@@ -10,4 +10,6 @@ class Role(Base):
     id: Mapped[int] = mapped_column(primary_key=True, autoincrement=True)
     name: Mapped[str] = mapped_column(String(255), unique=True, nullable=False)
 
-    users: Mapped[list["User"]] = relationship(back_populates="role", cascade="all, delete-orphan")
+    users: Mapped[list["User"]] = relationship(
+        back_populates="role", cascade="all, delete-orphan"
+    )

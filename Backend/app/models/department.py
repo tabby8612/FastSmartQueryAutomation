@@ -3,9 +3,10 @@ from __future__ import annotations
 from sqlalchemy import String, Text, Boolean, ForeignKey
 from sqlalchemy.orm import Mapped, mapped_column, relationship
 from app.database import Base
+from app.models.base import TimestampMixin
 
 
-class Department(Base):
+class Department(Base, TimestampMixin):
     __tablename__ = "departments"
 
     id: Mapped[int] = mapped_column(primary_key=True, autoincrement=True)
@@ -15,4 +16,8 @@ class Department(Base):
     is_active: Mapped[bool] = mapped_column(Boolean, default=True, nullable=False)
 
     hod: Mapped[User | None] = relationship(foreign_keys=[hod_id])
-    users: Mapped[list[User]] = relationship(back_populates="department", foreign_keys="User.department_id", cascade="all, delete-orphan")
+    users: Mapped[list[User]] = relationship(
+        back_populates="department",
+        foreign_keys="User.department_id",
+        cascade="all, delete-orphan",
+    )
