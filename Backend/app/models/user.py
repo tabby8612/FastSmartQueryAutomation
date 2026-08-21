@@ -17,7 +17,7 @@ class User(Base, TimestampMixin):
     email: Mapped[str] = mapped_column(String(255), unique=True, nullable=False)
     password: Mapped[str] = mapped_column(String(255), nullable=False)
     full_name: Mapped[str] = mapped_column(String(255), nullable=False)
-    role_id: Mapped[int] = mapped_column(ForeignKey("roles.id"), nullable=False)
+    # role_id: Mapped[int] = mapped_column(ForeignKey("roles.id"), nullable=False)
     department_id: Mapped[int] = mapped_column(
         ForeignKey("departments.id"), nullable=False
     )
@@ -27,7 +27,9 @@ class User(Base, TimestampMixin):
     leave_start_day: Mapped[date | None] = mapped_column(Date, nullable=True)
     leave_end_day: Mapped[date | None] = mapped_column(Date, nullable=True)
 
-    role: Mapped[Role] = relationship(back_populates="users")
+    # role: Mapped[Role] = relationship(back_populates="users")
     department: Mapped[Department] = relationship(
         back_populates="users", foreign_keys=[department_id]
     )
+
+    roles = relationship("Role", secondary="user_roles", back_populates="users")

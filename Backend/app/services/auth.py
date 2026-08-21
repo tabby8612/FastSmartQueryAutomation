@@ -37,10 +37,10 @@ class AuthService:
     async def login(db, user_data: OAuth2PasswordRequestForm) -> User | None:
         result = await db.execute(
             select(User)
-            .options(joinedload(User.department), joinedload(User.role))
+            .options(joinedload(User.department), joinedload(User.roles))
             .where(User.email == user_data.username)
         )
-        user = result.scalar_one_or_none()
+        user = result.unique().scalar_one_or_none()
         if not user:
             return None
         if not verify_password(user_data.password, user.password):

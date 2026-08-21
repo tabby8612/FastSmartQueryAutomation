@@ -10,5 +10,5 @@ class AuthResource:
             "name": data.full_name,
             "email": data.email,
             "department": {"id": data.department.id, "name": data.department.name},
-            "role": data.role,
+            "roles": data.roles,
         }
