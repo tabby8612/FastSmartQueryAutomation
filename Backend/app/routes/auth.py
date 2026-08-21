@@ -8,6 +8,9 @@ from app.schemas.auth import UserLogin, UserRegister
 from app.schemas.user import UserResponse
 from app.services.auth import AuthService
 from app.helpers.security import create_access_token
+from app.resources.AuthResource import AuthResource
+from fastapi.security import OAuth2PasswordRequestForm
+from fastapi import Depends
 
 router = APIRouter(prefix="/auth", tags=["auth"])
 
@@ -37,12 +40,18 @@ async def register(user_data: UserRegister, db: AsyncSession = Depends(get_db)):
 
 
 @router.post("/login")
-async def login(user_data: UserLogin, db: AsyncSession = Depends(get_db)):
-    user = await AuthService.login(db, user_data.email, user_data.password)
+async def login(
+    user_data: OAuth2PasswordRequestForm = Depends(), db: AsyncSession = Depends(get_db)
+):
+    user = await AuthService.login(db, user_data)
     if not user:
         raise HTTPException(
             status_code=status.HTTP_401_UNAUTHORIZED,
             detail="Invalid email or password",
         )
     access_token = create_access_token({"sub": str(user.id)})
-    return {"access_token": access_token, "token_type": "bearer"}
+    return {
+        "user": AuthResource.userResource(user),
+        "access_token": access_token,
+        "token_type": "bearer",
+    }

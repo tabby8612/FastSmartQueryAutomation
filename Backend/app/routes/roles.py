@@ -5,12 +5,17 @@ from sqlalchemy.future import select
 from app.database import get_db
 from app.models.role import Role
 from app.schemas.role import RoleCreate, RoleResponse, RoleUpdate
+from app.helpers.security import get_current_user
 
 router = APIRouter(prefix="/roles", tags=["roles"])
 
 
 @router.post("/", response_model=RoleResponse, status_code=status.HTTP_201_CREATED)
-async def create_role(role: RoleCreate, db: AsyncSession = Depends(get_db)):
+async def create_role(
+    role: RoleCreate,
+    db: AsyncSession = Depends(get_db),
+    get_current_user=Depends(get_current_user),
+):
     existing = await db.execute(select(Role).where(Role.name == role.name))
     if existing.scalar_one_or_none():
         raise HTTPException(
@@ -25,7 +30,10 @@ async def create_role(role: RoleCreate, db: AsyncSession = Depends(get_db)):
 
 
 @router.get("/", response_model=list[RoleResponse])
-async def get_roles(db: AsyncSession = Depends(get_db)):
+async def get_roles(
+    db: AsyncSession = Depends(get_db),
+    get_current_user=Depends(get_current_user),
+):
     result = await db.execute(select(Role))
     return result.scalars().all()
 

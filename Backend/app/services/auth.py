@@ -1,8 +1,10 @@
 from sqlalchemy.future import select
+from sqlalchemy.orm import joinedload
 
 from app.models.user import User
 from app.helpers.security import verify_password
 from app.services.user import UserService
+from fastapi.security import OAuth2PasswordRequestForm
 
 
 class AuthService:
@@ -32,12 +34,15 @@ class AuthService:
         )
 
     @staticmethod
-    async def login(db, email: str, password: str) -> User | None:
-        result = await db.execute(select(User).where(User.email == email))
+    async def login(db, user_data: OAuth2PasswordRequestForm) -> User | None:
+        result = await db.execute(
+            select(User)
+            .options(joinedload(User.department), joinedload(User.role))
+            .where(User.email == user_data.username)
+        )
         user = result.scalar_one_or_none()
-        return user
         if not user:
             return None
-        if not verify_password(password, user.password):
+        if not verify_password(user_data.password, user.password):
             return None
         return user
