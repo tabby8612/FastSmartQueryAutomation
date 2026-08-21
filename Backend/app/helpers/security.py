@@ -50,7 +50,13 @@ def verify_token(token: str):
 async def get_current_user(
     token=Depends(oauth2_scheme), db: AsyncSession = Depends(get_db)
 ):
-    payload = jwt.decode(token, JWT_SECRET, JWT_ALGORITHM)
+    payload = verify_token(token)
+
+    if payload is None:
+        raise HTTPException(
+            status_code=status.HTTP_408_REQUEST_TIMEOUT,
+            detail="token is expired",
+        )
 
     user_id = payload.get("sub")
 
@@ -62,11 +68,11 @@ async def get_current_user(
 
     result = await db.execute(
         select(User)
-        .options(joinedload(User.role), joinedload(User.department))
+        .options(joinedload(User.roles), joinedload(User.department))
         .where(User.id == int(user_id))
     )
 
-    user = result.scalar_one_or_none
+    user = result.unique().scalar_one_or_none()
 
     if user is None:
         raise HTTPException(
@@ -75,3 +81,18 @@ async def get_current_user(
         )
 
     return user
+
+
+def allowed_roles(allowed_roles):
+
+    async def check_roles(current_user: User = Depends(get_current_user)):
+        role_ids = [role.id for role in current_user.roles]
+        print("role_ids", role_ids)
+        if not any(roleId in allowed_roles for roleId in role_ids):
+            raise HTTPException(
+                status_code=status.HTTP_401_UNAUTHORIZED,
+                detail="You are not allowed to access this resource",
+            )
+        return current_user
+
+    return check_roles

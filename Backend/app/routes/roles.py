@@ -5,7 +5,8 @@ from sqlalchemy.future import select
 from app.database import get_db
 from app.models.role import Role
 from app.schemas.role import RoleCreate, RoleResponse, RoleUpdate
-from app.helpers.security import get_current_user
+from app.helpers.security import get_current_user, allowed_roles
+from app.Enums.RolesEnum import RolesEnum
 
 router = APIRouter(prefix="/roles", tags=["roles"])
 
@@ -32,7 +33,6 @@ async def create_role(
 @router.get("/", response_model=list[RoleResponse])
 async def get_roles(
     db: AsyncSession = Depends(get_db),
-    get_current_user=Depends(get_current_user),
 ):
     result = await db.execute(select(Role))
     return result.scalars().all()
