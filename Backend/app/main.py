@@ -1,5 +1,5 @@
 from fastapi import FastAPI
-from app.routes import roles, departments, users, auth
+from app.routes import roles, departments, users, auth, categories
 
 app = FastAPI()
 
@@ -12,3 +12,4 @@ app.include_router(roles.router)
 app.include_router(departments.router)
 app.include_router(users.router)
 app.include_router(auth.router)
+app.include_router(categories.router)
