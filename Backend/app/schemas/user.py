@@ -1,13 +1,15 @@
 from datetime import date
 
 from pydantic import BaseModel, ConfigDict
+from app.schemas.department import DepartmentResponse
+from app.schemas.role import RoleResponse
 
 
 class UserBase(BaseModel):
     student_id: str
     email: str
     full_name: str
-    role_id: int
+    # role_id: int
     department_id: int
     is_active: bool = True
     on_leave: bool = False
@@ -36,5 +38,13 @@ class UserUpdate(BaseModel):
 
 class UserResponse(UserBase):
     id: int
+
+    model_config = ConfigDict(from_attributes=True)
+
+
+class ProfileResponse(UserBase):
+    id: int
+    department: DepartmentResponse
+    roles: list[RoleResponse]
 
     model_config = ConfigDict(from_attributes=True)
