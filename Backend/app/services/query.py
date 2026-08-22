@@ -5,11 +5,9 @@ from ml.train import classify_issue
 
 from app.models.query import Query
 from app.Enums.QueryStatusEnum import QueryStatusEnum
-from datetime import datetime
-import random
-import string
 from app.models.user import User
 from app.models.user import Role
+from app.helpers.utils import generate_tracking_number
 
 
 class QueryService:
@@ -100,12 +98,6 @@ class QueryService:
     async def delete(db: AsyncSession, query: Query) -> None:
         await db.delete(query)
         await db.flush()
-
-
-def generate_tracking_number(prefix="QRY"):
-    timestamps = datetime.now().strftime("%Y%m%d-%H%M%S")
-    random_part = "".join(random.choices(string.ascii_uppercase + string.digits, k=4))
-    return f"{prefix}-{timestamps}-{random_part}"
 
 
 async def get_officer_id_by_department_id(db: AsyncSession, deptID):
