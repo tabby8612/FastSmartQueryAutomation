@@ -8,21 +8,22 @@ class QueryBase(BaseModel):
     tracking_id: str
     student_id: int
     assigned_id: int | None = None
-    department_id: int
-    category_id: int
+    department_id: int | None = None
+    category_id: int | None = None
     channel: str
     subject: str
     body: str
-    intent: str
-    confidence_level: Decimal
+    intent: str | None = None
+    confidence_level: Decimal | None = None
     status: str
     escalation_level: int = 0
     awaiting_student_input: bool = False
     resolved_at: datetime | None = None
 
 
-class QueryCreate(QueryBase):
-    pass
+class QueryCreate(BaseModel):
+    subject: str
+    body: str
 
 
 class QueryUpdate(BaseModel):
