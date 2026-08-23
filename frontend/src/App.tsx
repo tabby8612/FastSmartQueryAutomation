@@ -1,12 +1,12 @@
 import './App.css'
-import { Button } from "@/components/ui/button"
-import { Camera } from "lucide-react"
+import LoginPage from './pages/Login'
+import Dashboard from "./pages/Dashboard"
 
 function App() {
 
   return (
     <>
-      <Button><Camera /></Button>
+      <Dashboard />
     </>
   )
 }
