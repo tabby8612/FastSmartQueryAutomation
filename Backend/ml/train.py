@@ -11,7 +11,6 @@ X = vectorizer.fit_transform(texts)
 model = LogisticRegression()
 model.fit(X, categories)
 
-DEFAULT_DEPARTMENT = "Customer Support"
 CONFIDENCE_THRESHOLD = 0.4
 DEFAULT_CATEGORY = "general"
 

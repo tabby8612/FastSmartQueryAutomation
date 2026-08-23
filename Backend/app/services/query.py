@@ -32,6 +32,7 @@ class QueryService:
             department_id=predication_data.get("department_id"),
             category_id=predication_data.get("category_id"),
             confidence_level=predication_data.get("confidence_score"),
+            intent=predication_data.get("category"),
             assigned_id=officer.id if officer is not None else None,
         )
         db.add(query)

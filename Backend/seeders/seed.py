@@ -251,10 +251,10 @@ async def seed_user_roles(session, users, roles):
 
     user_roles = [
         User_Roles(role_id=role_map["admin"].id, user_id=user_map["STU001"].id),
-        User_Roles(role_id=role_map["student"].id, user_id=user_map["STU002"].id),
-        User_Roles(role_id=role_map["staff"].id, user_id=user_map["STU003"].id),
         User_Roles(role_id=role_map["hod"].id, user_id=user_map["STU004"].id),
-        User_Roles(role_id=role_map["staff"].id, user_id=user_map["STU004"].id),
+        User_Roles(role_id=role_map["officer"].id, user_id=user_map["STU003"].id),
+        User_Roles(role_id=role_map["student"].id, user_id=user_map["STU002"].id),
+        User_Roles(role_id=role_map["officer"].id, user_id=user_map["STU004"].id),
     ]
     session.add_all(user_roles)
     await session.commit()
