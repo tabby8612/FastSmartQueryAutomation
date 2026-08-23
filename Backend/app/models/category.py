@@ -13,9 +13,7 @@ class Category(Base, TimestampMixin):
     name: Mapped[str] = mapped_column(String(255), nullable=False)
     description: Mapped[str | None] = mapped_column(Text, nullable=True)
     department_id: Mapped[int] = mapped_column(
-        ForeignKey("departments.id"), nullable=False
+        ForeignKey("departments.id"), nullable=True
     )
 
-    department: Mapped["Department"] = relationship(
-        foreign_keys=[department_id]
-    )
+    department: Mapped["Department"] = relationship(foreign_keys=[department_id])

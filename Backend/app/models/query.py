@@ -16,7 +16,7 @@ class Query(Base, TimestampMixin):
     tracking_id: Mapped[str] = mapped_column(
         String(255), unique=True, nullable=False, index=True
     )
-    student_id: Mapped[int] = mapped_column(ForeignKey("users.id"), nullable=False)
+    student_id: Mapped[int] = mapped_column(ForeignKey("users.id"), nullable=True)
     assigned_id: Mapped[int | None] = mapped_column(
         ForeignKey("users.id"), nullable=True
     )

@@ -1,8 +1,8 @@
-"""added queries table
+"""initial creation of queries table
 
-Revision ID: bdaa3c02de7e
-Revises: eb781e20985d
-Create Date: 2026-08-22 07:18:09.872834
+Revision ID: f630d8858bbc
+Revises: 0cd8514ed953
+Create Date: 2026-08-23 06:45:41.800276
 
 """
 
@@ -12,8 +12,8 @@ from alembic import op
 import sqlalchemy as sa
 
 # revision identifiers, used by Alembic.
-revision: str = "bdaa3c02de7e"
-down_revision: Union[str, Sequence[str], None] = "eb781e20985d"
+revision: str = "f630d8858bbc"
+down_revision: Union[str, Sequence[str], None] = "0cd8514ed953"
 branch_labels: Union[str, Sequence[str], None] = None
 depends_on: Union[str, Sequence[str], None] = None
 
@@ -25,7 +25,7 @@ def upgrade() -> None:
         "queries",
         sa.Column("id", sa.Integer(), autoincrement=True, nullable=False),
         sa.Column("tracking_id", sa.String(length=255), nullable=False),
-        sa.Column("student_id", sa.Integer(), nullable=False),
+        sa.Column("student_id", sa.Integer(), nullable=True),
         sa.Column("assigned_id", sa.Integer(), nullable=True),
         sa.Column("department_id", sa.Integer(), nullable=True),
         sa.Column("category_id", sa.Integer(), nullable=True),
@@ -34,11 +34,19 @@ def upgrade() -> None:
         sa.Column("body", sa.Text(), nullable=False),
         sa.Column("intent", sa.String(length=255), nullable=True),
         sa.Column("confidence_level", sa.Numeric(precision=4, scale=3), nullable=True),
-        sa.Column("status", sa.String(length=255), nullable=False),
-        sa.Column("escalation_level", sa.SmallInteger(), nullable=False, default=0),
         sa.Column(
-            "awaiting_student_input", sa.Boolean(), nullable=False, default=False
+            "status",
+            sa.String(length=255),
+            nullable=False,
+            server_default="open",
         ),
+        sa.Column(
+            "escalation_level",
+            sa.SmallInteger(),
+            nullable=False,
+            server_default=sa.text("0"),
+        ),
+        sa.Column("awaiting_student_input", sa.Boolean(), nullable=False),
         sa.Column("resolved_at", sa.DateTime(), nullable=True),
         sa.Column(
             "created_at",

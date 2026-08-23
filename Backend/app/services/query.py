@@ -8,6 +8,7 @@ from app.Enums.QueryStatusEnum import QueryStatusEnum
 from app.models.user import User
 from app.models.user import Role
 from app.helpers.utils import generate_tracking_number
+from app.Enums.RolesEnum import RolesEnum
 
 
 class QueryService:
@@ -107,8 +108,8 @@ async def get_officer_id_by_department_id(db: AsyncSession, deptID):
         .where(
             User.department_id == int(deptID),
             User.on_leave == False,
-            User.roles.any(Role.name == "staff"),
-        )  # later change it to ENUM
+            User.roles.any(Role.name == RolesEnum.OFFICER.name.lower()),
+        )
     )
     result = await db.execute(stmt)
     data = result.unique().scalars().first()
