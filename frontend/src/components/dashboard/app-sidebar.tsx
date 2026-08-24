@@ -2,26 +2,13 @@
 
 import * as React from "react"
 import {
-  IconCamera,
-  IconChartBar,
   IconDashboard,
-  IconDatabase,
-  IconFileAi,
-  IconFileDescription,
-  IconFileWord,
-  IconFolder,
   IconHelp,
-  IconInnerShadowTop,
-  IconListDetails,
-  IconReport,
   IconSearch,
   IconSettings,
-  IconUsers,
 } from "@tabler/icons-react"
 
-import { NavDocuments } from "@/components/dashboard/nav-documents"
 import { NavMain } from "@/components/dashboard/nav-main"
-import { NavSecondary } from "@/components/dashboard/nav-secondary"
 import { NavUser } from "@/components/dashboard/nav-user"
 import {
   Sidebar,
@@ -29,128 +16,74 @@ import {
   SidebarFooter,
   SidebarHeader,
   SidebarMenu,
-  SidebarMenuButton,
   SidebarMenuItem,
 } from "@/components/ui/sidebar"
+import { useAuth } from "@/contexts/auth-context"
 
 const data = {
-  user: {
-    name: "shadcn",
-    email: "m@example.com",
-    avatar: "/avatars/shadcn.jpg",
-  },
-  navMain: [
+  student: [
     {
       title: "Dashboard",
       url: "#",
       icon: IconDashboard,
     },
     {
-      title: "Lifecycle",
+      title: "Submit Issue",
       url: "#",
-      icon: IconListDetails,
+      icon: IconDashboard,
     },
     {
-      title: "Analytics",
+      title: "My Issue",
       url: "#",
-      icon: IconChartBar,
+      icon: IconDashboard,
+    }
+  ],
+  officer: [
+    {
+      title: "Dashboard",
+      url: "#",
+      icon: IconDashboard,
     },
     {
-      title: "Projects",
+      title: "Assigned Issues",
       url: "#",
-      icon: IconFolder,
-    },
-    {
-      title: "Team",
-      url: "#",
-      icon: IconUsers,
+      icon: IconDashboard,
     },
   ],
-  navClouds: [
+  admin: [
     {
-      title: "Capture",
-      icon: IconCamera,
-      isActive: true,
+      title: "Dashboard",
       url: "#",
-      items: [
-        {
-          title: "Active Proposals",
-          url: "#",
-        },
-        {
-          title: "Archived",
-          url: "#",
-        },
-      ],
+      icon: IconDashboard,
     },
     {
-      title: "Proposal",
-      icon: IconFileDescription,
+      title: "All Issue",
       url: "#",
-      items: [
-        {
-          title: "Active Proposals",
-          url: "#",
-        },
-        {
-          title: "Archived",
-          url: "#",
-        },
-      ],
+      icon: IconDashboard,
     },
     {
-      title: "Prompts",
-      icon: IconFileAi,
+      title: "Users",
       url: "#",
-      items: [
-        {
-          title: "Active Proposals",
-          url: "#",
-        },
-        {
-          title: "Archived",
-          url: "#",
-        },
-      ],
-    },
-  ],
-  navSecondary: [
-    {
-      title: "Settings",
-      url: "#",
-      icon: IconSettings,
+      icon: IconDashboard,
     },
     {
-      title: "Get Help",
+      title: "Categories",
       url: "#",
-      icon: IconHelp,
+      icon: IconDashboard,
     },
     {
-      title: "Search",
+      title: "Department",
       url: "#",
-      icon: IconSearch,
-    },
-  ],
-  documents: [
-    {
-      name: "Data Library",
-      url: "#",
-      icon: IconDatabase,
-    },
-    {
-      name: "Reports",
-      url: "#",
-      icon: IconReport,
-    },
-    {
-      name: "Word Assistant",
-      url: "#",
-      icon: IconFileWord,
-    },
+      icon: IconDashboard,
+    }
   ],
 }
 
-export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
+export function AppSidebar({ roleName, ...props }: React.ComponentProps<typeof Sidebar> & { roleName?: string | null }) {
+  const { user } = useAuth()
+  const effectiveRole = roleName || user?.rolename || "student"
+  const navItems = data[effectiveRole as keyof typeof data] || data.student
+
   return (
     <Sidebar collapsible="offcanvas" {...props}>
       <SidebarHeader>
@@ -161,12 +94,14 @@ export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
         </SidebarMenu>
       </SidebarHeader>
       <SidebarContent>
-        <NavMain items={data.navMain} />
-        {/* <NavDocuments items={data.documents} /> */}
-        {/* <NavSecondary items={data.navSecondary} className="mt-auto" /> */}
+        <NavMain items={navItems} />
       </SidebarContent>
       <SidebarFooter>
-        <NavUser user={data.user} />
+        <NavUser user={{
+          name: user?.name || "User",
+          email: user?.email || "user@example.com",
+          avatar: "/avatars/shadcn.jpg",
+        }} />
       </SidebarFooter>
     </Sidebar>
   )

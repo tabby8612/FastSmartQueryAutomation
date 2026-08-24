@@ -11,4 +11,5 @@ class AuthResource:
             "email": data.email,
             "department": {"id": data.department.id, "name": data.department.name},
             "roles": data.roles,
+            "rolename": data.roles[0].name if data.roles else None,
         }

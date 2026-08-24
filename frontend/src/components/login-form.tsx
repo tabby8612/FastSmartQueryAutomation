@@ -1,3 +1,7 @@
+import { useState } from "react"
+import { useNavigate } from "react-router-dom"
+import axios from "axios"
+import { useAuth } from "@/contexts/auth-context"
 import { cn } from "@/lib/utils"
 import { Button } from "@/components/ui/button"
 import { Card, CardContent } from "@/components/ui/card"
@@ -15,22 +19,41 @@ export function LoginForm({
   className,
   ...props
 }: React.ComponentProps<"div">) {
+  const navigate = useNavigate()
+  const { setAuth } = useAuth()
+  const [error, setError] = useState("")
+
+  const handleSubmit = async (e: React.SubmitEvent<HTMLFormElement>) => {
+    e.preventDefault()
+    const formData = new FormData(e.currentTarget)
+    
+    try {
+      const response = await axios.post("http://127.0.0.1:8000/auth/login", formData, {headers: {"Content-Type": "application/x-www-form-urlencoded"}})
+      const { access_token, user } = response.data
+      setAuth(access_token, user)
+      navigate("/dashboard")
+    } catch {
+      setError("Invalid email or password")
+    }
+  }
+
   return (
     <div className={cn("flex flex-col gap-6", className)} {...props}>
       <Card className="overflow-hidden p-0">
         <CardContent className="grid p-0 md:grid-cols-2">
-          <form className="p-6 md:p-8">
+          <form onSubmit={handleSubmit} className="p-6 md:p-8">
             <FieldGroup>
               <div className="flex flex-col items-center gap-2 text-center">
                 <h1 className="text-2xl font-bold">Welcome back</h1>
                 <p className="text-balance text-muted-foreground">
-                  Login to your Acme Inc account
+                  Login to your account
                 </p>
               </div>
               <Field>
                 <FieldLabel htmlFor="email">Email</FieldLabel>
                 <Input
-                  id="email"
+                  id="username"
+                  name="username"
                   type="email"
                   placeholder="m@example.com"
                   required
@@ -46,11 +69,14 @@ export function LoginForm({
                     Forgot your password?
                   </a>
                 </div>
-                <Input id="password" type="password" required />
+                <Input id="password" name="password" type="password" required />
               </Field>
               <Field>
                 <Button type="submit">Login</Button>
               </Field>
+              {error && (
+                <p className="text-sm text-red-500">{error}</p>
+              )}
               <FieldSeparator className="*:data-[slot=field-separator-content]:bg-card">
                 Or continue with
               </FieldSeparator>

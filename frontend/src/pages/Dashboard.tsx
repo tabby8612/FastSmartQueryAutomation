@@ -7,10 +7,12 @@ import {
   SidebarInset,
   SidebarProvider,
 } from "@/components/ui/sidebar"
-
+import { useAuth } from "@/contexts/auth-context"
 import data from "@/data/sample"
 
 export default function Page() {
+  const { role_name } = useAuth()
+
   return (
     <SidebarProvider
       style={
@@ -20,7 +22,7 @@ export default function Page() {
         } as React.CSSProperties
       }
     >
-      <AppSidebar variant="inset" />
+      <AppSidebar variant="inset" roleName={role_name} />
       <SidebarInset>
         <SiteHeader />
         <div className="flex flex-1 flex-col">
