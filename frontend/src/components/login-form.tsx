@@ -14,6 +14,7 @@ import {
 } from "@/components/ui/field"
 import { Input } from "@/components/ui/input"
 import hero from "@/assets/hero.png"
+import api from "@/lib/axios"
 
 export function LoginForm({
   className,
@@ -28,7 +29,7 @@ export function LoginForm({
     const formData = new FormData(e.currentTarget)
     
     try {
-      const response = await axios.post("http://127.0.0.1:8000/auth/login", formData, {headers: {"Content-Type": "application/x-www-form-urlencoded"}})
+      const response = await api.post("/auth/login", formData, {headers: {"Content-Type": "application/x-www-form-urlencoded"}})
       const { access_token, user } = response.data
       setAuth(access_token, user)
       navigate("/dashboard")
