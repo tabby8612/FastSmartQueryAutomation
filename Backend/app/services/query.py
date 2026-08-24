@@ -44,7 +44,12 @@ class QueryService:
     async def get_all(
         db: AsyncSession, student_id: int | None = None, assigned_id: int | None = None
     ) -> list[Query]:
-        stmt = select(Query)
+        stmt = select(Query).options(
+            joinedload(Query.student),
+            joinedload(Query.assigned),
+            joinedload(Query.department),
+            joinedload(Query.category),
+        )
         if student_id is not None:
             stmt = stmt.where(Query.student_id == student_id)
         if assigned_id is not None:

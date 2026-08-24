@@ -87,6 +87,12 @@ import {
   TabsList,
   TabsTrigger,
 } from "@/components/ui/tabs"
+import { Drawer, DrawerClose, DrawerContent, DrawerDescription, DrawerFooter, DrawerHeader, DrawerTitle, DrawerTrigger } from "../ui/drawer"
+import { ChartContainer, ChartTooltip, ChartTooltipContent, type ChartConfig } from "../ui/chart"
+import { Area, AreaChart, CartesianGrid, XAxis } from "recharts"
+import { useIsMobile } from "@/hooks/use-mobile"
+import { Input, Separator } from "@base-ui/react"
+import { useAuth } from "@/contexts/auth-context"
 
 // New in v9: declare the features this table uses — anything you don't
 // register is tree-shaken out of the bundle.
@@ -174,7 +180,7 @@ const columns = columnHelper.columns([
   columnHelper.accessor("tracking_id", {
     header: "Tracking ID",
     cell: ({ row }) => {
-      return row.original.tracking_id
+      return <TableCellViewer item={row.original} />
     },
     enableHiding: false,
   }),
@@ -191,7 +197,7 @@ const columns = columnHelper.columns([
     header: "Subject",
     cell: ({ row }) => (
       <div className="w-32">
-        {row.original.subject.slice(0,30)}
+        {row.original.subject.slice(0, 30)}...
       </div>
     ),
   }),
@@ -230,7 +236,7 @@ const columns = columnHelper.columns([
   }),
   columnHelper.display({
     id: "actions",
-    cell: ({row}) => (
+    cell: ({ row }) => (
       <a href={`/edit/${row.original.id}`}>Edit - {row.original.id}</a>
     ),
   }),
@@ -271,6 +277,8 @@ export function DataTable({
   data: z.infer<typeof schema>[]
 }) {
   const [data, setData] = React.useState(() => initialData)
+  const { role_name } = useAuth();
+
   React.useEffect(() => {
     setData(initialData)
   }, [initialData])
@@ -347,7 +355,7 @@ export function DataTable({
           </SelectTrigger>
           <SelectContent>
             <SelectItem value="issues">Issues</SelectItem>
-            </SelectContent>
+          </SelectContent>
         </Select>
         <TabsList className="hidden **:data-[slot=badge]:size-5 **:data-[slot=badge]:rounded-full **:data-[slot=badge]:bg-muted-foreground/30 **:data-[slot=badge]:px-1 @4xl/main:flex">
           <TabsTrigger value="issues">Recent Issues</TabsTrigger>
@@ -386,10 +394,15 @@ export function DataTable({
                 })}
             </DropdownMenuContent>
           </DropdownMenu>
-          <Button variant="outline" size="sm">
-            <IconPlus />
-            <span className="hidden lg:inline">Add New Issue</span>
-          </Button>
+          {
+            role_name == "student" && (
+              <Button variant="outline" size="sm">
+                <IconPlus />
+                <span className="hidden lg:inline">Add New Issue</span>
+              </Button>
+            )
+          }
+
         </div>
       </div>
       <TabsContent
@@ -520,8 +533,62 @@ export function DataTable({
           </div>
         </div>
       </TabsContent>
-      
+
     </Tabs>
+  )
+}
+
+const chartData = [
+  { month: "January", desktop: 186, mobile: 80 },
+  { month: "February", desktop: 305, mobile: 200 },
+  { month: "March", desktop: 237, mobile: 120 },
+  { month: "April", desktop: 73, mobile: 190 },
+  { month: "May", desktop: 209, mobile: 130 },
+  { month: "June", desktop: 214, mobile: 140 },
+]
+
+const chartConfig = {
+  desktop: {
+    label: "Desktop",
+    color: "var(--primary)",
+  },
+  mobile: {
+    label: "Mobile",
+    color: "var(--primary)",
+  },
+} satisfies ChartConfig
+
+function TableCellViewer({ item }: { item: z.infer<typeof schema> }) {
+  const isMobile = useIsMobile()
+
+  return (
+    <Drawer swipeDirection={isMobile ? "down" : "down"} showSwipeHandle={isMobile}>
+      <DrawerTrigger>
+        <Button variant="link" className="w-fit px-0 text-left text-foreground">
+          {item.tracking_id}
+        </Button>
+      </DrawerTrigger>
+      <DrawerContent>
+        <DrawerHeader className="gap-10 mb-7">
+          <DrawerTitle className="text-2xl font-bold text-primary">{item.tracking_id}</DrawerTitle>
+          <DrawerDescription className="text-lg text-slate-600">
+            Showing issue details for the Item Tracking # {item.tracking_id}
+          </DrawerDescription>
+        </DrawerHeader>
+        <div className="flex flex-col gap-4 overflow-y-auto px-4 text-sm">
+          <div className="flex flex-col gap-3">
+            <Label htmlFor="header" className="font-bold">Tracking ID</Label>
+            <Input id="header" defaultValue={item.tracking_id} />
+          </div>
+
+        </div>
+        <DrawerFooter>
+          <DrawerClose>
+            <Button variant="outline">Close</Button>
+          </DrawerClose>
+        </DrawerFooter>
+      </DrawerContent>
+    </Drawer>
   )
 }
 

@@ -2,6 +2,7 @@ from datetime import datetime
 from decimal import Decimal
 
 from pydantic import BaseModel, ConfigDict
+from app.schemas.user import UserResponse
 
 
 class QueryBase(BaseModel):
@@ -39,7 +40,35 @@ class QueryUpdate(BaseModel):
     resolved_at: datetime | None = None
 
 
+class Student(BaseModel):
+    id: int
+    student_id: str
+    email: str
+    full_name: str
+
+
+class Officer(BaseModel):
+    id: int
+    email: str
+    full_name: str
+
+
+class Department(BaseModel):
+    id: int
+    name: str
+
+
+class Category(BaseModel):
+    id: int
+    name: str
+
+
 class QueryResponse(QueryBase):
     id: int
+    created_at: datetime | None
+    student: Student
+    assigned: Officer
+    department: Department
+    department: Category
 
     model_config = ConfigDict(from_attributes=True)

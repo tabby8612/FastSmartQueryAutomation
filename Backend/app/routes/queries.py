@@ -50,7 +50,7 @@ async def get_queries(
 ):
     if has_role(current_user, ["admin"]):
         return await QueryService.get_all(db)
-    if has_role(current_user, ["staff", "hod"]):
+    if has_role(current_user, ["staff", "hod", "officer"]):
         return await QueryService.get_all(db, assigned_id=current_user.id)
     return await QueryService.get_all(db, student_id=current_user.id)
 

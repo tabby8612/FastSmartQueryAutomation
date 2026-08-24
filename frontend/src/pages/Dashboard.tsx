@@ -7,13 +7,13 @@ import {
   SidebarProvider,
 } from "@/components/ui/sidebar"
 import { useAuth } from "@/contexts/auth-context"
-import { BookOpenCheck, BookOpenIcon, Hash } from "lucide-react"
+import { BookOpenCheck, BookOpenIcon, Hash, Loader } from "lucide-react"
 import { useEffect, useState } from "react"
 import api from "@/lib/axios"
 
 
 export default function Page() {
-  const { role_name, access_token } = useAuth()
+  const { role_name, access_token, user } = useAuth()
   const [queries, setQueries] = useState<Query[]>([])
   const [loading, setLoading] = useState(true)
 
@@ -38,7 +38,8 @@ export default function Page() {
 
 
   const openCount = queries.filter((q) => q.status.toLowerCase() === "open").length
-  const closeCount = queries.filter((q) => q.status.toLowerCase() === "close").length
+  const closeCount = queries.filter((q) => q.status.toLowerCase() === "closed").length
+  const inProgressCount = queries.filter((q) => q.status.toLowerCase() === "in_progress").length
   const totalCount = queries.length
 
 
@@ -58,19 +59,21 @@ export default function Page() {
           <div className="@container/main flex flex-1 flex-col gap-2">
             <div className="flex flex-col gap-4 py-4 md:gap-6 md:py-6">
               <div className="md:py-6 bg-white mx-5 px-6 rounded-2xl flex flex-col gap-5">
-                <h1 className="text-3xl font-bold">Hello, Tabish</h1>
+                <h1 className="text-3xl font-bold">Hello, {user?.name ? user.name : "Anyonmous"}</h1>
                 <h1 className="text-xl font-bold text-muted-foreground">Here is the overview of issues</h1>
-                <div className="grid grid-cols-3 gap-7">
+                <div className="grid grid-cols-4 gap-5">
                   {loading ? (
                     <>
                       <SectionCard title="Open" value="—" description="Loading..." icon={BookOpenIcon} />
-                      <SectionCard title="Closed" value="—" description="Loading..." icon={BookOpenCheck} />
+                      <SectionCard title="Closed" value="—" description="Loading..." icon={Loader} />
+                      <SectionCard title="In Progress" value="—" description="Loading..." icon={BookOpenCheck} />
                       <SectionCard title="Total" value="—" description="Loading..." icon={Hash} />
                     </>
                   ) : (
                     <>
                       <SectionCard title="Open" value={String(openCount)} description="These are issues that are opened" icon={BookOpenIcon} />
-                      <SectionCard title="Closed" value={String(closeCount)} description="These are issues that are closed" icon={BookOpenCheck} />
+                      <SectionCard title="In Progress" value={String(closeCount)} description="These are issues that are pending" icon={Loader} />
+                      <SectionCard title="Closed" value={String(inProgressCount)} description="These are issues that are closed" icon={BookOpenCheck} />
                       <SectionCard title="Total" value={String(totalCount)} description="These are total issues" icon={Hash} />
                     </>
                   )}
