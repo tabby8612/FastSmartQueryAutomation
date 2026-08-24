@@ -11,7 +11,7 @@ import { useAuth } from "@/contexts/auth-context"
 import data from "@/data/sample"
 
 export default function Page() {
-  const { role_name } = useAuth()
+  const { role_name, access_token } = useAuth()
 
   return (
     <SidebarProvider

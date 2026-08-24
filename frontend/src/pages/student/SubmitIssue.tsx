@@ -1,3 +1,5 @@
+import { useState } from "react"
+import { useNavigate } from "react-router-dom"
 import { AppSidebar } from "@/components/dashboard/app-sidebar"
 import { SiteHeader } from "@/components/dashboard/site-header"
 import { SidebarInset, SidebarProvider } from "@/components/ui/sidebar"
@@ -5,11 +7,23 @@ import { useAuth } from "@/contexts/auth-context"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
+import api from "@/lib/axios"
 import { Textarea } from "@/components/ui/textarea"
 
-
 export default function SubmitIssue() {
-  const { role_name } = useAuth()
+  const { role_name, access_token } = useAuth()
+  const navigate = useNavigate()
+  const [subject, setSubject] = useState("")
+  const [body, setBody] = useState("")
+
+  const handleSubmit = async (e: React.SubmitEvent) => {
+    e.preventDefault()
+    console.log(access_token)
+    await api.post("/queries/", { subject, body }, {
+      headers: { Authorization: `Bearer ${access_token}` },
+    })
+    navigate("/dashboard")
+  }
 
   return (
     <SidebarProvider
@@ -24,26 +38,35 @@ export default function SubmitIssue() {
       <SidebarInset>
         <SiteHeader />
         <div className="flex flex-1 flex-col">
-          <div className="@container/main  flex flex-1 flex-col gap-2">
-            <div className="flex flex-col justify-center items-center gap-4 rounded-2xl bg-white h-full m-5 py-4 md:gap-6 md:py-6 px-4 lg:px-6">
-              <div className="w-full p-5  flex flex-col justify-center items-center gap-4">
-              <h1 className="text-4xl font-bold">Submit New Issue</h1>
-              <p className="text-muted-foreground">Tell us what problem you are facing</p>
-              <div className="flex flex-col gap-4 w-2xl pt-10">
-                <div className="flex flex-col gap-2">
+          <div className="@container/main flex flex-1 flex-col gap-2">
+            <div className="flex flex-col bg-white h-full m-5 rounded-2xl gap-4 py-4 md:gap-6 md:py-6 px-4 lg:px-6">
+              <div className="flex flex-col items-center justify-center  h-full m-5 p-5 rounded-2xl gap-4 py-4">
+                <h1 className="text-4xl font-bold">Submit New Issue</h1>
+                <p className="text-muted-foreground text-2xl">Tell us what problem you are facing</p>
+                <form onSubmit={handleSubmit} className="flex flex-col gap-4 max-w-xl  w-full mt-5">
+                <div className="flex flex-col gap-2 my-3">
                   <Label htmlFor="title">Title</Label>
-                  <Input id="title" placeholder="Enter the title of your issue" />
+                  <Input
+                    id="title"
+                    placeholder="Enter the title of your issue"
+                    value={subject}
+                    onChange={(e) => setSubject(e.target.value)}
+                    className="border-stone-500"
+                    required
+                  />
                 </div>
                 <div className="flex flex-col gap-2">
                   <Label htmlFor="description">Description</Label>
-                  <Textarea id="textarea-message" placeholder="Type your message here." rows={8} className="h-44" />
+                  <Textarea id="description" placeholder="Describe your issue in detail" className="border-stone-500 h-50" value={body} onChange={(e) => setBody(e.target.value)} required/>
+                  </div>
+                <div className="flex gap-4 mt-4 justify-end">
+                  <Button type="button" className="w-1/2 bg-stone-300" variant="outline" onClick={() => navigate("/dashboard")}>Cancel</Button>
+                  <Button type="submit" className="w-1/2">Submit New Issue</Button>
                 </div>
-                <div className="flex gap-4 mt-4 justify-end ">
-                  <Button variant="outline" className="w-1/2">Cancel</Button>
-                  <Button className="w-1/2">Submit New Issue</Button>
-                </div>
+              </form>
               </div>
-              </div>
+
+              
             </div>
           </div>
         </div>

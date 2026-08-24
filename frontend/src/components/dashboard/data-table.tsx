@@ -304,7 +304,7 @@ const columns = columnHelper.columns([
     id: "actions",
     cell: () => (
       <DropdownMenu>
-        <DropdownMenuTrigger asChild>
+        <DropdownMenuTrigger>
           <Button
             variant="ghost"
             className="flex size-8 text-muted-foreground data-[state=open]:bg-muted"
@@ -451,7 +451,7 @@ export function DataTable({
         </TabsList>
         <div className="flex items-center gap-2">
           <DropdownMenu>
-            <DropdownMenuTrigger asChild>
+            <DropdownMenuTrigger>
               <Button variant="outline" size="sm">
                 <IconLayoutColumns />
                 <span className="hidden lg:inline">Customize Columns</span>
@@ -661,7 +661,7 @@ function TableCellViewer({ item }: { item: z.infer<typeof schema> }) {
 
   return (
     <Drawer direction={isMobile ? "bottom" : "right"}>
-      <DrawerTrigger asChild>
+      <DrawerTrigger>
         <Button variant="link" className="w-fit px-0 text-left text-foreground">
           {item.header}
         </Button>
@@ -806,7 +806,7 @@ function TableCellViewer({ item }: { item: z.infer<typeof schema> }) {
         </div>
         <DrawerFooter>
           <Button>Submit</Button>
-          <DrawerClose asChild>
+          <DrawerClose>
             <Button variant="outline">Done</Button>
           </DrawerClose>
         </DrawerFooter>

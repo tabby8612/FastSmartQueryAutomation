@@ -24,13 +24,13 @@ const data = {
   student: [
     {
       title: "Dashboard",
-      url: "#",
+      url: "/dashboard",
       icon: IconDashboard,
     },
     {
       title: "Submit Issue",
-      url: "#",
-      icon: IconDashboard,
+      url: "/submit-issue",
+      icon: IconHelp,
     },
     {
       title: "My Issue",
