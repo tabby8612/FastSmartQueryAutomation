@@ -3,7 +3,7 @@ import LoginPage from './pages/Login'
 import Dashboard from "./pages/Dashboard"
 import { AuthProvider } from "./contexts/auth-context"
 import { ProtectedRoute } from "./components/protected-route"
-
+import SubmitIssue from './pages/student/SubmitIssue'
 function App() {
   return (
     <AuthProvider>
@@ -18,6 +18,7 @@ function App() {
               </ProtectedRoute>
             }
           />
+          <Route path="/submit-issue" element={<SubmitIssue />} />
         </Routes>
       </BrowserRouter>
     </AuthProvider>
