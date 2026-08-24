@@ -1,20 +1,46 @@
 import { AppSidebar } from "@/components/dashboard/app-sidebar"
-import { ChartAreaInteractive } from "@/components/dashboard/chart-area-interactive"
-import { DataTable } from "@/components/dashboard/data-table"
+import { DataTable, type Query } from "@/components/dashboard/data-table"
 import { SectionCard } from "@/components/dashboard/section-card"
-import { SectionCards } from "@/components/dashboard/section-cards"
 import { SiteHeader } from "@/components/dashboard/site-header"
 import {
   SidebarInset,
   SidebarProvider,
 } from "@/components/ui/sidebar"
 import { useAuth } from "@/contexts/auth-context"
-import data from "@/data/sample"
 import { BookOpenCheck, BookOpenIcon, Hash } from "lucide-react"
+import { useEffect, useState } from "react"
+import api from "@/lib/axios"
 
 
 export default function Page() {
   const { role_name, access_token } = useAuth()
+  const [queries, setQueries] = useState<Query[]>([])
+  const [loading, setLoading] = useState(true)
+
+  useEffect(() => {
+    const fetchQueries = async () => {
+      try {
+        const response = await api.get<Query[]>("/queries", {
+          headers: {
+            Authorization: `Bearer ${access_token}`,
+          },
+        })
+        setQueries(response.data)
+      } catch (error) {
+        console.error("Failed to fetch queries:", error)
+      } finally {
+        setLoading(false)
+      }
+    }
+
+    fetchQueries()
+  }, [access_token])
+
+
+  const openCount = queries.filter((q) => q.status.toLowerCase() === "open").length
+  const closeCount = queries.filter((q) => q.status.toLowerCase() === "close").length
+  const totalCount = queries.length
+
 
   return (
     <SidebarProvider
@@ -35,20 +61,23 @@ export default function Page() {
                 <h1 className="text-3xl font-bold">Hello, Tabish</h1>
                 <h1 className="text-xl font-bold text-muted-foreground">Here is the overview of issues</h1>
                 <div className="grid grid-cols-3 gap-7">
-                  <SectionCard title="Open" value="12" description="These are issuses that are opened" icon={BookOpenIcon} />
-                  <SectionCard title="Closed" value="5" description="These are issuses that are closed" icon={BookOpenCheck} />
-                  <SectionCard title="Total" value="17" description="These are total issuses" icon={Hash} />
-                  {/* <SectionCard title="Open" value="12" description="These are issuses that are opened" icon={BookOpenIcon}/> */}
-                  {/* <SectionCard title="Open" value="12" description="These are issuses that are opened" icon={BookOpenIcon}/> */}
-                  {/* <SectionCard />
-                <SectionCard /> */}
+                  {loading ? (
+                    <>
+                      <SectionCard title="Open" value="—" description="Loading..." icon={BookOpenIcon} />
+                      <SectionCard title="Closed" value="—" description="Loading..." icon={BookOpenCheck} />
+                      <SectionCard title="Total" value="—" description="Loading..." icon={Hash} />
+                    </>
+                  ) : (
+                    <>
+                      <SectionCard title="Open" value={String(openCount)} description="These are issues that are opened" icon={BookOpenIcon} />
+                      <SectionCard title="Closed" value={String(closeCount)} description="These are issues that are closed" icon={BookOpenCheck} />
+                      <SectionCard title="Total" value={String(totalCount)} description="These are total issues" icon={Hash} />
+                    </>
+                  )}
                 </div>
               </div>
-              {/* <div className="px-4 lg:px-6">
-                <ChartAreaInteractive />
-              </div> */}
               <div className="py-2 mx-6 rounded-2xl pt-5 bg-white">
-                <DataTable data={data} />
+                <DataTable data={queries} />
               </div>
             </div>
           </div>
