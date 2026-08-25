@@ -10,6 +10,7 @@ import { useAuth } from "@/contexts/auth-context"
 import { BookOpenCheck, BookOpenIcon, Hash, Loader } from "lucide-react"
 import { useEffect, useState } from "react"
 import api from "@/lib/axios"
+import { ChartAreaInteractive } from "@/components/dashboard/chart-area-interactive"
 
 
 export default function Page() {
@@ -85,6 +86,9 @@ export default function Page() {
                       <SectionCard title="Total" value={String(totalCount)} description="These are total issues" icon={Hash} />
                     </>
                   )}
+                </div>
+                <div className="px-4 lg:px-6">
+                  {/* <ChartAreaInteractive /> */}
                 </div>
               </div>
               <div className="py-2 mx-6 rounded-2xl pt-5 bg-white">

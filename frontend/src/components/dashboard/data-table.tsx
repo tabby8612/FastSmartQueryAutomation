@@ -86,7 +86,6 @@ import {
 import { Drawer, DrawerClose, DrawerContent, DrawerDescription, DrawerFooter, DrawerHeader, DrawerTitle, DrawerTrigger } from "../ui/drawer"
 import { type ChartConfig } from "../ui/chart"
 import { useIsMobile } from "@/hooks/use-mobile"
-import { Input } from "@base-ui/react"
 import { useAuth } from "@/contexts/auth-context"
 import { useNavigate } from "react-router-dom"
 
@@ -206,8 +205,8 @@ const columns = columnHelper.columns([
   columnHelper.accessor("department", {
     header: "Department",
     cell: ({ row }) => (
-      <div className="">
-        {row.original.department?.name.toUpperCase()}
+      <div className="capitalize">
+        {row.original.department?.name}
       </div>
     ),
     enableSorting: false,

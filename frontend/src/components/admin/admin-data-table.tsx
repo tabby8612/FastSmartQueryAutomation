@@ -206,8 +206,8 @@ const columns = columnHelper.columns([
   columnHelper.accessor("department", {
     header: "Department",
     cell: ({ row }) => (
-      <div className="">
-        {row.original.department?.name.toUpperCase()}
+      <div className="capitalize">
+        {row.original.department?.name}
       </div>
     ),
     enableSorting: false,

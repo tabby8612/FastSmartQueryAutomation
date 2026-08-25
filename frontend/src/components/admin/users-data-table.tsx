@@ -231,7 +231,7 @@ const columns = columnHelper.columns([
     ),
     enableSorting: false,
   }),
-  columnHelper.accessor("leave_start_day", {
+  columnHelper.accessor("leave_end_day", {
     header: "Leave End Date",
     cell: ({ row }) => (
       <p>{row.original.leave_end_day}</p>
