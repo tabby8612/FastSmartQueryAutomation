@@ -32,7 +32,17 @@ export function LoginForm({
       const response = await api.post("/auth/login", formData, {headers: {"Content-Type": "application/x-www-form-urlencoded"}})
       const { access_token, user } = response.data
       setAuth(access_token, user)
-      navigate("/dashboard")
+
+      if (user.rolename === "student") {
+        navigate("/student/dashboard")
+      } else if (user.rolename === "officer") {
+        navigate("/officer/dashboard")
+      } else if (user.rolename === "admin") {
+        navigate("/admin/dashboard")
+      }
+
+      navigate("/student/dashboard")
+      
     } catch {
       setError("Invalid email or password")
     }

@@ -6,6 +6,7 @@ import {
   IconHelp,
   IconSearch,
   IconSettings,
+  IconAddressBook
 } from "@tabler/icons-react"
 
 import { NavMain } from "@/components/dashboard/nav-main"
@@ -19,61 +20,62 @@ import {
   SidebarMenuItem,
 } from "@/components/ui/sidebar"
 import { useAuth } from "@/contexts/auth-context"
+import { BookAlertIcon, BriefcaseBusinessIcon, NotebookPenIcon, TagsIcon, UserCircle2 } from "lucide-react"
 
 const data = {
   student: [
     {
       title: "Dashboard",
-      url: "/dashboard",
+      url: "/student/dashboard",
       icon: IconDashboard,
     },
     {
       title: "Submit Issue",
-      url: "/submit-issue",
+      url: "/student/submit-issue",
       icon: IconHelp,
     },
     {
       title: "My Issue",
       url: "#",
-      icon: IconDashboard,
+      icon: IconAddressBook,
     }
   ],
   officer: [
     {
       title: "Dashboard",
-      url: "#",
+      url: "/officer/dashboard",
       icon: IconDashboard,
     },
     {
       title: "Assigned Issues",
-      url: "#",
-      icon: IconDashboard,
+      url: "/officer/issues",
+      icon: IconAddressBook,
     },
   ],
   admin: [
     {
       title: "Dashboard",
-      url: "#",
+      url: "/admin/dashboard",
       icon: IconDashboard,
     },
     {
       title: "All Issue",
-      url: "#",
+      url: "/admin/issues",
       icon: IconDashboard,
     },
     {
       title: "Users",
-      url: "#",
+      url: "/admin/issues",
       icon: IconDashboard,
     },
     {
       title: "Categories",
-      url: "#",
+      url: "/admin/categories",
       icon: IconDashboard,
     },
     {
       title: "Department",
-      url: "#",
+      url: "/admin/department",
       icon: IconDashboard,
     }
   ],
@@ -83,7 +85,7 @@ export function AppSidebar({ roleName, ...props }: React.ComponentProps<typeof S
   const { user } = useAuth()
   const effectiveRole = roleName || user?.rolename || "student"
   const navItems = data[effectiveRole as keyof typeof data] || data.student
-
+  
   return (
     <Sidebar collapsible="offcanvas" {...props}>
       <SidebarHeader>

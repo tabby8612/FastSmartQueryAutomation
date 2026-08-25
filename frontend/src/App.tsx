@@ -18,7 +18,31 @@ function App() {
               </ProtectedRoute>
             }
           />
-          <Route path="/submit-issue" element={<SubmitIssue />} />
+          <Route
+            path="/student/dashboard"
+            element={
+              <ProtectedRoute>
+                <Dashboard />
+              </ProtectedRoute>
+            }
+          />
+          <Route
+            path="/officer/dashboard"
+            element={
+              <ProtectedRoute>
+                <Dashboard />
+              </ProtectedRoute>
+            }
+          />
+          <Route
+            path="/admin/dashboard"
+            element={
+              <ProtectedRoute>
+                <Dashboard />
+              </ProtectedRoute>
+            }
+          />
+          <Route path="/student/submit-issue" element={<SubmitIssue />} />
         </Routes>
       </BrowserRouter>
     </AuthProvider>

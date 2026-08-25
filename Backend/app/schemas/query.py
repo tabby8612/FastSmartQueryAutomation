@@ -66,9 +66,9 @@ class Category(BaseModel):
 class QueryResponse(QueryBase):
     id: int
     created_at: datetime | None
-    student: Student
-    assigned: Officer
-    department: Department
-    category: Category
+    student: Student | None
+    assigned: Officer | None
+    department: Department | None
+    category: Category | None
 
     model_config = ConfigDict(from_attributes=True)

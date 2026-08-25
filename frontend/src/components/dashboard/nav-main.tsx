@@ -1,6 +1,7 @@
 "use client"
 
 import { IconCirclePlusFilled, IconMail, type Icon } from "@tabler/icons-react"
+import { useLocation } from "react-router-dom";
 
 import { Button } from "@/components/ui/button"
 import {
@@ -23,6 +24,10 @@ export function NavMain({
   }[]
 }) {
   const navigate = useNavigate();
+  const location = useLocation();
+  const currentPath = location.pathname; // segment after first "/"
+  console.log(currentPath, items)
+  console.log(location);
 
   return (
     <SidebarGroup>
@@ -50,7 +55,7 @@ export function NavMain({
         <SidebarMenu>
           {items.map((item) => (
             <SidebarMenuItem key={item.title} className="my-1 font-semibold">
-              <SidebarMenuButton tooltip={item.title} onClick={() => navigate(item.url)}>
+              <SidebarMenuButton tooltip={item.title} className={item.url === currentPath ? "bg-primary text-white" : 'hover:bg-blue-200 hover:text-black'} onClick={() => navigate(item.url)}>
                 {item.icon && <item.icon />}
                 <span>{item.title}</span>
               </SidebarMenuButton>

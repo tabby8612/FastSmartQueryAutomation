@@ -598,19 +598,19 @@ function TableCellViewer({ item }: { item: z.infer<typeof schema> }) {
           </div>
           <div className="flex flex-col gap-2">
             <Label htmlFor="student_name" className="font-bold">Student Name</Label>
-            <p>{item.student.full_name}</p>
+            <p>{item.student?.full_name ?? "-"}</p>
           </div>
           <div className="flex flex-col gap-2">
             <Label htmlFor="officer_name" className="font-bold">Officer Name</Label>
-            <p>{item.assigned.full_name}</p>
+            <p>{item.assigned?.full_name ?? "-"}</p>
           </div>
           <div className="flex flex-col gap-2">
             <Label htmlFor="department_name" className="font-bold">Department Name</Label>
-            <p>{item.department.name.toUpperCase()}</p>
+            <p>{item.department?.name?.toUpperCase() ?? "-"}</p>
           </div>
           <div className="flex flex-col gap-2">
             <Label htmlFor="category_name" className="font-bold">Category Name</Label>
-            <p>{item.category.name}</p>
+            <p>{item.category?.name ?? "-"}</p>
           </div>
           <div className="flex flex-col gap-2">
             <Label htmlFor="channel" className="font-bold">Channel Name</Label>
