@@ -35,13 +35,18 @@ async def create_query(
     current_user: User = Depends(get_current_user),
 ):
 
-    return await QueryService.create(
+    new_ticket = await QueryService.create(
         db=db,
         student_id=current_user.id,
         subject=query.subject,
         body=query.body,
         channel=ChannelEnum.WEB_FORM,
     )
+
+    return {
+        "message": f"Your Ticket is Successfully Created. Use Tracking Id {new_ticket.tracking_id} to track your ticket",
+        "success": True,
+    }
 
 
 @router.get("/", response_model=list[QueryResponse])

@@ -1,4 +1,4 @@
-import { useState } from "react"
+import { useEffect, useState } from "react"
 import { useNavigate } from "react-router-dom"
 import { AppSidebar } from "@/components/dashboard/app-sidebar"
 import { SiteHeader } from "@/components/dashboard/site-header"
@@ -15,14 +15,23 @@ export default function SubmitIssue() {
   const navigate = useNavigate()
   const [subject, setSubject] = useState("")
   const [body, setBody] = useState("")
+  const [successMessage, setSuccessMessage] = useState<string | null>(null)
+
+  useEffect(() => {
+    if (successMessage) {
+      const timer = setTimeout(() => {
+        navigate("/student/dashboard")
+      }, 10000)
+      return () => clearTimeout(timer)
+    }
+  }, [successMessage, navigate])
 
   const handleSubmit = async (e: React.SubmitEvent) => {
     e.preventDefault()
-    console.log(access_token)
-    await api.post("/queries/", { subject, body }, {
+    const response = await api.post("/queries/", { subject, body }, {
       headers: { Authorization: `Bearer ${access_token}` },
     })
-    navigate("/dashboard")
+    setSuccessMessage(response.data.message)
   }
 
   return (
@@ -41,6 +50,14 @@ export default function SubmitIssue() {
           <div className="@container/main flex flex-1 flex-col gap-2">
             <div className="flex flex-col bg-white h-full m-5 rounded-2xl gap-4 py-4 md:gap-6 md:py-6 px-4 lg:px-6">
               <div className="flex flex-col items-center justify-center  h-full m-5 p-5 rounded-2xl gap-4 py-4">
+                {successMessage ? (
+                  <div className="flex flex-col items-center gap-4">
+                    <h1 className="text-4xl font-bold text-green-600">Success!</h1>
+                    <p className="text-lg text-center">{successMessage}</p>
+                    <p className="text-sm text-muted-foreground">Redirecting to dashboard in 10 seconds...</p>
+                  </div>
+                ) : (
+                  <>
                 <h1 className="text-4xl font-bold">Submit New Issue</h1>
                 <p className="text-muted-foreground text-2xl">Tell us what problem you are facing</p>
                 <form onSubmit={handleSubmit} className="flex flex-col gap-4 max-w-xl  w-full mt-5">
@@ -64,6 +81,8 @@ export default function SubmitIssue() {
                   <Button type="submit" className="w-1/2">Submit New Issue</Button>
                 </div>
               </form>
+                  </>
+                )}
               </div>
 
               
