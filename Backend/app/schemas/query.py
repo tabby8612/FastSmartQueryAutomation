@@ -69,6 +69,6 @@ class QueryResponse(QueryBase):
     student: Student
     assigned: Officer
     department: Department
-    department: Category
+    category: Category
 
     model_config = ConfigDict(from_attributes=True)

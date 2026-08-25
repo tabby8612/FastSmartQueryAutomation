@@ -14,7 +14,7 @@ export type Query = {
     "escalation_level": number,
     "awaiting_student_input": boolean,
     "resolved_at": string,
-    "created_at": "2026-08-23T02:56:53.645890Z",
+    "created_at": string,
     "student": Student,
     "assigned": Officer,
     "department": Department

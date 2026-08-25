@@ -60,7 +60,15 @@ export default function Page() {
             <div className="flex flex-col gap-4 py-4 md:gap-6 md:py-6">
               <div className="md:py-6 bg-white mx-5 px-6 rounded-2xl flex flex-col gap-5">
                 <h1 className="text-3xl font-bold">Hello, {user?.name ? user.name : "Anyonmous"}</h1>
-                <h1 className="text-xl font-bold text-muted-foreground">Here is the overview of issues</h1>
+                {
+                  role_name === "student" && <h1 className="text-xl font-bold text-muted-foreground">Here is the overview of issues you have created</h1>
+                }
+                {
+                  role_name === "officer" && <h1 className="text-xl font-bold text-muted-foreground">Here is the overview of issues assigned to you</h1>
+                }
+                {
+                  role_name === "admin" && <h1 className="text-xl font-bold text-muted-foreground">Here is the overview of all issues</h1>
+                }
                 <div className="grid grid-cols-4 gap-5">
                   {loading ? (
                     <>

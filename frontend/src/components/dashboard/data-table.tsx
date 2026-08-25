@@ -27,12 +27,10 @@ import {
   IconChevronsLeft,
   IconChevronsRight,
   IconCircleCheckFilled,
-  IconDotsVertical,
   IconGripVertical,
   IconLayoutColumns,
   IconLoader,
   IconPlus,
-  IconTrendingUp,
 } from "@tabler/icons-react"
 import {
   columnFilteringFeature,
@@ -61,8 +59,6 @@ import {
   DropdownMenu,
   DropdownMenuCheckboxItem,
   DropdownMenuContent,
-  DropdownMenuItem,
-  DropdownMenuSeparator,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu"
 import { Label } from "@/components/ui/label"
@@ -88,10 +84,9 @@ import {
   TabsTrigger,
 } from "@/components/ui/tabs"
 import { Drawer, DrawerClose, DrawerContent, DrawerDescription, DrawerFooter, DrawerHeader, DrawerTitle, DrawerTrigger } from "../ui/drawer"
-import { ChartContainer, ChartTooltip, ChartTooltipContent, type ChartConfig } from "../ui/chart"
-import { Area, AreaChart, CartesianGrid, XAxis } from "recharts"
+import { type ChartConfig } from "../ui/chart"
 import { useIsMobile } from "@/hooks/use-mobile"
-import { Input, Separator } from "@base-ui/react"
+import { Input } from "@base-ui/react"
 import { useAuth } from "@/contexts/auth-context"
 
 // New in v9: declare the features this table uses — anything you don't
@@ -117,10 +112,31 @@ export const schema = z.object({
   tracking_id: z.string(),
   channel: z.string(),
   subject: z.string(),
+  body: z.string(),
   intent: z.string(),
   status: z.string(),
   awaiting_student_input: z.boolean(),
-  resolved_at: z.string()
+  resolved_at: z.string(),
+  created_at: z.string(),
+  student: z.object({
+    id: z.number(),
+    student_id: z.string(),
+    email: z.string(),
+    full_name: z.string(),
+  }),
+  assigned: z.object({
+    id: z.number(),
+    email: z.string(),
+    full_name: z.string(),
+  }),
+  department: z.object({
+    id: z.number(),
+    name: z.string(),
+  }),
+  category: z.object({
+    id: z.number(),
+    name: z.string(),
+  }),
 })
 
 export type Query = z.infer<typeof schema>
@@ -184,20 +200,20 @@ const columns = columnHelper.columns([
     },
     enableHiding: false,
   }),
+  columnHelper.accessor("department", {
+    header: "Department",
+    cell: ({ row }) => (
+      <div className="">
+        {row.original.department?.name.toUpperCase()}
+      </div>
+    ),
+  }),
   columnHelper.accessor("channel", {
     header: "Channel",
     cell: ({ row }) => (
       <div className="">
         <Badge>{row.original.channel}
         </Badge>
-      </div>
-    ),
-  }),
-  columnHelper.accessor("subject", {
-    header: "Subject",
-    cell: ({ row }) => (
-      <div className="w-32">
-        {row.original.subject.slice(0, 30)}...
       </div>
     ),
   }),
@@ -214,10 +230,10 @@ const columns = columnHelper.columns([
       </Badge>
     ),
   }),
-  columnHelper.accessor("intent", {
-    header: "Intent",
+  columnHelper.accessor("category", {
+    header: "Category",
     cell: ({ row }) => (
-      <Badge>{row.original.intent}</Badge>
+      <Badge>{row.original.category?.name[0].toUpperCase() + row.original.category?.name.slice(1, row.original.category?.name.length)}</Badge>
     ),
   }),
   columnHelper.accessor("awaiting_student_input", {
@@ -228,10 +244,10 @@ const columns = columnHelper.columns([
       </div>
     ),
   }),
-  columnHelper.accessor("resolved_at", {
-    header: "Resolved At",
+  columnHelper.accessor("created_at", {
+    header: "Created At",
     cell: ({ row }) => {
-      return row.original.resolved_at
+      return new Intl.DateTimeFormat("en-US", {dateStyle: "medium"}).format(new Date(row.original.created_at))
     },
   }),
   columnHelper.display({
@@ -575,15 +591,65 @@ function TableCellViewer({ item }: { item: z.infer<typeof schema> }) {
             Showing issue details for the Item Tracking # {item.tracking_id}
           </DrawerDescription>
         </DrawerHeader>
-        <div className="flex flex-col gap-4 overflow-y-auto px-4 text-sm">
-          <div className="flex flex-col gap-3">
-            <Label htmlFor="header" className="font-bold">Tracking ID</Label>
-            <Input id="header" defaultValue={item.tracking_id} />
+        <div className="grid grid-cols-3 gap-6 justify-center items-center overflow-y-auto px-4 size-8/12 mx-auto ">
+          <div className="flex flex-col gap-2">
+            <Label htmlFor="tracking_id" className="font-bold">Tracking ID</Label>
+            <p>{item.tracking_id}</p>
           </div>
-
+          <div className="flex flex-col gap-2">
+            <Label htmlFor="student_name" className="font-bold">Student Name</Label>
+            <p>{item.student.full_name}</p>
+          </div>
+          <div className="flex flex-col gap-2">
+            <Label htmlFor="officer_name" className="font-bold">Officer Name</Label>
+            <p>{item.assigned.full_name}</p>
+          </div>
+          <div className="flex flex-col gap-2">
+            <Label htmlFor="department_name" className="font-bold">Department Name</Label>
+            <p>{item.department.name.toUpperCase()}</p>
+          </div>
+          <div className="flex flex-col gap-2">
+            <Label htmlFor="category_name" className="font-bold">Category Name</Label>
+            <p>{item.category.name}</p>
+          </div>
+          <div className="flex flex-col gap-2">
+            <Label htmlFor="channel" className="font-bold">Channel Name</Label>
+            <p>{item.channel}</p>
+          </div>
+          <div className="flex flex-col gap-2">
+            <Label htmlFor="intent" className="font-bold">Intent</Label>
+            <p>{item.intent}</p>
+          </div>
+          <div className="flex flex-col gap-2">
+            <Label htmlFor="status" className="font-bold">Status</Label>
+            <Badge className={item.status === "open" ? "bg-green-700 text-white" : "bg-red-600 text-white"}>{item.status}</Badge>
+          </div>
+          <div className="flex flex-col gap-2">
+            <Label htmlFor="intent" className="font-bold">Awaiting Student Response</Label>
+            {
+              item.awaiting_student_input ? <Badge className="bg-green-700 text-white">Yes</Badge> : <Badge className="bg-red-700 text-white">No</Badge>
+            }
+            
+          </div>
+          <div className="flex flex-col gap-2">
+            <Label htmlFor="intent" className="font-bold">Created At</Label>
+            <p>{item.created_at ? new Intl.DateTimeFormat("en-US").format(new Date(item.created_at)) : "None"}</p>
+          </div>
+          <div className="flex flex-col gap-2">
+            <Label htmlFor="intent" className="font-bold">Resolved At</Label>
+            <p>{item.resolved_at ? new Intl.DateTimeFormat("en-US").format(new Date(item.resolved_at)) : "None"}</p>
+          </div>
+          <div className="flex flex-col gap-2 col-span-full">
+            <Label htmlFor="intent" className="font-bold">Subject</Label>
+            <p>{item.subject}</p>
+          </div>
+          <div className="flex flex-col gap-2 col-span-full">
+            <Label htmlFor="intent" className="font-bold">Description</Label>
+            <p>{item.body}</p>
+          </div>
         </div>
         <DrawerFooter>
-          <DrawerClose>
+          <DrawerClose className="pt-10">
             <Button variant="outline">Close</Button>
           </DrawerClose>
         </DrawerFooter>
