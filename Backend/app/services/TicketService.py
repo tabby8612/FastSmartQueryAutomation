@@ -1,9 +1,9 @@
 from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy.future import select
-from sqlalchemy.orm import joinedload
+from sqlalchemy.orm import joinedload, selectinload
 from ml.train import classify_issue
 
-from app.models.query import Query
+from app.models.ticket import Ticket
 from app.Enums.QueryStatusEnum import QueryStatusEnum
 from app.models.user import User
 from app.models.user import Role
@@ -11,18 +11,18 @@ from app.helpers.utils import generate_tracking_number
 from app.Enums.RolesEnum import RolesEnum
 
 
-class QueryService:
+class TicketService:
     @staticmethod
     async def create(
         db: AsyncSession, student_id: int, subject: str, body: str, channel: str
-    ) -> Query:
+    ) -> Ticket:
         tracking_id = generate_tracking_number()
         predication_data: dict[str, any] = await classify_issue(db, body)
         officer = await get_officer_id_by_department_id(
             db, predication_data.get("department_id")
         )
 
-        query = Query(
+        new_ticket = Ticket(
             tracking_id=tracking_id,
             student_id=student_id,
             channel=channel,
@@ -35,37 +35,46 @@ class QueryService:
             intent=predication_data.get("category"),
             assigned_id=officer.id if officer is not None else None,
         )
-        db.add(query)
+        db.add(new_ticket)
         await db.flush()
-        await db.refresh(query)
-        return query
+        await db.refresh(new_ticket)
+        return new_ticket
 
     @staticmethod
     async def get_all(
         db: AsyncSession, student_id: int | None = None, assigned_id: int | None = None
-    ) -> list[Query]:
-        stmt = select(Query).options(
-            joinedload(Query.student),
-            joinedload(Query.assigned),
-            joinedload(Query.department),
-            joinedload(Query.category),
+    ) -> list[Ticket]:
+        stmt = select(Ticket).options(
+            joinedload(Ticket.student),
+            joinedload(Ticket.assigned),
+            joinedload(Ticket.department),
+            joinedload(Ticket.category),
         )
         if student_id is not None:
-            stmt = stmt.where(Query.student_id == student_id)
+            stmt = stmt.where(Ticket.student_id == student_id)
         if assigned_id is not None:
-            stmt = stmt.where(Query.assigned_id == assigned_id)
+            stmt = stmt.where(Ticket.assigned_id == assigned_id)
         result = await db.execute(stmt)
         return list(result.scalars().all())
 
     @staticmethod
-    async def get_by_id(db: AsyncSession, query_id: int) -> Query | None:
-        result = await db.execute(select(Query).where(Query.id == query_id))
+    async def get_by_id(db: AsyncSession, query_id: int) -> Ticket | None:
+        result = await db.execute(
+            select(Ticket)
+            .options(
+                selectinload(Ticket.student),
+                selectinload(Ticket.assigned),
+                selectinload(Ticket.department),
+                selectinload(Ticket.category),
+            )
+            .where(Ticket.id == query_id)
+        )
         return result.scalar_one_or_none()
 
     @staticmethod
     async def update(
         db: AsyncSession,
-        query: Query,
+        ticket: Ticket,
         assigned_id: int | None,
         channel: str | None,
         subject: str | None,
@@ -76,33 +85,33 @@ class QueryService:
         escalation_level: int | None,
         awaiting_student_input: bool | None,
         resolved_at,
-    ) -> Query:
+    ) -> Ticket:
         if assigned_id is not None:
-            query.assigned_id = assigned_id
+            ticket.assigned_id = assigned_id
         if channel is not None:
-            query.channel = channel
+            ticket.channel = channel
         if subject is not None:
-            query.subject = subject
+            ticket.subject = subject
         if body is not None:
-            query.body = body
+            ticket.body = body
         if intent is not None:
-            query.intent = intent
+            ticket.intent = intent
         if confidence_level is not None:
-            query.confidence_level = confidence_level
+            ticket.confidence_level = confidence_level
         if status is not None:
-            query.status = status
+            ticket.status = status
         if escalation_level is not None:
-            query.escalation_level = escalation_level
+            ticket.escalation_level = escalation_level
         if awaiting_student_input is not None:
-            query.awaiting_student_input = awaiting_student_input
+            ticket.awaiting_student_input = awaiting_student_input
         if resolved_at is not None:
-            query.resolved_at = resolved_at
+            ticket.resolved_at = resolved_at
         await db.flush()
-        await db.refresh(query)
-        return query
+        await db.refresh(ticket)
+        return ticket
 
     @staticmethod
-    async def delete(db: AsyncSession, query: Query) -> None:
+    async def delete(db: AsyncSession, query: Ticket) -> None:
         await db.delete(query)
         await db.flush()
 

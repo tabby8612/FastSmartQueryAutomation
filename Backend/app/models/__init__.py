@@ -9,7 +9,7 @@ from app.models.user_roles import User_Roles
 
 from app.models.category import Category
 
-from app.models.query import Query
+from app.models.ticket import Ticket
 
 __all__ = [
     "Base",
@@ -19,5 +19,5 @@ __all__ = [
     "User",
     "User_Roles",
     "Category",
-    "Query",
+    "Ticket",
 ]

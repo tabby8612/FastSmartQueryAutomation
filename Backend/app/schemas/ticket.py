@@ -5,9 +5,9 @@ from pydantic import BaseModel, ConfigDict
 from app.schemas.user import UserResponse
 
 
-class QueryBase(BaseModel):
+class TicketBase(BaseModel):
     tracking_id: str
-    student_id: int
+    student_id: int | None = None
     assigned_id: int | None = None
     department_id: int | None = None
     category_id: int | None = None
@@ -22,12 +22,12 @@ class QueryBase(BaseModel):
     resolved_at: datetime | None = None
 
 
-class QueryCreate(BaseModel):
+class TicketCreate(BaseModel):
     subject: str
     body: str
 
 
-class QueryUpdate(BaseModel):
+class TicketUpdate(BaseModel):
     assigned_id: int | None = None
     channel: str | None = None
     subject: str | None = None
@@ -42,7 +42,7 @@ class QueryUpdate(BaseModel):
 
 class Student(BaseModel):
     id: int
-    student_id: str
+    student_id: str | None
     email: str
     full_name: str
 
@@ -63,7 +63,7 @@ class Category(BaseModel):
     name: str
 
 
-class QueryResponse(QueryBase):
+class TicketResponse(TicketBase):
     id: int
     created_at: datetime | None
     student: Student | None

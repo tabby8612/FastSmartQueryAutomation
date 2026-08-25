@@ -6,7 +6,7 @@ from app.schemas.role import RoleResponse
 
 
 class UserBase(BaseModel):
-    student_id: str
+    student_id: str | None = None
     email: str
     full_name: str
     # role_id: int

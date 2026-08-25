@@ -208,36 +208,45 @@ async def seed_roles(session):
 async def seed_users(session, departments, roles):
     users = [
         User(
-            student_id="STU001",
             email="admin@example.com",
             password=hash_password("admin123"),
             full_name="Admin User",
             department_id=departments[0].id,
             is_active=True,
+            is_student=False,
+            is_officer=False,
+            is_admin=True,
         ),
         User(
-            student_id="STU002",
+            student_id="STU001",
             email="student@example.com",
             password=hash_password("student123"),
             full_name="Student User",
             department_id=departments[0].id,
             is_active=True,
+            is_student=True,
+            is_officer=False,
+            is_admin=False,
         ),
         User(
-            student_id="STU003",
-            email="staff@example.com",
-            password=hash_password("staff123"),
-            full_name="Staff User",
+            email="officer@example.com",
+            password=hash_password("officer123"),
+            full_name="Officer User",
             department_id=departments[1].id,
             is_active=True,
+            is_student=False,
+            is_officer=True,
+            is_admin=False,
         ),
         User(
-            student_id="STU004",
             email="hod@example.com",
             password=hash_password("hod123"),
             full_name="HOD User",
             department_id=departments[2].id,
             is_active=True,
+            is_student=False,
+            is_officer=True,
+            is_admin=False,
         ),
     ]
     session.add_all(users)
@@ -247,14 +256,22 @@ async def seed_users(session, departments, roles):
 
 async def seed_user_roles(session, users, roles):
     role_map = {role.name: role for role in roles}
-    user_map = {user.student_id: user for user in users}
+    user_map = {user.email: user for user in users}
 
     user_roles = [
-        User_Roles(role_id=role_map["admin"].id, user_id=user_map["STU001"].id),
-        User_Roles(role_id=role_map["hod"].id, user_id=user_map["STU004"].id),
-        User_Roles(role_id=role_map["officer"].id, user_id=user_map["STU003"].id),
-        User_Roles(role_id=role_map["student"].id, user_id=user_map["STU002"].id),
-        User_Roles(role_id=role_map["officer"].id, user_id=user_map["STU004"].id),
+        User_Roles(
+            role_id=role_map["admin"].id, user_id=user_map["admin@example.com"].id
+        ),
+        User_Roles(role_id=role_map["hod"].id, user_id=user_map["hod@example.com"].id),
+        User_Roles(
+            role_id=role_map["officer"].id, user_id=user_map["officer@example.com"].id
+        ),
+        User_Roles(
+            role_id=role_map["student"].id, user_id=user_map["student@example.com"].id
+        ),
+        User_Roles(
+            role_id=role_map["officer"].id, user_id=user_map["hod@example.com"].id
+        ),
     ]
     session.add_all(user_roles)
     await session.commit()

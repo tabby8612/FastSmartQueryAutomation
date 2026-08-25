@@ -9,8 +9,8 @@ from app.database import Base
 from app.models.base import TimestampMixin
 
 
-class Query(Base, TimestampMixin):
-    __tablename__ = "queries"
+class Ticket(Base, TimestampMixin):
+    __tablename__ = "tickets"
 
     id: Mapped[int] = mapped_column(primary_key=True, autoincrement=True)
     tracking_id: Mapped[str] = mapped_column(

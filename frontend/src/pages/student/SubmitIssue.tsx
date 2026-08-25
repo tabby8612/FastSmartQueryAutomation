@@ -28,7 +28,7 @@ export default function SubmitIssue() {
 
   const handleSubmit = async (e: React.SubmitEvent) => {
     e.preventDefault()
-    const response = await api.post("/queries/", { subject, body }, {
+    const response = await api.post("/tickets/", { subject, body }, {
       headers: { Authorization: `Bearer ${access_token}` },
     })
     setSuccessMessage(response.data.message)

@@ -7,7 +7,7 @@ from sqlalchemy.future import select
 
 from app.models.user import User
 from app.models.user_roles import User_Roles
-from app.models.query import Query
+from app.models.ticket import Ticket
 from app.models.category import Category
 from app.models.department import Department
 from app.models.role import Role
@@ -45,7 +45,7 @@ async def find_officer(db: AsyncSession, department_id: int) -> User | None:
 
 async def process_incoming_email(
     db: AsyncSession, sender_email: str, subject: str, body: str
-) -> Query:
+) -> Ticket:
     result = await db.execute(select(User).where(User.email == sender_email))
     student = result.scalar_one_or_none()
 
@@ -76,7 +76,7 @@ async def process_incoming_email(
     category = predication.get("category")
     tracking_id = generate_tracking_number()
 
-    query = Query(
+    query = Ticket(
         tracking_id=tracking_id,
         student_id=student.id,
         assigned_id=assigned_id,

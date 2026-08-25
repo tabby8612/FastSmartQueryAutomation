@@ -13,7 +13,7 @@ class User(Base, TimestampMixin):
     __tablename__ = "users"
 
     id: Mapped[int] = mapped_column(primary_key=True, autoincrement=True)
-    student_id: Mapped[str] = mapped_column(String(255), unique=True, nullable=False)
+    student_id: Mapped[str] = mapped_column(String(255), unique=True, nullable=True)
     email: Mapped[str] = mapped_column(String(255), unique=True, nullable=False)
     password: Mapped[str] = mapped_column(String(255), nullable=False)
     full_name: Mapped[str] = mapped_column(String(255), nullable=False)
@@ -21,6 +21,9 @@ class User(Base, TimestampMixin):
         ForeignKey("departments.id"), nullable=True
     )
     is_active: Mapped[bool] = mapped_column(Boolean, default=True, nullable=False)
+    is_student: Mapped[bool] = mapped_column(Boolean, default=True, nullable=False)
+    is_officer: Mapped[bool] = mapped_column(Boolean, default=False, nullable=False)
+    is_admin: Mapped[bool] = mapped_column(Boolean, default=False, nullable=False)
     on_leave: Mapped[bool] = mapped_column(Boolean, default=False, nullable=False)
     auto_reply_message: Mapped[str | None] = mapped_column(Text, nullable=True)
     leave_start_day: Mapped[date | None] = mapped_column(Date, nullable=True)

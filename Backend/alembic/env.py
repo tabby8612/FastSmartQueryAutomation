@@ -8,7 +8,7 @@ from app.database import Base
 from alembic import context
 
 # Import models so Alembic can detect them for autogenerate
-from app.models import Role, department, user, user_roles, category, query
+from app.models import Role, department, ticket, user, user_roles, category, Ticket
 
 load_dotenv()
 DATABASE_URL = os.getenv("DATABASE_URL", "sqlite+aiosqlite:///./fastsmartquery.db")

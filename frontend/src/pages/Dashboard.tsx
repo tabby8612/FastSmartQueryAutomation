@@ -15,33 +15,33 @@ import { ChartAreaInteractive } from "@/components/dashboard/chart-area-interact
 
 export default function Page() {
   const { role_name, access_token, user } = useAuth()
-  const [queries, setQueries] = useState<Query[]>([])
+  const [tickets, setTickets] = useState<Query[]>([])
   const [loading, setLoading] = useState(true)
 
   useEffect(() => {
-    const fetchQueries = async () => {
+    const fetchTicket = async () => {
       try {
-        const response = await api.get<Query[]>("/queries", {
+        const response = await api.get<Query[]>("/tickets", {
           headers: {
             Authorization: `Bearer ${access_token}`,
           },
         })
-        setQueries(response.data)
+        setTickets(response.data)
       } catch (error) {
-        console.error("Failed to fetch queries:", error)
+        console.error("Failed to fetch tickets:", error)
       } finally {
         setLoading(false)
       }
     }
 
-    fetchQueries()
+    fetchTicket()
   }, [access_token])
 
 
-  const openCount = queries.filter((q) => q.status.toLowerCase() === "open").length
-  const closeCount = queries.filter((q) => q.status.toLowerCase() === "closed").length
-  const inProgressCount = queries.filter((q) => q.status.toLowerCase() === "in_progress").length
-  const totalCount = queries.length
+  const openCount = tickets.filter((q) => q.status.toLowerCase() === "open").length
+  const closeCount = tickets.filter((q) => q.status.toLowerCase() === "closed").length
+  const inProgressCount = tickets.filter((q) => q.status.toLowerCase() === "in_progress").length
+  const totalCount = tickets.length
 
 
   return (
@@ -62,13 +62,13 @@ export default function Page() {
               <div className="md:py-6 bg-white mx-5 px-6 rounded-2xl flex flex-col gap-5">
                 <h1 className="text-3xl font-bold">Hello, {user?.name ? user.name : "Anyonmous"}</h1>
                 {
-                  role_name === "student" && <h1 className="text-xl font-bold text-muted-foreground">Here is the overview of issues you have created</h1>
+                  role_name === "student" && <h1 className="text-xl font-bold text-muted-foreground">Here is the overview of tickets you have created</h1>
                 }
                 {
-                  role_name === "officer" && <h1 className="text-xl font-bold text-muted-foreground">Here is the overview of issues assigned to you</h1>
+                  role_name === "officer" && <h1 className="text-xl font-bold text-muted-foreground">Here is the overview of tickets assigned to you</h1>
                 }
                 {
-                  role_name === "admin" && <h1 className="text-xl font-bold text-muted-foreground">Here is the overview of all issues</h1>
+                  role_name === "admin" && <h1 className="text-xl font-bold text-muted-foreground">Here is the overview of all tickets</h1>
                 }
                 <div className="grid grid-cols-4 gap-5">
                   {loading ? (
@@ -80,10 +80,10 @@ export default function Page() {
                     </>
                   ) : (
                     <>
-                      <SectionCard title="Open" value={String(openCount)} description="These are issues that are opened" icon={BookOpenIcon} />
-                      <SectionCard title="In Progress" value={String(closeCount)} description="These are issues that are pending" icon={Loader} />
-                      <SectionCard title="Closed" value={String(inProgressCount)} description="These are issues that are closed" icon={BookOpenCheck} />
-                      <SectionCard title="Total" value={String(totalCount)} description="These are total issues" icon={Hash} />
+                      <SectionCard title="Open" value={String(openCount)} description="These are tickets that are opened" icon={BookOpenIcon} />
+                      <SectionCard title="In Progress" value={String(closeCount)} description="These are tickets that are pending" icon={Loader} />
+                      <SectionCard title="Closed" value={String(inProgressCount)} description="These are tickets that are closed" icon={BookOpenCheck} />
+                      <SectionCard title="Total" value={String(totalCount)} description="These are total tickets" icon={Hash} />
                     </>
                   )}
                 </div>
@@ -92,7 +92,7 @@ export default function Page() {
                 </div>
               </div>
               <div className="py-2 mx-6 rounded-2xl pt-5 bg-white">
-                <DataTable data={queries} />
+                <DataTable data={tickets} />
               </div>
             </div>
           </div>

@@ -1,4 +1,4 @@
-export type Query = {
+export type Ticket = {
     "id": number,
     "tracking_id": string,
     "student_id": number,
