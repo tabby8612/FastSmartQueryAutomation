@@ -13,6 +13,7 @@ import {
 } from "@/components/ui/sidebar"
 import { Separator } from "@base-ui/react"
 import { useNavigate } from "react-router-dom"
+import { useAuth } from "@/contexts/auth-context";
 
 export function NavMain({
   items,
@@ -26,31 +27,27 @@ export function NavMain({
   const navigate = useNavigate();
   const location = useLocation();
   const currentPath = location.pathname; // segment after first "/"
-  console.log(currentPath, items)
-  console.log(location);
+  const { role_name } = useAuth()
 
   return (
     <SidebarGroup>
       <SidebarGroupContent className="flex flex-col gap-2">
-        <SidebarMenu>
-          <SidebarMenuItem className="flex items-center gap-2 ">
-            <SidebarMenuButton
-              tooltip="Create New Issue"
-              className="flex justify-center items-center h-10 min-w-8 bg-primary text-primary-foreground duration-200 ease-linear hover:bg-primary/90 hover:text-primary-foreground active:bg-primary/90 active:text-primary-foreground"
-            >
-              {/* <IconCirclePlusFilled /> */}
-              <span>Create New Issue</span>
-            </SidebarMenuButton>
-            {/* <Button
-              size="icon"
-              className="size-8 group-data-[collapsible=icon]:opacity-0"
-              variant="outline"
-            >
-              <IconMail />
-              <span className="sr-only">Inbox</span>
-            </Button> */}
-          </SidebarMenuItem>
-        </SidebarMenu>
+        {
+          role_name === "student" && (
+            <SidebarMenu>
+              <SidebarMenuItem className="flex items-center gap-2 ">
+                <SidebarMenuButton
+                  tooltip="Create New Issue"
+                  onClick={() => navigate("/student/submit-issue")}
+                  className="flex justify-center items-center h-10 min-w-8 bg-primary text-primary-foreground duration-200 ease-linear hover:bg-primary/90 hover:text-primary-foreground active:bg-primary/90 active:text-primary-foreground"
+                >
+                  {/* <IconCirclePlusFilled /> */}
+                  <span>Create New Issue</span>
+                </SidebarMenuButton>
+              </SidebarMenuItem>
+            </SidebarMenu>
+          )
+        }
         <Separator orientation="horizontal" className="bg-slate-200 h-0.5 my-5" />
         <SidebarMenu>
           {items.map((item) => (

@@ -37,3 +37,20 @@ export type Department = {
     "id": number,
     "name": string,
 }
+
+export type User = {
+    id: number,
+    full_name: string,
+    email: string,
+    is_active: boolean,
+    on_leave: boolean,
+    auto_reply_message: boolean,
+    leave_start_day: string,
+    leave_end_day: string,
+}
+
+export type Category = {
+    id: number,
+    name: string,
+    description: string
+}

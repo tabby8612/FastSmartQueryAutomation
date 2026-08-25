@@ -86,9 +86,9 @@ import {
 import { Drawer, DrawerClose, DrawerContent, DrawerDescription, DrawerFooter, DrawerHeader, DrawerTitle, DrawerTrigger } from "../ui/drawer"
 import { type ChartConfig } from "../ui/chart"
 import { useIsMobile } from "@/hooks/use-mobile"
-import { Input } from "@base-ui/react"
 import { useAuth } from "@/contexts/auth-context"
 import { useNavigate } from "react-router-dom"
+import type { User } from "@/types"
 
 // New in v9: declare the features this table uses — anything you don't
 // register is tree-shaken out of the bundle.
@@ -107,42 +107,40 @@ const features = tableFeatures({
 
 const columnHelper = createColumnHelper<
   typeof features,
-  z.infer<typeof schema>
+  User
 >()
 
-export const schema = z.object({
-  id: z.number(),
-  tracking_id: z.string(),
-  channel: z.string(),
-  subject: z.string(),
-  body: z.string(),
-  intent: z.string(),
-  status: z.string(),
-  awaiting_student_input: z.boolean(),
-  resolved_at: z.string(),
-  created_at: z.string(),
-  student: z.object({
-    id: z.number(),
-    student_id: z.string(),
-    email: z.string(),
-    full_name: z.string(),
-  }),
-  assigned: z.object({
-    id: z.number(),
-    email: z.string(),
-    full_name: z.string(),
-  }),
-  department: z.object({
-    id: z.number(),
-    name: z.string(),
-  }),
-  category: z.object({
-    id: z.number(),
-    name: z.string(),
-  }),
-})
-
-export type Query = z.infer<typeof schema>
+// export const schema = z.object({
+//   id: z.number(),
+//   tracking_id: z.string(),
+//   channel: z.string(),
+//   subject: z.string(),
+//   body: z.string(),
+//   intent: z.string(),
+//   status: z.string(),
+//   awaiting_student_input: z.boolean(),
+//   resolved_at: z.string(),
+//   created_at: z.string(),
+//   student: z.object({
+//     id: z.number(),
+//     student_id: z.string(),
+//     email: z.string(),
+//     full_name: z.string(),
+//   }),
+//   assigned: z.object({
+//     id: z.number(),
+//     email: z.string(),
+//     full_name: z.string(),
+//   }),
+//   department: z.object({
+//     id: z.number(),
+//     name: z.string(),
+//   }),
+//   category: z.object({
+//     id: z.number(),
+//     name: z.string(),
+//   }),
+// })
 
 // Create a separate component for the drag handle
 function DragHandle({ id }: { id: number }) {
@@ -196,72 +194,56 @@ const columns = columnHelper.columns([
     enableSorting: false,
     enableHiding: false,
   }),
-  columnHelper.accessor("tracking_id", {
-    header: "Tracking ID",
+  columnHelper.accessor("full_name", {
+    header: "Full Name",
     cell: ({ row }) => {
       return <TableCellViewer item={row.original} />
     },
     enableHiding: false,
   }),
-  columnHelper.accessor("department", {
-    header: "Department",
+  columnHelper.accessor("email", {
+    header: "Email",
     cell: ({ row }) => (
       <div className="">
-        {row.original.department?.name.toUpperCase()}
+        {row.original.email}
       </div>
     ),
     enableSorting: false,
-  }),
-  columnHelper.accessor("channel", {
-    header: "Channel",
+  }),  
+  columnHelper.accessor("is_active", {
+    header: "Active",
     cell: ({ row }) => (
-      <div className="">
-        <Badge>{row.original.channel}
-        </Badge>
-      </div>
-    ),
-  }),
-  columnHelper.accessor("status", {
-    header: "Status",
-    cell: ({ row }) => (
-      <Badge variant="outline" className="px-1.5 text-muted-foreground">
-        {row.original.status === "open" ? (
-          <IconCircleCheckFilled className="fill-green-500 dark:fill-green-400" />
-        ) : (
-          <IconLoader />
-        )}
-        {row.original.status}
-      </Badge>
+      <Badge className={row.original.is_active ? "bg-green-600" : "bg-red-600"}>{row.original.is_active ? "Yes" : "No"}</Badge>
     ),
     enableSorting: false,
   }),
-  columnHelper.accessor("category", {
-    header: "Category",
+  columnHelper.accessor("on_leave", {
+    header: "On Leave",
     cell: ({ row }) => (
-      <Badge>{row.original.category?.name[0].toUpperCase() + row.original.category?.name.slice(1, row.original.category?.name.length)}</Badge>
+      <Badge className={row.original.on_leave ? "bg-green-600" : "bg-red-600"}>{row.original.on_leave ? "Yes" : "No"}</Badge>
     ),
+    enableSorting: false,
   }),
-  columnHelper.accessor("awaiting_student_input", {
-    header: "Awaiting Response",
+  columnHelper.accessor("leave_start_day", {
+    header: "Leave Start Date",
     cell: ({ row }) => (
-      <div className="flex justify-center items-center">
-        {row.original.awaiting_student_input ? <Badge className="bg-green-200 text-black">Yes</Badge> : <Badge className="bg-red-200 text-black">No</Badge>}
-      </div>
+      <p>{row.original.leave_start_day}</p>
     ),
+    enableSorting: false,
   }),
-  columnHelper.accessor("created_at", {
-    header: "Created At",
-    cell: ({ row }) => {
-      return new Intl.DateTimeFormat("en-US", {dateStyle: "medium"}).format(new Date(row.original.created_at))
-    },
+  columnHelper.accessor("leave_start_day", {
+    header: "Leave End Date",
+    cell: ({ row }) => (
+      <p>{row.original.leave_end_day}</p>
+    ),
+    enableSorting: false,
   }),
-  
 ])
 
 function DraggableRow({
   row,
 }: {
-  row: Row<typeof features, z.infer<typeof schema>>
+  row: Row<typeof features, User>
 }) {
   const { transform, transition, setNodeRef, isDragging } = useSortable({
     id: row.original.id,
@@ -287,10 +269,10 @@ function DraggableRow({
   )
 }
 
-export function DataTable({
+export function UsersDataTable({
   data: initialData,
 }: {
-  data: z.infer<typeof schema>[]
+  data: User[]
 }) {
   const [data, setData] = React.useState(() => initialData)
   const { role_name } = useAuth();
@@ -372,11 +354,11 @@ export function DataTable({
             <SelectValue placeholder="Select a view" />
           </SelectTrigger>
           <SelectContent>
-            <SelectItem value="issues">Issues</SelectItem>
+            <SelectItem value="users">Users</SelectItem>
           </SelectContent>
         </Select>
         <TabsList className="hidden **:data-[slot=badge]:size-5 **:data-[slot=badge]:rounded-full **:data-[slot=badge]:bg-muted-foreground/30 **:data-[slot=badge]:px-1 @4xl/main:flex">
-          <TabsTrigger value="issues">Recent Issues</TabsTrigger>
+          <TabsTrigger value="users">Recent Users</TabsTrigger>
         </TabsList>
         <div className="flex items-center gap-2">
           <DropdownMenu>
@@ -424,7 +406,7 @@ export function DataTable({
         </div>
       </div>
       <TabsContent
-        value="issues"
+        value="users"
         className="relative flex flex-col gap-4 overflow-auto px-4 lg:px-6"
       >
         <div className="overflow-hidden rounded-lg border">
@@ -556,99 +538,29 @@ export function DataTable({
   )
 }
 
-const chartData = [
-  { month: "January", desktop: 186, mobile: 80 },
-  { month: "February", desktop: 305, mobile: 200 },
-  { month: "March", desktop: 237, mobile: 120 },
-  { month: "April", desktop: 73, mobile: 190 },
-  { month: "May", desktop: 209, mobile: 130 },
-  { month: "June", desktop: 214, mobile: 140 },
-]
-
-const chartConfig = {
-  desktop: {
-    label: "Desktop",
-    color: "var(--primary)",
-  },
-  mobile: {
-    label: "Mobile",
-    color: "var(--primary)",
-  },
-} satisfies ChartConfig
-
-function TableCellViewer({ item }: { item: z.infer<typeof schema> }) {
+function TableCellViewer({ item }: { item: User }) {
   const isMobile = useIsMobile()
 
   return (
     <Drawer swipeDirection={isMobile ? "down" : "down"} showSwipeHandle={isMobile}>
       <DrawerTrigger>
         <Button variant="link" className="w-fit px-0 text-left text-foreground">
-          {item.tracking_id}
+          {item.full_name}
         </Button>
       </DrawerTrigger>
       <DrawerContent>
         <DrawerHeader className="gap-10 mb-7">
-          <DrawerTitle className="text-2xl font-bold text-primary">{item.tracking_id}</DrawerTitle>
+          <DrawerTitle className="text-2xl font-bold text-primary">{item.full_name}</DrawerTitle>
           <DrawerDescription className="text-lg text-slate-600">
-            Showing issue details for the Item Tracking # {item.tracking_id}
+            Showing issue details for the Item Tracking # {item.full_name}
           </DrawerDescription>
         </DrawerHeader>
         <div className="grid grid-cols-3 gap-6 justify-center items-center overflow-y-auto px-4 size-8/12 mx-auto ">
           <div className="flex flex-col gap-2">
             <Label htmlFor="tracking_id" className="font-bold">Tracking ID</Label>
-            <p>{item.tracking_id}</p>
+            <p>{item.email}</p>
           </div>
-          <div className="flex flex-col gap-2">
-            <Label htmlFor="student_name" className="font-bold">Student Name</Label>
-            <p>{item.student?.full_name ?? "-"}</p>
-          </div>
-          <div className="flex flex-col gap-2">
-            <Label htmlFor="officer_name" className="font-bold">Officer Name</Label>
-            <p>{item.assigned?.full_name ?? "-"}</p>
-          </div>
-          <div className="flex flex-col gap-2">
-            <Label htmlFor="department_name" className="font-bold">Department Name</Label>
-            <p>{item.department?.name?.toUpperCase() ?? "-"}</p>
-          </div>
-          <div className="flex flex-col gap-2">
-            <Label htmlFor="category_name" className="font-bold">Category Name</Label>
-            <p>{item.category?.name ?? "-"}</p>
-          </div>
-          <div className="flex flex-col gap-2">
-            <Label htmlFor="channel" className="font-bold">Channel Name</Label>
-            <p>{item.channel}</p>
-          </div>
-          <div className="flex flex-col gap-2">
-            <Label htmlFor="intent" className="font-bold">Intent</Label>
-            <p>{item.intent}</p>
-          </div>
-          <div className="flex flex-col gap-2">
-            <Label htmlFor="status" className="font-bold">Status</Label>
-            <Badge className={item.status === "open" ? "bg-green-700 text-white" : "bg-red-600 text-white"}>{item.status}</Badge>
-          </div>
-          <div className="flex flex-col gap-2">
-            <Label htmlFor="intent" className="font-bold">Awaiting Student Response</Label>
-            {
-              item.awaiting_student_input ? <Badge className="bg-green-700 text-white">Yes</Badge> : <Badge className="bg-red-700 text-white">No</Badge>
-            }
-            
-          </div>
-          <div className="flex flex-col gap-2">
-            <Label htmlFor="intent" className="font-bold">Created At</Label>
-            <p>{item.created_at ? new Intl.DateTimeFormat("en-US").format(new Date(item.created_at)) : "None"}</p>
-          </div>
-          <div className="flex flex-col gap-2">
-            <Label htmlFor="intent" className="font-bold">Resolved At</Label>
-            <p>{item.resolved_at ? new Intl.DateTimeFormat("en-US").format(new Date(item.resolved_at)) : "None"}</p>
-          </div>
-          <div className="flex flex-col gap-2 col-span-full">
-            <Label htmlFor="intent" className="font-bold">Subject</Label>
-            <p>{item.subject}</p>
-          </div>
-          <div className="flex flex-col gap-2 col-span-full">
-            <Label htmlFor="intent" className="font-bold">Description</Label>
-            <p>{item.body}</p>
-          </div>
+          
         </div>
         <DrawerFooter>
           <DrawerClose className="pt-10">

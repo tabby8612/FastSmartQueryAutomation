@@ -6,7 +6,10 @@ import {
   IconHelp,
   IconSearch,
   IconSettings,
-  IconAddressBook
+  IconAddressBook,
+  IconUser,
+  IconTabs,
+  IconBrandOffice
 } from "@tabler/icons-react"
 
 import { NavMain } from "@/components/dashboard/nav-main"
@@ -20,7 +23,6 @@ import {
   SidebarMenuItem,
 } from "@/components/ui/sidebar"
 import { useAuth } from "@/contexts/auth-context"
-import { BookAlertIcon, BriefcaseBusinessIcon, NotebookPenIcon, TagsIcon, UserCircle2 } from "lucide-react"
 
 const data = {
   student: [
@@ -36,7 +38,7 @@ const data = {
     },
     {
       title: "My Issue",
-      url: "#",
+      url: "/student/my-issues",
       icon: IconAddressBook,
     }
   ],
@@ -59,24 +61,24 @@ const data = {
       icon: IconDashboard,
     },
     {
-      title: "All Issue",
+      title: "All Issues",
       url: "/admin/issues",
-      icon: IconDashboard,
+      icon: IconAddressBook,
     },
     {
       title: "Users",
-      url: "/admin/issues",
-      icon: IconDashboard,
+      url: "/admin/users",
+      icon: IconUser,
     },
     {
       title: "Categories",
       url: "/admin/categories",
-      icon: IconDashboard,
+      icon: IconTabs,
     },
     {
       title: "Department",
       url: "/admin/department",
-      icon: IconDashboard,
+      icon: IconBrandOffice,
     }
   ],
 }
@@ -85,7 +87,7 @@ export function AppSidebar({ roleName, ...props }: React.ComponentProps<typeof S
   const { user } = useAuth()
   const effectiveRole = roleName || user?.rolename || "student"
   const navItems = data[effectiveRole as keyof typeof data] || data.student
-  
+
   return (
     <Sidebar collapsible="offcanvas" {...props}>
       <SidebarHeader>

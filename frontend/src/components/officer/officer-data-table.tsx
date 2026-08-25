@@ -287,7 +287,7 @@ function DraggableRow({
   )
 }
 
-export function DataTable({
+export function OfficerDataTable({
   data: initialData,
 }: {
   data: z.infer<typeof schema>[]
