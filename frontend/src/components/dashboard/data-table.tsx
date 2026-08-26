@@ -606,16 +606,16 @@ function TableCellViewer({ item }: { item: z.infer<typeof schema> }) {
             <p>{item.assigned?.full_name ?? "-"}</p>
           </div>
           <div className="flex flex-col gap-2">
-            <Label htmlFor="department_name" className="font-bold">Department Name</Label>
-            <p>{item.department?.name?.toUpperCase() ?? "-"}</p>
+            <Label htmlFor="department_name" className="font-bold capitalize">Department Name</Label>
+            <p>{item.department?.name ?? "-"}</p>
           </div>
           <div className="flex flex-col gap-2">
-            <Label htmlFor="category_name" className="font-bold">Category Name</Label>
+            <Label htmlFor="category_name" className="font-bold capitalize">Category Name</Label>
             <p>{item.category?.name ?? "-"}</p>
           </div>
           <div className="flex flex-col gap-2">
             <Label htmlFor="channel" className="font-bold">Channel Name</Label>
-            <p>{item.channel}</p>
+            <Badge>{item.channel}</Badge>
           </div>
           <div className="flex flex-col gap-2">
             <Label htmlFor="intent" className="font-bold">Intent</Label>
@@ -633,19 +633,19 @@ function TableCellViewer({ item }: { item: z.infer<typeof schema> }) {
             
           </div>
           <div className="flex flex-col gap-2">
-            <Label htmlFor="intent" className="font-bold">Created At</Label>
+            <Label htmlFor="created_at" className="font-bold">Created At</Label>
             <p>{item.created_at ? new Intl.DateTimeFormat("en-US").format(new Date(item.created_at)) : "None"}</p>
           </div>
           <div className="flex flex-col gap-2">
-            <Label htmlFor="intent" className="font-bold">Resolved At</Label>
+            <Label htmlFor="resolved_at" className="font-bold">Resolved At</Label>
             <p>{item.resolved_at ? new Intl.DateTimeFormat("en-US").format(new Date(item.resolved_at)) : "None"}</p>
           </div>
           <div className="flex flex-col gap-2 col-span-full">
-            <Label htmlFor="intent" className="font-bold">Subject</Label>
+            <Label htmlFor="subject" className="font-bold">Subject</Label>
             <p>{item.subject}</p>
           </div>
           <div className="flex flex-col gap-2 col-span-full">
-            <Label htmlFor="intent" className="font-bold">Description</Label>
+            <Label htmlFor="description" className="font-bold">Description</Label>
             <p>{item.body}</p>
           </div>
         </div>

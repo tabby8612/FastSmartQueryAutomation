@@ -14,7 +14,7 @@ export function OfficerIssues() {
   useEffect(() => {
     const fetchQueries = async () => {
       try {
-        const response = await api.get<Query[]>("/queries", {
+        const response = await api.get<Query[]>("/tickets", {
           headers: {
             Authorization: `Bearer ${access_token}`,
           },

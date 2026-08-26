@@ -1,7 +1,7 @@
 from datetime import datetime
 from decimal import Decimal
 
-from pydantic import BaseModel, ConfigDict
+from pydantic import BaseModel, ConfigDict, Field
 from app.schemas.user import UserResponse
 
 
@@ -23,8 +23,8 @@ class TicketBase(BaseModel):
 
 
 class TicketCreate(BaseModel):
-    subject: str
-    body: str
+    subject: str = Field(min_length=15, max_length=200)
+    body: str = Field(min_length=20, max_length=1000)
 
 
 class TicketUpdate(BaseModel):

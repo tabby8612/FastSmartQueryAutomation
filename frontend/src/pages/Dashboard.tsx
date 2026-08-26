@@ -11,13 +11,15 @@ import { BookOpenCheck, BookOpenIcon, Hash, Loader } from "lucide-react"
 import { useEffect, useState } from "react"
 import api from "@/lib/axios"
 import { ChartAreaInteractive } from "@/components/dashboard/chart-area-interactive"
+import { OfficerDataTable } from "@/components/officer/officer-data-table"
+import { AdminDataTable } from "@/components/admin/admin-data-table"
 
 
 export default function Page() {
   const { role_name, access_token, user } = useAuth()
   const [tickets, setTickets] = useState<Query[]>([])
   const [loading, setLoading] = useState(true)
-
+  
   useEffect(() => {
     const fetchTicket = async () => {
       try {
@@ -62,6 +64,9 @@ export default function Page() {
               <div className="md:py-6 bg-white mx-5 px-6 rounded-2xl flex flex-col gap-5">
                 <h1 className="text-3xl font-bold">Hello, {user?.name ? user.name : "Anyonmous"}</h1>
                 {
+                  role_name === "officer" && <h1 className="text-2xl font-bold text-muted-foreground">Department Name: <span className="text-primary capitalize">{user?.department?.name || "Not Assigned Yet"}</span></h1>
+                }
+                {
                   role_name === "student" && <h1 className="text-xl font-bold text-muted-foreground">Here is the overview of tickets you have created</h1>
                 }
                 {
@@ -92,7 +97,15 @@ export default function Page() {
                 </div>
               </div>
               <div className="py-2 mx-6 rounded-2xl pt-5 bg-white">
-                <DataTable data={tickets} />
+                {
+                  role_name === "student" && <DataTable data={tickets} />
+                }
+                {
+                  role_name === "officer" && <OfficerDataTable data={tickets} />
+                }
+                {
+                  role_name === "admin" && <AdminDataTable data={tickets} /> 
+                }
               </div>
             </div>
           </div>
