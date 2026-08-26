@@ -2,7 +2,7 @@ from fastapi import APIRouter, Depends, HTTPException, status
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from app.database import get_db
-from app.schemas.user import UserCreate, UserResponse, UserUpdate
+from app.schemas.user import OfficerOptionResponse, UserCreate, UserResponse, UserUpdate
 from app.services.user import UserService
 
 router = APIRouter(prefix="/users", tags=["users"])
@@ -31,6 +31,15 @@ async def get_users(db: AsyncSession = Depends(get_db)):
     return await UserService.get_all(db)
 
 
+@router.get(
+    "/department_officers/{department_id}", response_model=list[OfficerOptionResponse]
+)
+async def get_officers_by_department(
+    department_id: int, db: AsyncSession = Depends(get_db)
+):
+    return await UserService.get_officers_by_department(db, department_id)
+
+
 @router.get("/{user_id}", response_model=UserResponse)
 async def get_user(user_id: int, db: AsyncSession = Depends(get_db)):
     user = await UserService.get_by_id(db, user_id)
@@ -42,7 +51,9 @@ async def get_user(user_id: int, db: AsyncSession = Depends(get_db)):
 
 
 @router.put("/{user_id}", response_model=UserResponse)
-async def update_user(user_id: int, user_update: UserUpdate, db: AsyncSession = Depends(get_db)):
+async def update_user(
+    user_id: int, user_update: UserUpdate, db: AsyncSession = Depends(get_db)
+):
     user = await UserService.get_by_id(db, user_id)
     if not user:
         raise HTTPException(

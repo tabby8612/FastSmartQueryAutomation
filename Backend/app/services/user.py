@@ -54,6 +54,17 @@ class UserService:
         return result.scalar_one_or_none()
 
     @staticmethod
+    async def get_officers_by_department(
+        db: AsyncSession, department_id: int
+    ) -> list[dict]:
+        result = await db.execute(
+            select(User)
+            .where(User.department_id == department_id, User.is_officer.is_(True))
+        )
+        officers = result.scalars().all()
+        return [{"user_id": officer.id, "name": officer.full_name} for officer in officers]
+
+    @staticmethod
     async def update(
         db: AsyncSession,
         user: User,

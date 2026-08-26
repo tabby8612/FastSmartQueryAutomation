@@ -42,6 +42,13 @@ class UserResponse(UserBase):
     model_config = ConfigDict(from_attributes=True)
 
 
+class OfficerOptionResponse(BaseModel):
+    user_id: int
+    name: str
+
+    model_config = ConfigDict(from_attributes=True)
+
+
 class ProfileResponse(UserBase):
     id: int
     department: DepartmentResponse

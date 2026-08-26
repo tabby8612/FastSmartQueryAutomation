@@ -84,9 +84,7 @@ import {
   TabsTrigger,
 } from "@/components/ui/tabs"
 import { Drawer, DrawerClose, DrawerContent, DrawerDescription, DrawerFooter, DrawerHeader, DrawerTitle, DrawerTrigger } from "../ui/drawer"
-import { type ChartConfig } from "../ui/chart"
 import { useIsMobile } from "@/hooks/use-mobile"
-import { Input } from "@base-ui/react"
 import { useAuth } from "@/contexts/auth-context"
 import { useNavigate } from "react-router-dom"
 
@@ -556,25 +554,6 @@ export function AdminDataTable({
   )
 }
 
-const chartData = [
-  { month: "January", desktop: 186, mobile: 80 },
-  { month: "February", desktop: 305, mobile: 200 },
-  { month: "March", desktop: 237, mobile: 120 },
-  { month: "April", desktop: 73, mobile: 190 },
-  { month: "May", desktop: 209, mobile: 130 },
-  { month: "June", desktop: 214, mobile: 140 },
-]
-
-const chartConfig = {
-  desktop: {
-    label: "Desktop",
-    color: "var(--primary)",
-  },
-  mobile: {
-    label: "Mobile",
-    color: "var(--primary)",
-  },
-} satisfies ChartConfig
 
 function TableCellViewer({ item }: { item: z.infer<typeof schema> }) {
   const isMobile = useIsMobile()
@@ -604,7 +583,29 @@ function TableCellViewer({ item }: { item: z.infer<typeof schema> }) {
           </div>
           <div className="flex flex-col gap-2">
             <Label htmlFor="officer_name" className="font-bold">Officer Name</Label>
-            <p>{item.assigned?.full_name ?? "-"}</p>
+            <Select defaultValue={"Technical Approach"} >
+                  <SelectTrigger id="type" className="w-full border-muted-foreground">
+                    <SelectValue placeholder="Select a type" />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="Table of Contents">
+                      Table of Contents
+                    </SelectItem>
+                    <SelectItem value="Executive Summary">
+                      Executive Summary
+                    </SelectItem>
+                    <SelectItem value="Technical Approach">
+                      Technical Approach
+                    </SelectItem>
+                    <SelectItem value="Design">Design</SelectItem>
+                    <SelectItem value="Capabilities">Capabilities</SelectItem>
+                    <SelectItem value="Focus Documents">
+                      Focus Documents
+                    </SelectItem>
+                    <SelectItem value="Narrative">Narrative</SelectItem>
+                    <SelectItem value="Cover Page">Cover Page</SelectItem>
+                  </SelectContent>
+                </Select>
           </div>
           <div className="flex flex-col gap-2">
             <Label htmlFor="department_name" className="font-bold">Department Name</Label>
