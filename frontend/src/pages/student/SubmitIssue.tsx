@@ -16,6 +16,7 @@ export default function SubmitIssue() {
   const [subject, setSubject] = useState("")
   const [body, setBody] = useState("")
   const [successMessage, setSuccessMessage] = useState<string | null>(null)
+  const [errors, setErrors] = useState<{ subject?: string; body?: string }>({})
 
   useEffect(() => {
     if (successMessage) {
@@ -28,10 +29,25 @@ export default function SubmitIssue() {
 
   const handleSubmit = async (e: React.SubmitEvent) => {
     e.preventDefault()
-    const response = await api.post("/tickets/", { subject, body }, {
-      headers: { Authorization: `Bearer ${access_token}` },
-    })
-    setSuccessMessage(response.data.message)
+    setErrors({})
+    try {
+      const response = await api.post("/tickets/", { subject, body }, {
+        headers: { Authorization: `Bearer ${access_token}` },
+      })
+      setSuccessMessage(response.data.message)
+    } catch (error: any) {
+      const fieldErrors: { subject?: string; body?: string } = {}
+      const detail = error.response?.data?.detail
+      if (Array.isArray(detail)) {
+        detail.forEach((err: any) => {
+          const field = err.loc?.[1] as string
+          if (field === "subject" || field === "body") {
+            fieldErrors[field] = err.msg
+          }
+        })
+      }
+      setErrors(fieldErrors)
+    }
   }
 
   return (
@@ -67,14 +83,22 @@ export default function SubmitIssue() {
                     id="title"
                     placeholder="Enter the title of your issue"
                     value={subject}
-                    onChange={(e) => setSubject(e.target.value)}
+                    onChange={(e) => {
+                      setSubject(e.target.value)
+                      if (errors.subject) setErrors((prev) => ({ ...prev, subject: undefined }))
+                    }}
                     className="border-stone-500"
                     required
                   />
+                  {errors.subject && <p className="text-red-500 text-sm">{errors.subject}</p>}
                 </div>
                 <div className="flex flex-col gap-2">
                   <Label htmlFor="description">Description</Label>
-                  <Textarea id="description" placeholder="Describe your issue in detail" className="border-stone-500 h-50" value={body} onChange={(e) => setBody(e.target.value)} required/>
+                  <Textarea id="description" placeholder="Describe your issue in detail" className="border-stone-500 h-50" value={body} onChange={(e) => {
+                    setBody(e.target.value)
+                    if (errors.body) setErrors((prev) => ({ ...prev, body: undefined }))
+                  }} required/>
+                  {errors.body && <p className="text-red-500 text-sm">{errors.body}</p>}
                   </div>
                 <div className="flex gap-4 mt-4 justify-end">
                   <Button type="button" className="w-1/2 bg-stone-300" variant="outline" onClick={() => navigate("/dashboard")}>Cancel</Button>
