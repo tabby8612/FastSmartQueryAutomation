@@ -13,7 +13,7 @@ import {
   FieldSeparator,
 } from "@/components/ui/field"
 import { Input } from "@/components/ui/input"
-import hero from "@/assets/hero.png"
+import automation_logo from "@/assets/automation_logo.png"
 import api from "@/lib/axios"
 
 export function LoginForm({
@@ -88,10 +88,10 @@ export function LoginForm({
               {error && (
                 <p className="text-sm text-red-500">{error}</p>
               )}
-              <FieldSeparator className="*:data-[slot=field-separator-content]:bg-card">
+              {/* <FieldSeparator className="*:data-[slot=field-separator-content]:bg-card">
                 Or continue with
-              </FieldSeparator>
-              <Field className="grid grid-cols-3 gap-4">
+              </FieldSeparator> */}
+              {/* <Field className="grid grid-cols-3 gap-4">
                 <Button variant="outline" type="button">
                   <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24">
                     <path
@@ -119,7 +119,7 @@ export function LoginForm({
                   </svg>
                   <span className="sr-only">Login with Meta</span>
                 </Button>
-              </Field>
+              </Field> */}
               <FieldDescription className="text-center">
                 Don&apos;t have an account? <a href="#">Sign up</a>
               </FieldDescription>
@@ -127,7 +127,7 @@ export function LoginForm({
           </form>
           <div className="relative hidden bg-muted md:block">
             <img
-              src={hero}
+              src={automation_logo}
               alt="Image"
               className="absolute inset-0 h-full w-full object-cover dark:brightness-[0.2] dark:grayscale"
             />
