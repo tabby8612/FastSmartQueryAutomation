@@ -623,7 +623,15 @@ function TableCellViewer({ item }: { item: z.infer<typeof schema> }) {
           </div>
           <div className="flex flex-col gap-2">
             <Label htmlFor="status" className="font-bold">Status</Label>
-            <Badge className={item.status === "open" ? "bg-green-700 text-white" : "bg-red-600 text-white"}>{item.status}</Badge>
+            {
+              item.status === "open" && <Badge className="bg-green-700 text-white">{item.status}</Badge>
+            }
+            {
+              item.status === "pending" && <Badge className="bg-orange-400 text-white">{item.status}</Badge>
+            }
+            {
+              item.status === "closed" && <Badge>{item.status}</Badge>
+            }
           </div>
           <div className="flex flex-col gap-2">
             <Label htmlFor="intent" className="font-bold">Awaiting Student Response</Label>

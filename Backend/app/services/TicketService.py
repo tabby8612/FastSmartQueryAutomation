@@ -28,7 +28,7 @@ class TicketService:
             channel=channel,
             subject=subject,
             body=body,
-            status=QueryStatusEnum.OPEN,
+            status=QueryStatusEnum.PENDING,
             department_id=predication_data.get("department_id"),
             category_id=predication_data.get("category_id"),
             confidence_level=predication_data.get("confidence_score"),

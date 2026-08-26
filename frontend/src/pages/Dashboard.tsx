@@ -42,7 +42,7 @@ export default function Page() {
 
   const openCount = tickets.filter((q) => q.status.toLowerCase() === "open").length
   const closeCount = tickets.filter((q) => q.status.toLowerCase() === "closed").length
-  const inProgressCount = tickets.filter((q) => q.status.toLowerCase() === "in_progress").length
+  const inProgressCount = tickets.filter((q) => q.status.toLowerCase() === "pending").length
   const totalCount = tickets.length
 
 
@@ -86,8 +86,8 @@ export default function Page() {
                   ) : (
                     <>
                       <SectionCard title="Open" value={String(openCount)} description="These are tickets that are opened" icon={BookOpenIcon} />
-                      <SectionCard title="In Progress" value={String(closeCount)} description="These are tickets that are pending" icon={Loader} />
-                      <SectionCard title="Closed" value={String(inProgressCount)} description="These are tickets that are closed" icon={BookOpenCheck} />
+                      <SectionCard title="In Progress" value={String(inProgressCount)} description="These are tickets that are pending" icon={Loader} />
+                      <SectionCard title="Closed" value={String(closeCount)} description="These are tickets that are closed" icon={BookOpenCheck} />
                       <SectionCard title="Total" value={String(totalCount)} description="These are total tickets" icon={Hash} />
                     </>
                   )}
