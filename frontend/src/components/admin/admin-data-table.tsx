@@ -379,12 +379,12 @@ export function AdminDataTable({
         <div className="flex items-center gap-2">
           <DropdownMenu>
             <DropdownMenuTrigger>
-              <Button variant="outline" size="sm">
-                <IconLayoutColumns />
+              <p className="flex gap-1 rounded-lg font-semibold px-2 py-1 text-xs border-border bg-muted justify-center items-center hover:bg-muted hover:text-foreground aria-expanded:bg-muted aria-expanded:text-foreground dark:border-input dark:bg-input/30 dark:hover:bg-input/50">
+                <IconLayoutColumns size={20}/>
                 <span className="hidden lg:inline">Customize Columns</span>
                 <span className="lg:hidden">Columns</span>
                 <IconChevronDown />
-              </Button>
+              </p>
             </DropdownMenuTrigger>
             <DropdownMenuContent align="end" className="w-56">
               {table
@@ -561,9 +561,7 @@ function TableCellViewer({ item }: { item: z.infer<typeof schema> }) {
   return (
     <Drawer swipeDirection={isMobile ? "down" : "down"} showSwipeHandle={isMobile}>
       <DrawerTrigger>
-        <Button variant="link" className="w-fit px-0 text-left text-foreground">
-          {item.tracking_id}
-        </Button>
+        <p className="w-fit px-0 text-left text-foreground font-semibold cursor-pointer underline-offset-4 hover:underline">{item.tracking_id}</p>
       </DrawerTrigger>
       <DrawerContent>
         <DrawerHeader className="gap-10 mb-7">
@@ -581,45 +579,23 @@ function TableCellViewer({ item }: { item: z.infer<typeof schema> }) {
             <Label htmlFor="student_name" className="font-bold">Student Name</Label>
             <p>{item.student?.full_name ?? "-"}</p>
           </div>
-          <div className="flex flex-col gap-2">
+          <div className="flex flex-col gap-2 capitalize">
             <Label htmlFor="officer_name" className="font-bold">Officer Name</Label>
-            <Select defaultValue={"Technical Approach"} >
-                  <SelectTrigger id="type" className="w-full border-muted-foreground">
-                    <SelectValue placeholder="Select a type" />
-                  </SelectTrigger>
-                  <SelectContent>
-                    <SelectItem value="Table of Contents">
-                      Table of Contents
-                    </SelectItem>
-                    <SelectItem value="Executive Summary">
-                      Executive Summary
-                    </SelectItem>
-                    <SelectItem value="Technical Approach">
-                      Technical Approach
-                    </SelectItem>
-                    <SelectItem value="Design">Design</SelectItem>
-                    <SelectItem value="Capabilities">Capabilities</SelectItem>
-                    <SelectItem value="Focus Documents">
-                      Focus Documents
-                    </SelectItem>
-                    <SelectItem value="Narrative">Narrative</SelectItem>
-                    <SelectItem value="Cover Page">Cover Page</SelectItem>
-                  </SelectContent>
-                </Select>
+            <p>{item.assigned.full_name}</p>
           </div>
-          <div className="flex flex-col gap-2">
+          <div className="flex flex-col gap-2 capitalize">
             <Label htmlFor="department_name" className="font-bold">Department Name</Label>
-            <p>{item.department?.name?.toUpperCase() ?? "-"}</p>
+            <p>{item.department?.name ?? "-"}</p>
           </div>
-          <div className="flex flex-col gap-2">
+          <div className="flex flex-col gap-2 capitalize">
             <Label htmlFor="category_name" className="font-bold">Category Name</Label>
             <p>{item.category?.name ?? "-"}</p>
           </div>
           <div className="flex flex-col gap-2">
             <Label htmlFor="channel" className="font-bold">Channel Name</Label>
-            <p>{item.channel}</p>
+            <Badge>{item.channel}</Badge>
           </div>
-          <div className="flex flex-col gap-2">
+          <div className="flex flex-col gap-2 capitalize">
             <Label htmlFor="intent" className="font-bold">Intent</Label>
             <p>{item.intent}</p>
           </div>

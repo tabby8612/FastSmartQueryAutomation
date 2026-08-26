@@ -44,25 +44,27 @@ export function NavUser({
 
   return (
     <SidebarMenu>
-      <SidebarMenuItem >
+      <SidebarMenuItem>
         <DropdownMenu>
-          <DropdownMenuTrigger>
-            <SidebarMenuButton
-              size="lg"
-              className=" lg:w-3xs data-[state=open]:bg-sidebar-accent data-[state=open]:text-sidebar-accent-foreground"
-            >
+          <DropdownMenuTrigger className="w-full">
+            <p className="flex gap-4 justify-center items-center  w-full">
               <Avatar className="h-8 w-8 rounded-lg grayscale">
                 <AvatarImage src={user.avatar} alt={user.name} />
                 <AvatarFallback className="rounded-lg">CN</AvatarFallback>
               </Avatar>
-              <div className="grid flex-1 text-left text-sm leading-tight">
+              <div className="grid flex-2 text-left text-sm leading-tight">
                 <span className="truncate font-medium">{user.name}</span>
                 <span className="truncate text-xs text-muted-foreground">
                   {user.email}
                 </span>
               </div>
               <IconDotsVertical className="ml-auto size-4" />
-            </SidebarMenuButton>
+            </p>
+            {/* <SidebarMenuButton
+              size="lg"
+              className=" lg:w-3xs data-[state=open]:bg-sidebar-accent data-[state=open]:text-sidebar-accent-foreground"
+            >
+            </SidebarMenuButton> */}
           </DropdownMenuTrigger>
           <DropdownMenuContent
             className="w-(--radix-dropdown-menu-trigger-width) min-w-56 rounded-lg"

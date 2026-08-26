@@ -32,7 +32,6 @@ export function LoginForm({
       const response = await api.post("/auth/login", formData, {headers: {"Content-Type": "application/x-www-form-urlencoded"}})
       const { access_token, user } = response.data
       setAuth(access_token, user)
-      console.log(user)
 
       if (user.rolename === "student") {
         return navigate("/student/dashboard")
