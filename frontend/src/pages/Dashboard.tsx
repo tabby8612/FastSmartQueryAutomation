@@ -13,31 +13,40 @@ import api from "@/lib/axios"
 import { ChartAreaInteractive } from "@/components/dashboard/chart-area-interactive"
 import { OfficerDataTable } from "@/components/officer/officer-data-table"
 import { AdminDataTable } from "@/components/admin/admin-data-table"
+import { AxiosError } from "axios"
+import { useNavigate } from "react-router-dom"
 
 
 export default function Page() {
-  const { role_name, access_token, user } = useAuth()
+  const { role_name, access_token, user, getAccessToken, getRoleName } = useAuth()
   const [tickets, setTickets] = useState<Query[]>([])
   const [loading, setLoading] = useState(true)
+  
+
+  const ACCESS_TOKEN = getAccessToken()
+  const ROLE_NAME = getRoleName()
+  const navigate = useNavigate()
   
   useEffect(() => {
     const fetchTicket = async () => {
       try {
         const response = await api.get<Query[]>("/tickets", {
           headers: {
-            Authorization: `Bearer ${access_token}`,
+            Authorization: `Bearer ${ACCESS_TOKEN}`,
           },
         })
         setTickets(response.data)
       } catch (error) {
-        console.error("Failed to fetch tickets:", error)
+        if (error instanceof AxiosError) {
+          navigate("/")
+        }
       } finally {
         setLoading(false)
       }
     }
 
     fetchTicket()
-  }, [access_token])
+  }, [ACCESS_TOKEN])
 
 
   const openCount = tickets.filter((q) => q.status.toLowerCase() === "open").length
@@ -64,16 +73,16 @@ export default function Page() {
               <div className="md:py-6 bg-white mx-5 px-6 rounded-2xl flex flex-col gap-5">
                 <h1 className="text-3xl font-bold">Hello, {user?.name ? user.name : "Anyonmous"}</h1>
                 {
-                  role_name === "officer" && <h1 className="text-2xl font-bold text-muted-foreground">Department Name: <span className="text-primary capitalize">{user?.department?.name || "Not Assigned Yet"}</span></h1>
+                  ROLE_NAME === "officer" && <h1 className="text-2xl font-bold text-muted-foreground">Department Name: <span className="text-primary capitalize">{user?.department?.name || "Not Assigned Yet"}</span></h1>
                 }
                 {
-                  role_name === "student" && <h1 className="text-xl font-bold text-muted-foreground">Here is the overview of tickets you have created</h1>
+                  ROLE_NAME === "student" && <h1 className="text-xl font-bold text-muted-foreground">Here is the overview of tickets you have created</h1>
                 }
                 {
-                  role_name === "officer" && <h1 className="text-xl font-bold text-muted-foreground">Here is the overview of tickets assigned to you</h1>
+                  ROLE_NAME === "officer" && <h1 className="text-xl font-bold text-muted-foreground">Here is the overview of tickets assigned to you</h1>
                 }
                 {
-                  role_name === "admin" && <h1 className="text-xl font-bold text-muted-foreground">Here is the overview of all tickets</h1>
+                  ROLE_NAME === "admin" && <h1 className="text-xl font-bold text-muted-foreground">Here is the overview of all tickets</h1>
                 }
                 <div className="grid grid-cols-4 gap-5">
                   {loading ? (
@@ -98,13 +107,13 @@ export default function Page() {
               </div>
               <div className="py-2 mx-6 rounded-2xl pt-5 bg-white">
                 {
-                  role_name === "student" && <DataTable data={tickets} />
+                  ROLE_NAME === "student" && <DataTable data={tickets} />
                 }
                 {
-                  role_name === "officer" && <OfficerDataTable data={tickets} />
+                  ROLE_NAME === "officer" && <OfficerDataTable data={tickets} />
                 }
                 {
-                  role_name === "admin" && <AdminDataTable data={tickets} /> 
+                  ROLE_NAME === "admin" && <AdminDataTable data={tickets} /> 
                 }
               </div>
             </div>

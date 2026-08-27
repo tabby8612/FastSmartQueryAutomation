@@ -17,6 +17,9 @@ interface AuthContextType {
   user: User | null
   setAuth: (token: string, user: User) => void
   logout: () => void
+  getAccessToken: () => string | null
+  getRoleName: () => string | null
+  getUser: () => User | null
 }
 
 const AuthContext = createContext<AuthContextType | undefined>(undefined)
@@ -42,8 +45,45 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     localStorage.removeItem("user")
   }
 
+  const getAccessToken = () => {
+    return access_token || localStorage.getItem("access_token")
+  }
+
+  const getRoleName = () => {
+    const roleName = user?.rolename;
+
+    if (roleName) {
+      return roleName
+    }
+
+    const active_user : User = JSON.parse(localStorage.getItem("user") || "")
+
+    if (active_user?.rolename) {
+      return active_user.rolename
+    }
+
+    return null;
+  }
+
+  const getUser = () => {
+    const active_user = user
+
+    if (active_user) {
+      return active_user
+    }
+
+    const current_user : User = JSON.parse(localStorage.getItem("user") || "")
+
+    if (current_user) {
+      return current_user
+    }
+
+    return null
+
+  }
+
   return (
-    <AuthContext.Provider value={{ access_token, role_name, user, setAuth, logout }}>
+    <AuthContext.Provider value={{ access_token, role_name, user, setAuth, logout, getAccessToken, getRoleName, getUser }}>
       {children}
     </AuthContext.Provider>
   )
