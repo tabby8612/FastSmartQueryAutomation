@@ -164,6 +164,20 @@ const columns = columnHelper.columns([
     },
     enableHiding: false,
   }),
+  columnHelper.accessor("description", {
+    header: "Description",
+    cell: ({ row }) => {
+      return row.original.description
+    },
+    enableHiding: false,
+  }),
+  columnHelper.accessor("ticket_count", {
+    header: "Ticket Count",
+    cell: ({ row }) => {
+      return row.original.ticket_count
+    },
+    enableHiding: false,
+  }),
   
   
 ])

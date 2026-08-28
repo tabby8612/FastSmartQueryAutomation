@@ -1,12 +1,16 @@
 from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy.future import select
+from sqlalchemy import func, text
 
 from app.models.category import Category
+from app.models.ticket import Ticket
 
 
 class CategoryService:
     @staticmethod
-    async def create(db: AsyncSession, name: str, description: str | None, department_id: int) -> Category:
+    async def create(
+        db: AsyncSession, name: str, description: str | None, department_id: int
+    ) -> Category:
         category = Category(
             name=name,
             description=description,
@@ -19,8 +23,19 @@ class CategoryService:
 
     @staticmethod
     async def get_all(db: AsyncSession) -> list[Category]:
-        result = await db.execute(select(Category))
-        return list(result.scalars().all())
+        stmt = (
+            select(
+                Category.id,
+                Category.name,
+                Category.description,
+                func.count(Ticket.id).label("ticket_count"),
+            )
+            .join(Ticket, Category.id == Ticket.category_id, full=True)
+            .group_by(Category.id)
+            .order_by(text("ticket_count desc"))
+        )
+        result = await db.execute(stmt)
+        return result.mappings().all()
 
     @staticmethod
     async def get_by_id(db: AsyncSession, category_id: int) -> Category | None:
@@ -28,7 +43,13 @@ class CategoryService:
         return result.scalar_one_or_none()
 
     @staticmethod
-    async def update(db: AsyncSession, category: Category, name: str | None, description: str | None, department_id: int | None) -> Category:
+    async def update(
+        db: AsyncSession,
+        category: Category,
+        name: str | None,
+        description: str | None,
+        department_id: int | None,
+    ) -> Category:
         if name is not None:
             category.name = name
         if description is not None:

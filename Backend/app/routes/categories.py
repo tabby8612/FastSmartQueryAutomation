@@ -18,9 +18,10 @@ async def create_category(category: CategoryCreate, db: AsyncSession = Depends(g
     )
 
 
-@router.get("/", response_model=list[CategoryResponse])
+@router.get("/", response_model=None)
 async def get_categories(db: AsyncSession = Depends(get_db)):
-    return await CategoryService.get_all(db)
+    results = await CategoryService.get_all(db)
+    return results
 
 
 @router.get("/{category_id}", response_model=CategoryResponse)
@@ -34,7 +35,11 @@ async def get_category(category_id: int, db: AsyncSession = Depends(get_db)):
 
 
 @router.put("/{category_id}", response_model=CategoryResponse)
-async def update_category(category_id: int, category_update: CategoryUpdate, db: AsyncSession = Depends(get_db)):
+async def update_category(
+    category_id: int,
+    category_update: CategoryUpdate,
+    db: AsyncSession = Depends(get_db),
+):
     category = await CategoryService.get_by_id(db, category_id)
     if not category:
         raise HTTPException(

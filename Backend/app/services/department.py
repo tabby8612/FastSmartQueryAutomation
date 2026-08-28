@@ -1,12 +1,21 @@
 from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy.future import select
+from sqlalchemy import func, text
+from sqlalchemy.orm import joinedload
 
 from app.models.department import Department
+from app.models.ticket import Ticket
 
 
 class DepartmentService:
     @staticmethod
-    async def create(db: AsyncSession, name: str, description: str | None, hod_id: int | None, is_active: bool) -> Department:
+    async def create(
+        db: AsyncSession,
+        name: str,
+        description: str | None,
+        hod_id: int | None,
+        is_active: bool,
+    ) -> Department:
         department = Department(
             name=name,
             description=description,
@@ -20,16 +29,41 @@ class DepartmentService:
 
     @staticmethod
     async def get_all(db: AsyncSession) -> list[Department]:
-        result = await db.execute(select(Department))
-        return list(result.scalars().all())
+        stmt = (
+            select(
+                Department.id,
+                Department.name,
+                Department.description,
+                Department.is_active,
+                Department.hod_id,
+                func.count(Ticket.id).label("ticket_count"),
+            )
+            .join_from(
+                Ticket, Department, Ticket.department_id == Department.id, full=True
+            )
+            .group_by(Department.id)
+            .order_by("ticket_count")
+            .order_by(text("ticket_count desc"))
+        )
+        result = await db.execute(stmt)
+        return result.mappings().all()
 
     @staticmethod
     async def get_by_id(db: AsyncSession, department_id: int) -> Department | None:
-        result = await db.execute(select(Department).where(Department.id == department_id))
+        result = await db.execute(
+            select(Department).where(Department.id == department_id)
+        )
         return result.scalar_one_or_none()
 
     @staticmethod
-    async def update(db: AsyncSession, department: Department, name: str | None, description: str | None, hod_id: int | None, is_active: bool | None) -> Department:
+    async def update(
+        db: AsyncSession,
+        department: Department,
+        name: str | None,
+        description: str | None,
+        hod_id: int | None,
+        is_active: bool | None,
+    ) -> Department:
         if name is not None:
             department.name = name
         if description is not None:

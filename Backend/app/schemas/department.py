@@ -21,5 +21,6 @@ class DepartmentUpdate(BaseModel):
 
 class DepartmentResponse(DepartmentBase):
     id: int
+    ticket_count: int
 
     model_config = ConfigDict(from_attributes=True)

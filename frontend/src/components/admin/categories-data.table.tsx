@@ -174,6 +174,15 @@ const columns = columnHelper.columns([
     ),
     enableSorting: false,
   }),  
+  columnHelper.accessor("ticket_count", {
+    header: "Ticket Count",
+    cell: ({ row }) => (
+      <div className="">
+        {row.original.ticket_count}
+      </div>
+    ),
+    enableSorting: false,
+  }),  
   
 ])
 

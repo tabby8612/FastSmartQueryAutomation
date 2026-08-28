@@ -36,6 +36,8 @@ export type Officer = {
 export type Department = {
     "id": number,
     "name": string,
+    "description": string,
+    "ticket_count": number
 }
 
 export type User = {
@@ -52,5 +54,6 @@ export type User = {
 export type Category = {
     id: number,
     name: string,
-    description: string
+    description: string,
+    ticket_count: number
 }
