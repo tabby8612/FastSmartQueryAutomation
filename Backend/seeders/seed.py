@@ -11,6 +11,7 @@ from app.models.category import Category
 from app.models.role import Role
 from app.models.user import User
 from app.models.user_roles import User_Roles
+from app.models.ticket import Ticket
 from app.helpers.security import hash_password
 
 load_dotenv()
@@ -26,6 +27,7 @@ async def get_db():
 
 
 async def clear_tables(session):
+    await session.execute(Ticket.__table__.delete())
     await session.execute(User_Roles.__table__.delete())
     await session.execute(User.__table__.delete())
     await session.execute(Category.__table__.delete())
@@ -37,27 +39,54 @@ async def clear_tables(session):
 async def seed_departments(session):
     departments = [
         Department(
-            name="finance and billing",
-            description="Queries regarding finance and billng",
+            name="academic affairs office",
+            description="Queries regarding academic and examination",
             is_active=True,
         ),
         Department(
-            name="technical and IT support",
-            description="Queries regarding technical support",
+            name="billing accounts & finance office",
+            description="Queries regarding billing, accounts, and finance",
             is_active=True,
         ),
         Department(
-            name="student account management",
-            description="Queries regarding account management",
+            name="admissions office",
+            description="Queries regarding student admissions",
             is_active=True,
         ),
         Department(
-            name="general administration",
-            description="Queries regarding customer relation and general queries",
+            name="student affairs & administration office",
+            description="Queries regarding student affairs and administration",
             is_active=True,
         ),
         Department(
-            name="sales", description="Queries regarding sales queries", is_active=True
+            name="hostel & housing office",
+            description="Queries regarding hostel and student housing",
+            is_active=True,
+        ),
+        Department(
+            name="library office",
+            description="Queries regarding library",
+            is_active=True,
+        ),
+        Department(
+            name="information technology (IT) office",
+            description="Queries regarding information technology and information communication",
+            is_active=True,
+        ),
+        Department(
+            name="facilities & maintenance office",
+            description="Queries regarding maintenance of student facilities",
+            is_active=True,
+        ),
+        Department(
+            name="security & discipline office",
+            description="Queries regarding student security and discipline",
+            is_active=True,
+        ),
+        Department(
+            name="transportation office",
+            description="Queries regarding transportation service provided by university",
+            is_active=True,
         ),
     ]
     session.add_all(departments)
@@ -68,124 +97,59 @@ async def seed_departments(session):
 async def seed_categories(session, departments):
     categories = [
         Category(
-            name="billing",
-            description="Billing related queries",
+            name="general",
+            description="general help desk related queries",
+            department_id=None,
+        ),
+        Category(
+            name="academic",
+            description="academic related queries",
             department_id=departments[0].id,
         ),
         Category(
-            name="refund",
-            description="refund related queries",
-            department_id=departments[0].id,
+            name="finance",
+            description="billing, accounts and finance related queries",
+            department_id=departments[1].id,
         ),
         Category(
-            name="payment failure",
-            description="payment failure related queries",
-            department_id=departments[0].id,
+            name="admissions",
+            description="admissions related queries",
+            department_id=departments[2].id,
         ),
         Category(
-            name="invoice",
-            description="invoice related queries",
-            department_id=departments[0].id,
+            name="administration",
+            description="administration and student affairs related queries",
+            department_id=departments[3].id,
         ),
         Category(
-            name="subscription",
-            description="subscription related queries",
-            department_id=departments[0].id,
+            name="housing",
+            description="hostel and student housing related queries",
+            department_id=departments[4].id,
+        ),
+        Category(
+            name="library",
+            description="library related queries",
+            department_id=departments[5].id,
         ),
         Category(
             name="technical",
-            description="technical related queries",
-            department_id=departments[1].id,
+            description="bug report and information technology (IT) related queries",
+            department_id=departments[6].id,
         ),
         Category(
-            name="bug report",
-            description="bug report related queries",
-            department_id=departments[1].id,
+            name="maintenance",
+            description="facility maintenance related queries",
+            department_id=departments[7].id,
         ),
         Category(
-            name="performance issue",
-            description="performance related queries",
-            department_id=departments[1].id,
+            name="security/discipline",
+            description="student security and discipline queries",
+            department_id=departments[8].id,
         ),
         Category(
-            name="outage",
-            description="outage related queries",
-            department_id=departments[1].id,
-        ),
-        Category(
-            name="integration issue",
-            description="integration related queries",
-            department_id=departments[1].id,
-        ),
-        Category(
-            name="account",
-            description="account related queries",
-            department_id=departments[2].id,
-        ),
-        Category(
-            name="login issues",
-            description="login issues related queries",
-            department_id=departments[2].id,
-        ),
-        Category(
-            name="security",
-            description="security related queries",
-            department_id=departments[2].id,
-        ),
-        Category(
-            name="profile update",
-            description="profile update related queries",
-            department_id=departments[2].id,
-        ),
-        Category(
-            name="general",
-            description="general related queries",
-            department_id=departments[3].id,
-        ),
-        Category(
-            name="feedback",
-            description="feedback related queries",
-            department_id=departments[3].id,
-        ),
-        Category(
-            name="feature request",
-            description="feature request related queries",
-            department_id=departments[3].id,
-        ),
-        Category(
-            name="complaint",
-            description="complaint related queries",
-            department_id=departments[3].id,
-        ),
-        Category(
-            name="greeting",
-            description="greeting related queries",
-            department_id=departments[3].id,
-        ),
-        Category(
-            name="sale inquiry",
-            description="sale inquiry related queries",
-            department_id=departments[4].id,
-        ),
-        Category(
-            name="demo request",
-            description="demo request related queries",
-            department_id=departments[4].id,
-        ),
-        Category(
-            name="demo request",
-            description="demo request related queries",
-            department_id=departments[4].id,
-        ),
-        Category(
-            name="pricing question",
-            description="pricing question related queries",
-            department_id=departments[4].id,
-        ),
-        Category(
-            name="partnership",
-            description="partnership related queries",
-            department_id=departments[4].id,
+            name="transport",
+            description="student transport related queries",
+            department_id=departments[9].id,
         ),
     ]
     session.add_all(categories)

@@ -18,9 +18,14 @@ class TicketService:
     ) -> Ticket:
         tracking_id = generate_tracking_number()
         predication_data: dict[str, any] = await classify_issue(db, body)
-        officer = await get_officer_id_by_department_id(
-            db, predication_data.get("department_id")
-        )
+
+        department_id = predication_data.get("department_id")
+        officer = None
+
+        if department_id is not None:
+            officer = await get_officer_id_by_department_id(
+                db, predication_data.get("department_id")
+            )
 
         new_ticket = Ticket(
             tracking_id=tracking_id,
