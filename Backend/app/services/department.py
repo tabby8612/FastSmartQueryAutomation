@@ -39,10 +39,13 @@ class DepartmentService:
                 func.count(Ticket.id).label("ticket_count"),
             )
             .join_from(
-                Ticket, Department, Ticket.department_id == Department.id, full=True
+                Department,
+                Ticket,
+                Ticket.department_id == Department.id,
+                full=False,
+                isouter=True,
             )
             .group_by(Department.id)
-            .order_by("ticket_count")
             .order_by(text("ticket_count desc"))
         )
         result = await db.execute(stmt)

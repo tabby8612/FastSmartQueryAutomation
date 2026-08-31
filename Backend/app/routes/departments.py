@@ -2,14 +2,22 @@ from fastapi import APIRouter, Depends, HTTPException, status
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from app.database import get_db
-from app.schemas.department import DepartmentCreate, DepartmentResponse, DepartmentUpdate
+from app.schemas.department import (
+    DepartmentCreate,
+    DepartmentResponse,
+    DepartmentUpdate,
+)
 from app.services.department import DepartmentService
 
 router = APIRouter(prefix="/departments", tags=["departments"])
 
 
-@router.post("/", response_model=DepartmentResponse, status_code=status.HTTP_201_CREATED)
-async def create_department(department: DepartmentCreate, db: AsyncSession = Depends(get_db)):
+@router.post(
+    "/", response_model=DepartmentResponse, status_code=status.HTTP_201_CREATED
+)
+async def create_department(
+    department: DepartmentCreate, db: AsyncSession = Depends(get_db)
+):
     return await DepartmentService.create(
         db=db,
         name=department.name,
@@ -19,7 +27,7 @@ async def create_department(department: DepartmentCreate, db: AsyncSession = Dep
     )
 
 
-@router.get("/", response_model=list[DepartmentResponse])
+@router.get("/", response_model=None)
 async def get_departments(db: AsyncSession = Depends(get_db)):
     return await DepartmentService.get_all(db)
 
@@ -35,7 +43,11 @@ async def get_department(department_id: int, db: AsyncSession = Depends(get_db))
 
 
 @router.put("/{department_id}", response_model=DepartmentResponse)
-async def update_department(department_id: int, department_update: DepartmentUpdate, db: AsyncSession = Depends(get_db)):
+async def update_department(
+    department_id: int,
+    department_update: DepartmentUpdate,
+    db: AsyncSession = Depends(get_db),
+):
     department = await DepartmentService.get_by_id(db, department_id)
     if not department:
         raise HTTPException(
