@@ -1,15 +1,7 @@
 "use client"
 
+import type { User } from "@/types"
 import { createContext, useContext, useState, type ReactNode } from "react"
-
-interface User {
-  id: number
-  name: string
-  email: string
-  department: { id: number; name: string }
-  roles: Array<{ id: number; name: string }>
-  rolename: string | null
-}
 
 interface AuthContextType {
   access_token: string | null

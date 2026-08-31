@@ -85,9 +85,9 @@ const data = {
 
 export function AppSidebar({ roleName, ...props }: React.ComponentProps<typeof Sidebar> & { roleName?: string | null }) {
   const { user } = useAuth()
-  const effectiveRole = roleName || user?.rolename || "student"
-  const navItems = data[effectiveRole as keyof typeof data] || data.student
-
+  const effectiveRole = roleName || user?.rolename || null
+  const navItems = data[effectiveRole as keyof typeof data]
+  
   return (
     <Sidebar collapsible="offcanvas" {...props}>
       <SidebarHeader>
@@ -98,7 +98,10 @@ export function AppSidebar({ roleName, ...props }: React.ComponentProps<typeof S
         </SidebarMenu>
       </SidebarHeader>
       <SidebarContent>
-        <NavMain items={navItems} />
+        {
+          navItems && <NavMain items={navItems} />
+        }
+        
       </SidebarContent>
       <SidebarFooter>
         <NavUser user={{

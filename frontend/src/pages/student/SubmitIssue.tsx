@@ -17,6 +17,7 @@ export default function SubmitIssue() {
   const [body, setBody] = useState("")
   const [successMessage, setSuccessMessage] = useState<string | null>(null)
   const [errors, setErrors] = useState<{ subject?: string; body?: string }>({})
+  const [submissionError, setSubmissionError] = useState<string>("")
 
   useEffect(() => {
     if (successMessage) {
@@ -30,6 +31,7 @@ export default function SubmitIssue() {
   const handleSubmit = async (e: React.SubmitEvent) => {
     e.preventDefault()
     setErrors({})
+    setSubmissionError("")
     try {
       const response = await api.post("/tickets/", { subject, body }, {
         headers: { Authorization: `Bearer ${access_token}` },
@@ -45,7 +47,10 @@ export default function SubmitIssue() {
             fieldErrors[field] = err.msg
           }
         })
+      } else {
+        setSubmissionError(error.response?.data?.detail)
       }
+      console.error(error.response?.data)
       setErrors(fieldErrors)
     }
   }
@@ -77,6 +82,14 @@ export default function SubmitIssue() {
                 <h1 className="text-4xl font-bold">Submit New Issue</h1>
                 <p className="text-muted-foreground text-2xl">Tell us what problem you are facing</p>
                 <form onSubmit={handleSubmit} className="flex flex-col gap-4 max-w-xl  w-full mt-5">
+                  {
+                    submissionError && (
+                      <div className="bg-red-200 px-3 py-2 rounded-sm text-sm flex justify-center items-center">
+                    <p className=" mx-auto capitalize font-bold">{submissionError}</p>
+                  </div>
+                    )
+                  }
+                  
                 <div className="flex flex-col gap-2 my-3">
                   <Label htmlFor="title">Title</Label>
                   <Input
@@ -86,6 +99,7 @@ export default function SubmitIssue() {
                     onChange={(e) => {
                       setSubject(e.target.value)
                       if (errors.subject) setErrors((prev) => ({ ...prev, subject: undefined }))
+                        if (submissionError) setSubmissionError('') 
                     }}
                     className="border-stone-500"
                     required
@@ -97,6 +111,7 @@ export default function SubmitIssue() {
                   <Textarea id="description" placeholder="Describe your issue in detail" className="border-stone-500 h-50" value={body} onChange={(e) => {
                     setBody(e.target.value)
                     if (errors.body) setErrors((prev) => ({ ...prev, body: undefined }))
+                      if (submissionError) setSubmissionError('')
                   }} required/>
                   {errors.body && <p className="text-red-500 text-sm">{errors.body}</p>}
                   </div>

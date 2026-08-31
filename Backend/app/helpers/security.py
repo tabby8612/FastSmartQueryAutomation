@@ -50,6 +50,27 @@ def verify_token(token: str):
 async def get_current_user(
     token=Depends(oauth2_scheme), db: AsyncSession = Depends(get_db)
 ):
+    user = await get_active_user_by_token(token, db)
+
+    return user
+
+
+def allowed_roles(allowed_roles):
+
+    async def check_roles(current_user: User = Depends(get_current_user)):
+        role_ids = [role.id for role in current_user.roles]
+        print("role_ids", role_ids)
+        if not any(roleId in allowed_roles for roleId in role_ids):
+            raise HTTPException(
+                status_code=status.HTTP_401_UNAUTHORIZED,
+                detail="You are not allowed to access this resource",
+            )
+        return current_user
+
+    return check_roles
+
+
+async def get_active_user_by_token(token: str, db: AsyncSession):
     payload = verify_token(token)
 
     if payload is None:
@@ -81,18 +102,3 @@ async def get_current_user(
         )
 
     return user
-
-
-def allowed_roles(allowed_roles):
-
-    async def check_roles(current_user: User = Depends(get_current_user)):
-        role_ids = [role.id for role in current_user.roles]
-        print("role_ids", role_ids)
-        if not any(roleId in allowed_roles for roleId in role_ids):
-            raise HTTPException(
-                status_code=status.HTTP_401_UNAUTHORIZED,
-                detail="You are not allowed to access this resource",
-            )
-        return current_user
-
-    return check_roles

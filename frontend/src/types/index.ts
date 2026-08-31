@@ -49,6 +49,7 @@ export type User = {
     auto_reply_message: boolean,
     leave_start_day: string,
     leave_end_day: string,
+    rolename: string
 }
 
 export type Category = {

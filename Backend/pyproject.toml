@@ -19,6 +19,8 @@ dependencies = [
     "python-jose>=3.5.0",
     "scikit-learn>=1.9.0",
     "pandas>=3.0.5",
+    "authlib>=1.8.0",
+    "itsdangerous>=2.2.0",
 ]
 
 [project.scripts]

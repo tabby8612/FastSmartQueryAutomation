@@ -555,26 +555,6 @@ export function DataTable({
   )
 }
 
-const chartData = [
-  { month: "January", desktop: 186, mobile: 80 },
-  { month: "February", desktop: 305, mobile: 200 },
-  { month: "March", desktop: 237, mobile: 120 },
-  { month: "April", desktop: 73, mobile: 190 },
-  { month: "May", desktop: 209, mobile: 130 },
-  { month: "June", desktop: 214, mobile: 140 },
-]
-
-const chartConfig = {
-  desktop: {
-    label: "Desktop",
-    color: "var(--primary)",
-  },
-  mobile: {
-    label: "Mobile",
-    color: "var(--primary)",
-  },
-} satisfies ChartConfig
-
 function TableCellViewer({ item }: { item: z.infer<typeof schema> }) {
   const isMobile = useIsMobile()
 
@@ -607,11 +587,11 @@ function TableCellViewer({ item }: { item: z.infer<typeof schema> }) {
           </div>
           <div className="flex flex-col gap-2">
             <Label htmlFor="department_name" className="font-bold capitalize">Department Name</Label>
-            <p>{item.department?.name ?? "-"}</p>
+            <p className="capitalize">{item.department?.name ?? "-"}</p>
           </div>
           <div className="flex flex-col gap-2">
             <Label htmlFor="category_name" className="font-bold capitalize">Category Name</Label>
-            <p>{item.category?.name ?? "-"}</p>
+            <p className="capitalize">{item.category?.name ?? "-"}</p>
           </div>
           <div className="flex flex-col gap-2">
             <Label htmlFor="channel" className="font-bold">Channel Name</Label>
@@ -619,7 +599,7 @@ function TableCellViewer({ item }: { item: z.infer<typeof schema> }) {
           </div>
           <div className="flex flex-col gap-2">
             <Label htmlFor="intent" className="font-bold">Intent</Label>
-            <p>{item.intent}</p>
+            <p className="capitalize">{item.intent}</p>
           </div>
           <div className="flex flex-col gap-2">
             <Label htmlFor="status" className="font-bold">Status</Label>

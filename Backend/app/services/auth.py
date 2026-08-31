@@ -1,3 +1,4 @@
+from fastapi import HTTPException, status
 from sqlalchemy.future import select
 from sqlalchemy.orm import joinedload
 
@@ -45,4 +46,52 @@ class AuthService:
             return None
         if not verify_password(user_data.password, user.password):
             return None
+        return user
+
+    @staticmethod
+    async def authorize_google_account(db, userinfo):
+        google_sub = userinfo["sub"]
+        email = userinfo["email"]
+        email_verified = userinfo.get("email_verified", False)
+
+        if not email_verified:
+            raise HTTPException(
+                status_code=status.HTTP_400_BAD_REQUEST,
+                detail="Google Email is not verified",
+            )
+
+        user = await AuthService.find_user_by_google_sub(db, google_sub)
+
+        if user is None:
+            user = await AuthService.find_user_by_email(db, email, google_sub)
+
+        return user
+
+    @staticmethod
+    async def find_user_by_google_sub(db, google_sub: str):
+        stmt = (
+            select(User)
+            .where(User.google_sub == google_sub)
+            .options(joinedload(User.department), joinedload(User.roles))
+        )
+
+        result = await db.execute(stmt)
+
+        return result.unique().scalar_one_or_none()
+
+    @staticmethod
+    async def find_user_by_email(db, email: str, google_sub: str):
+        stmt = (
+            select(User)
+            .where(User.email == email)
+            .options(joinedload(User.department), joinedload(User.roles))
+        )
+
+        result = await db.execute(stmt)
+
+        user = result.unique().scalar_one_or_none()
+
+        if user:
+            user.google_sub = google_sub
+
         return user

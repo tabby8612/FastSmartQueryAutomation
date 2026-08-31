@@ -10,7 +10,7 @@ class UserBase(BaseModel):
     email: str
     full_name: str
     # role_id: int
-    department_id: int
+    department_id: int | None
     is_active: bool = True
     on_leave: bool = False
     auto_reply_message: str | None = None
@@ -51,7 +51,7 @@ class OfficerOptionResponse(BaseModel):
 
 class ProfileResponse(UserBase):
     id: int
-    department: DepartmentResponse
-    roles: list[RoleResponse]
+    department: DepartmentResponse | None
+    roles: list[RoleResponse] | None
 
     model_config = ConfigDict(from_attributes=True)

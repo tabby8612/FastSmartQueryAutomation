@@ -2,8 +2,10 @@ from datetime import date
 
 from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy.future import select
+from sqlalchemy.orm import joinedload
 
 from app.models.user import User
+from app.models.role import Role
 from app.helpers.security import hash_password
 
 
@@ -13,34 +15,58 @@ class UserService:
         db: AsyncSession,
         student_id: str,
         email: str,
-        password: str,
+        password: str | None,
+        google_sub: str | None,
         full_name: str,
-        role_id: int,
-        department_id: int,
+        department_id: int | None,
         is_active: bool = True,
+        is_student: bool = True,
+        is_officer: bool = False,
+        is_admin: bool = False,
         on_leave: bool = False,
         auto_reply_message: str | None = None,
         leave_start_day: date | None = None,
         leave_end_day: date | None = None,
     ) -> User:
-        hashed_password = hash_password(password)
+        if password is not None:
+            hashed_password = hash_password(password)
 
         user = User(
             student_id=student_id,
             email=email,
-            password=hashed_password,
+            password=hashed_password if password is not None else None,
+            google_sub=google_sub,
             full_name=full_name,
-            role_id=role_id,
             department_id=department_id,
             is_active=is_active,
+            is_student=is_student,
+            is_officer=is_officer,
+            is_admin=is_admin,
             on_leave=on_leave,
             auto_reply_message=auto_reply_message,
             leave_start_day=leave_start_day,
             leave_end_day=leave_end_day,
         )
+
+        student_result = await db.execute(select(Role).where(Role.name == "student"))
+        student_role = student_result.scalar_one_or_none()
+
+        user.roles = [student_role]
+
         db.add(user)
         await db.flush()
         await db.refresh(user)
+
+        stmt = (
+            select(User)
+            .where(User.id == user.id)
+            .options(joinedload(User.department), joinedload(User.roles))
+        )
+
+        result = await db.execute(stmt)
+
+        user = result.unique().scalar_one()
+
         return user
 
     @staticmethod
@@ -58,11 +84,14 @@ class UserService:
         db: AsyncSession, department_id: int
     ) -> list[dict]:
         result = await db.execute(
-            select(User)
-            .where(User.department_id == department_id, User.is_officer.is_(True))
+            select(User).where(
+                User.department_id == department_id, User.is_officer.is_(True)
+            )
         )
         officers = result.scalars().all()
-        return [{"user_id": officer.id, "name": officer.full_name} for officer in officers]
+        return [
+            {"user_id": officer.id, "name": officer.full_name} for officer in officers
+        ]
 
     @staticmethod
     async def update(
