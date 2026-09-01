@@ -47,7 +47,7 @@ export function NavUser({
       <SidebarMenuItem>
         <DropdownMenu>
           <DropdownMenuTrigger className="w-full">
-            <p className="flex gap-4 justify-center items-center  w-full">
+            <div className="flex gap-4 justify-center items-center  w-full">
               <Avatar className="h-8 w-8 rounded-lg grayscale">
                 <AvatarImage src={user.avatar} alt={user.name} />
                 <AvatarFallback className="rounded-lg">CN</AvatarFallback>
@@ -59,7 +59,7 @@ export function NavUser({
                 </span>
               </div>
               <IconDotsVertical className="ml-auto size-4" />
-            </p>
+            </div>
             {/* <SidebarMenuButton
               size="lg"
               className=" lg:w-3xs data-[state=open]:bg-sidebar-accent data-[state=open]:text-sidebar-accent-foreground"
