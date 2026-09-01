@@ -58,10 +58,16 @@ export function Users() {
                       Here is the overview of all users
                     </p>
                   </div>
-                  <Button onClick={() => navigate("/admin/users/create-student")}>
-                    <IconUserPlus />
-                    Create Student
-                  </Button>
+                  <div className="flex flex-col gap-3 sm:flex-row">
+                    <Button onClick={() => navigate("/admin/users/create-student")}>
+                      <IconUserPlus />
+                      Create Student
+                    </Button>
+                    <Button onClick={() => navigate("/admin/users/create-officer")}>
+                      <IconUserPlus />
+                      Create Officer
+                    </Button>
+                  </div>
                 </div>
                 </div>
               <div className="py-2 mx-6 rounded-2xl pt-5 bg-white">

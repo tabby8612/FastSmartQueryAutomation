@@ -1,7 +1,6 @@
 from datetime import date
 
 from pydantic import BaseModel, ConfigDict
-from app.schemas.department import DepartmentResponse
 from app.schemas.role import RoleResponse
 
 
@@ -48,9 +47,14 @@ class OfficerOptionResponse(BaseModel):
     model_config = ConfigDict(from_attributes=True)
 
 
+class Department(BaseModel):
+    id: int
+    name: str
+
+
 class ProfileResponse(UserBase):
     id: int
-    department: DepartmentResponse | None
+    department: Department | None
     roles: list[RoleResponse] | None
 
     model_config = ConfigDict(from_attributes=True)

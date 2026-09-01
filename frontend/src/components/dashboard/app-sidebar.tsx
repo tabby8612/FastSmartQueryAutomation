@@ -75,6 +75,11 @@ const data = {
       icon: IconUserPlus,
     },
     {
+      title: "Create Officer",
+      url: "/admin/users/create-officer",
+      icon: IconUserPlus,
+    },
+    {
       title: "Categories",
       url: "/admin/categories",
       icon: IconTabs,

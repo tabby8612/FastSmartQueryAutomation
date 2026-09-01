@@ -66,9 +66,9 @@ async def login(
     }
 
 
-@router.get("/profile", response_model=ProfileResponse)
+@router.get("/profile", response_model=None)
 async def profile(current_user: User = Depends(get_current_user)):
-    return current_user
+    return AuthResource.userResource(current_user)
 
 
 @router.get("/google/login")
