@@ -8,8 +8,14 @@ from app.schemas.department import (
     DepartmentUpdate,
 )
 from app.services.department import DepartmentService
+from app.helpers.security import allowed_roles, get_current_user
+from app.Enums.RolesEnum import RolesEnum
 
-router = APIRouter(prefix="/departments", tags=["departments"])
+router = APIRouter(
+    prefix="/departments",
+    tags=["departments"],
+    dependencies=[Depends(get_current_user), Depends(allowed_roles([RolesEnum.ADMIN]))],
+)
 
 
 @router.post(

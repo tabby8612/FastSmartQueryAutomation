@@ -4,8 +4,14 @@ from sqlalchemy.ext.asyncio import AsyncSession
 from app.database import get_db
 from app.schemas.user import OfficerOptionResponse, UserCreate, UserResponse, UserUpdate
 from app.services.user import UserService
+from app.helpers.security import get_current_user, allowed_roles
+from app.Enums.RolesEnum import RolesEnum
 
-router = APIRouter(prefix="/users", tags=["users"])
+router = APIRouter(
+    prefix="/users",
+    tags=["users"],
+    dependencies=[Depends(get_current_user), Depends(allowed_roles([RolesEnum.ADMIN]))],
+)
 
 
 @router.post("/", response_model=UserResponse, status_code=status.HTTP_201_CREATED)

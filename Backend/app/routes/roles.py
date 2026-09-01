@@ -8,15 +8,15 @@ from app.schemas.role import RoleCreate, RoleResponse, RoleUpdate
 from app.helpers.security import get_current_user, allowed_roles
 from app.Enums.RolesEnum import RolesEnum
 
-router = APIRouter(prefix="/roles", tags=["roles"])
+router = APIRouter(
+    prefix="/roles",
+    tags=["roles"],
+    dependencies=[Depends(get_current_user), Depends(allowed_roles([RolesEnum.ADMIN]))],
+)
 
 
 @router.post("/", response_model=RoleResponse, status_code=status.HTTP_201_CREATED)
-async def create_role(
-    role: RoleCreate,
-    db: AsyncSession = Depends(get_db),
-    get_current_user=Depends(get_current_user),
-):
+async def create_role(role: RoleCreate, db: AsyncSession = Depends(get_db)):
     existing = await db.execute(select(Role).where(Role.name == role.name))
     if existing.scalar_one_or_none():
         raise HTTPException(
@@ -31,9 +31,7 @@ async def create_role(
 
 
 @router.get("/", response_model=list[RoleResponse])
-async def get_roles(
-    db: AsyncSession = Depends(get_db),
-):
+async def get_roles(db: AsyncSession = Depends(get_db)):
     result = await db.execute(select(Role))
     return result.scalars().all()
 
@@ -51,7 +49,9 @@ async def get_role(role_id: int, db: AsyncSession = Depends(get_db)):
 
 @router.put("/{role_id}", response_model=RoleResponse)
 async def update_role(
-    role_id: int, role_update: RoleUpdate, db: AsyncSession = Depends(get_db)
+    role_id: int,
+    role_update: RoleUpdate,
+    db: AsyncSession = Depends(get_db),
 ):
     result = await db.execute(select(Role).where(Role.id == role_id))
     role = result.scalar_one_or_none()
