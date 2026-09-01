@@ -67,6 +67,10 @@ export function Users() {
                       <IconUserPlus />
                       Create Officer
                     </Button>
+                    <Button onClick={() => navigate("/admin/users/create-admin")}>
+                      <IconUserPlus />
+                      Create Admin
+                    </Button>
                   </div>
                 </div>
                 </div>

@@ -80,6 +80,11 @@ const data = {
       icon: IconUserPlus,
     },
     {
+      title: "Create Admin",
+      url: "/admin/users/create-admin",
+      icon: IconUserPlus,
+    },
+    {
       title: "Categories",
       url: "/admin/categories",
       icon: IconTabs,

@@ -10,6 +10,7 @@ import { AdminIssues } from './pages/admin/AdminIssues'
 import { Users } from './pages/admin/Users'
 import { CreateStudent } from './pages/admin/CreateStudent'
 import { CreateOfficer } from './pages/admin/CreateOfficer'
+import { CreateAdmin } from './pages/admin/CreateAdmin'
 import { Categories } from './pages/admin/Categories'
 import { Departments } from './pages/admin/Departments'
 import GoogleCallback from './pages/GoogleCallback'
@@ -98,6 +99,14 @@ function App() {
             element={
               <ProtectedRoute>
                 <CreateOfficer />
+              </ProtectedRoute>
+            }
+          />
+          <Route
+            path="/admin/users/create-admin"
+            element={
+              <ProtectedRoute>
+                <CreateAdmin />
               </ProtectedRoute>
             }
           />
