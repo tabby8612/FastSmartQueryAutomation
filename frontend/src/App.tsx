@@ -126,7 +126,14 @@ function App() {
               </ProtectedRoute>
             }
           />
-          <Route path="/student/submit-issue" element={<SubmitIssue />} />
+          <Route
+            path="/student/submit-issue"
+            element={
+              <ProtectedRoute>
+                <SubmitIssue />
+              </ProtectedRoute>
+            }
+          />
         </Routes>
       </BrowserRouter>
     </AuthProvider>

@@ -42,13 +42,19 @@ export type Department = {
 
 export type User = {
     id: number,
-    full_name: string,
+    name: string,
+    full_name?: string,
     email: string,
     is_active: boolean,
     on_leave: boolean,
     auto_reply_message: boolean,
     leave_start_day: string,
     leave_end_day: string,
+    department?: {
+      id: number,
+      name: string
+    } | null,
+    roles?: unknown[],
     rolename: string
 }
 
