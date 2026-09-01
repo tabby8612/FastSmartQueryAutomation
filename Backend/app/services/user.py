@@ -3,6 +3,7 @@ from datetime import date
 from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy.future import select
 from sqlalchemy.orm import joinedload
+from fastapi import HTTPException, status
 
 from app.models.user import User
 from app.models.role import Role
@@ -13,17 +14,17 @@ class UserService:
     @staticmethod
     async def create(
         db: AsyncSession,
-        student_id: str,
         email: str,
-        password: str | None,
-        google_sub: str | None,
         full_name: str,
-        department_id: int | None,
+        student_id: str | None = None,
+        password: str | None = None,
+        department_id: int | None = None,
         is_active: bool = True,
         is_student: bool = True,
         is_officer: bool = False,
         is_admin: bool = False,
         on_leave: bool = False,
+        google_sub: str | None = None,
         auto_reply_message: str | None = None,
         leave_start_day: date | None = None,
         leave_end_day: date | None = None,
@@ -31,9 +32,19 @@ class UserService:
         if password is not None:
             hashed_password = hash_password(password)
 
+        q = select(User.id, User.email).where(User.email.ilike(f"{email}"))
+        q_result = await db.execute(q)
+        exist_user = q_result.scalar_one_or_none()
+
+        if exist_user:
+            raise HTTPException(
+                status_code=status.HTTP_403_FORBIDDEN,
+                detail="User with this email already exist",
+            )
+
         user = User(
             student_id=student_id,
-            email=email,
+            email=email.lower(),
             password=hashed_password if password is not None else None,
             google_sub=google_sub,
             full_name=full_name,
@@ -48,10 +59,18 @@ class UserService:
             leave_end_day=leave_end_day,
         )
 
-        student_result = await db.execute(select(Role).where(Role.name == "student"))
-        student_role = student_result.scalar_one_or_none()
+        if user.is_admin:
+            stmt = select(Role).where(Role.name == "admin")
+        elif user.is_officer:
+            stmt = select(Role).where(Role.name == "officer")
+        else:
+            stmt = select(Role).where(Role.name == "student")
 
-        user.roles = [student_role]
+        result = await db.execute(stmt)
+        role = result.scalar_one_or_none()
+
+        if role is not None:
+            user.roles = [role]
 
         db.add(user)
         await db.flush()

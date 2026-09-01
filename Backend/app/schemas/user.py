@@ -9,8 +9,7 @@ class UserBase(BaseModel):
     student_id: str | None = None
     email: str
     full_name: str
-    # role_id: int
-    department_id: int | None
+    department_id: int | None = None
     is_active: bool = True
     on_leave: bool = False
     auto_reply_message: str | None = None

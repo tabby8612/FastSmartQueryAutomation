@@ -14,17 +14,57 @@ router = APIRouter(
 )
 
 
-@router.post("/", response_model=UserResponse, status_code=status.HTTP_201_CREATED)
-async def create_user(user: UserCreate, db: AsyncSession = Depends(get_db)):
+@router.post(
+    "/create_student", response_model=UserResponse, status_code=status.HTTP_201_CREATED
+)
+async def create_student(user: UserCreate, db: AsyncSession = Depends(get_db)):
     return await UserService.create(
         db=db,
         student_id=user.student_id,
         email=user.email,
         password=user.password,
         full_name=user.full_name,
-        role_id=user.role_id,
+        is_active=user.is_active,
+        is_student=True,
+        is_officer=False,
+        is_admin=False,
+    )
+
+
+@router.post(
+    "/create_officer", response_model=UserResponse, status_code=status.HTTP_201_CREATED
+)
+async def create_officer(user: UserCreate, db: AsyncSession = Depends(get_db)):
+    return await UserService.create(
+        db=db,
+        email=user.email,
+        password=user.password,
+        full_name=user.full_name,
         department_id=user.department_id,
         is_active=user.is_active,
+        is_student=False,
+        is_officer=True,
+        is_admin=False,
+        on_leave=user.on_leave,
+        auto_reply_message=user.auto_reply_message,
+        leave_start_day=user.leave_start_day,
+        leave_end_day=user.leave_end_day,
+    )
+
+
+@router.post(
+    "/create_admin", response_model=UserResponse, status_code=status.HTTP_201_CREATED
+)
+async def create_officer(user: UserCreate, db: AsyncSession = Depends(get_db)):
+    return await UserService.create(
+        db=db,
+        email=user.email,
+        password=user.password,
+        full_name=user.full_name,
+        is_active=user.is_active,
+        is_student=False,
+        is_officer=False,
+        is_admin=True,
         on_leave=user.on_leave,
         auto_reply_message=user.auto_reply_message,
         leave_start_day=user.leave_start_day,
