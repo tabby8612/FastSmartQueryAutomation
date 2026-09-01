@@ -4,10 +4,9 @@ import * as React from "react"
 import {
   IconDashboard,
   IconHelp,
-  IconSearch,
-  IconSettings,
   IconAddressBook,
   IconUser,
+  IconUserPlus,
   IconTabs,
   IconBrandOffice
 } from "@tabler/icons-react"
@@ -71,6 +70,11 @@ const data = {
       icon: IconUser,
     },
     {
+      title: "Create Student",
+      url: "/admin/users/create-student",
+      icon: IconUserPlus,
+    },
+    {
       title: "Categories",
       url: "/admin/categories",
       icon: IconTabs,
@@ -105,7 +109,7 @@ export function AppSidebar({ roleName, ...props }: React.ComponentProps<typeof S
       </SidebarContent>
       <SidebarFooter>
         <NavUser user={{
-          name: user?.name || "User",
+          name: user?.full_name || "User",
           email: user?.email || "user@example.com",
           avatar: "/avatars/shadcn.jpg",
         }} />

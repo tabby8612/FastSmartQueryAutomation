@@ -8,6 +8,7 @@ import { MyIssues } from './pages/student/MyIssues'
 import { OfficerIssues } from './pages/officer/OfficerIssues'
 import { AdminIssues } from './pages/admin/AdminIssues'
 import { Users } from './pages/admin/Users'
+import { CreateStudent } from './pages/admin/CreateStudent'
 import { Categories } from './pages/admin/Categories'
 import { Departments } from './pages/admin/Departments'
 import GoogleCallback from './pages/GoogleCallback'
@@ -80,6 +81,14 @@ function App() {
             element={
               <ProtectedRoute>
                 <Users />
+              </ProtectedRoute>
+            }
+          />
+          <Route
+            path="/admin/users/create-student"
+            element={
+              <ProtectedRoute>
+                <CreateStudent />
               </ProtectedRoute>
             }
           />
