@@ -45,7 +45,9 @@ async def create(
 
     return {
         "message": f"Your Ticket is Successfully Created. Use Tracking Id {new_ticket.tracking_id} to track your ticket",
+        "tracking_id": new_ticket.tracking_id,
         "success": True,
+        "channel": ChannelEnum.WEB_FORM.lower(),
     }
 
 
