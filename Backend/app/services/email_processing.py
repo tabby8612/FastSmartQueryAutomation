@@ -16,6 +16,7 @@ from app.helpers.utils import generate_tracking_number
 from ml.train import classify_issue
 from app.Enums.ChannelEnum import ChannelEnum
 from app.Enums.QueryStatusEnum import QueryStatusEnum
+from app.Enums.TicketPriorityEnum import TicketPriorityEnum
 
 load_dotenv()
 DEFAULT_USER_PASSWORD = os.getenv("DEFAULT_USER_PASSWORD", "123456")
@@ -36,7 +37,7 @@ async def find_officer(db: AsyncSession, department_id: int) -> User | None:
         select(User)
         .join(User_Roles, User.id == User_Roles.user_id)
         .join(Role, User_Roles.role_id == Role.id)
-        .where(Role.name.in_(["staff", "hod"]))
+        .where(Role.name.in_(["staff", "hod", "officer"]))
         .where(User.department_id == department_id)
         .limit(1)
     )
@@ -55,7 +56,7 @@ async def process_incoming_email(
             email=sender_email,
             password=hash_password(DEFAULT_USER_PASSWORD),
             full_name=sender_email.split("@")[0],
-            department_id=4,  # make department nullable
+            department_id=None,
             is_active=True,
             on_leave=False,
         )
@@ -71,27 +72,35 @@ async def process_incoming_email(
 
     predication: dict[str, any] = await classify_issue(db, f"{subject} {body}")
 
-    officer = await find_officer(db, int(predication.get("department_id")))
-    assigned_id = officer.id if officer else None
-    category = predication.get("category")
-    tracking_id = generate_tracking_number()
+    department_id = predication.get("department_id")
+    assigned_id = None
 
-    query = Ticket(
+    if department_id is not None:
+        officer = await find_officer(db, int(department_id))
+        assigned_id = officer.id if officer else None
+
+    category = predication.get("category")
+    category_id = predication.get("category_id")
+    tracking_id = generate_tracking_number()
+    priority_level = predication.get("priority")
+    predication_score = predication.get("category_confidence_score")
+
+    new_ticket = Ticket(
         tracking_id=tracking_id,
         student_id=student.id,
         assigned_id=assigned_id,
-        department_id=predication.get("department_id"),
-        category_id=predication.get("category_id"),
+        department_id=department_id,
+        category_id=category_id,
         channel=ChannelEnum.EMAIL,
         subject=subject,
         body=body,
         intent=category if category else "general",
-        confidence_level=predication.get("confidence_score"),
-        status=QueryStatusEnum.OPEN,
-        escalation_level=0,
+        confidence_level=predication_score,
+        status=QueryStatusEnum.PENDING,
+        escalation_level=TicketPriorityEnum.to_level(priority_level),
         awaiting_student_input=False,
     )
-    db.add(query)
+    db.add(new_ticket)
     await db.flush()
-    await db.refresh(query)
-    return query
+    await db.refresh(new_ticket)
+    return new_ticket

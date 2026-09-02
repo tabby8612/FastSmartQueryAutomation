@@ -28,7 +28,7 @@ priority_model = LogisticRegression(max_iter=1000)
 priority_model.fit(X, priorities)
 
 
-CONFIDENCE_THRESHOLD = 0.4
+CONFIDENCE_THRESHOLD = 0.35
 DEFAULT_CATEGORY = "general"
 
 

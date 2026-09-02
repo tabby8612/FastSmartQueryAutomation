@@ -9,6 +9,7 @@ from app.models.user import User
 from app.models.user import Role
 from app.helpers.utils import generate_tracking_number
 from app.Enums.RolesEnum import RolesEnum
+from app.Enums.TicketPriorityEnum import TicketPriorityEnum
 
 
 class TicketService:
@@ -16,29 +17,37 @@ class TicketService:
     async def create(
         db: AsyncSession, student_id: int, subject: str, body: str, channel: str
     ) -> Ticket:
-        tracking_id = generate_tracking_number()
         predication_data: dict[str, any] = await classify_issue(db, body)
 
         department_id = predication_data.get("department_id")
-        officer = None
+        assigned_id = None
 
         if department_id is not None:
             officer = await get_officer_id_by_department_id(
                 db, predication_data.get("department_id")
             )
+            assigned_id = officer.id if officer else None
+
+        category = predication_data.get("category")
+        category_id = predication_data.get("category_id")
+        tracking_id = generate_tracking_number()
+        priority_level = predication_data.get("priority")
+        predication_score = predication_data.get("category_confidence_score")
 
         new_ticket = Ticket(
             tracking_id=tracking_id,
             student_id=student_id,
+            assigned_id=assigned_id,
+            department_id=department_id,
+            category_id=category_id,
             channel=channel,
             subject=subject,
             body=body,
+            intent=category if category else "general",
+            confidence_level=predication_score,
             status=QueryStatusEnum.PENDING,
-            department_id=predication_data.get("department_id"),
-            category_id=predication_data.get("category_id"),
-            confidence_level=predication_data.get("confidence_score"),
-            intent=predication_data.get("category"),
-            assigned_id=officer.id if officer is not None else None,
+            escalation_level=TicketPriorityEnum.to_level(priority_level),
+            awaiting_student_input=False,
         )
         db.add(new_ticket)
         await db.flush()

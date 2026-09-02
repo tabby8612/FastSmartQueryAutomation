@@ -15,9 +15,7 @@ class EmailIncoming(BaseModel):
     body: str
 
 
-@router.post(
-    "/incoming", response_model=TicketResponse, status_code=status.HTTP_201_CREATED
-)
+@router.post("/incoming", response_model=None, status_code=status.HTTP_201_CREATED)
 async def incoming_email(email_data: EmailIncoming, db: AsyncSession = Depends(get_db)):
     query = await process_incoming_email(
         db, email_data.sender, email_data.subject, email_data.body
