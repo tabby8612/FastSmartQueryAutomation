@@ -193,7 +193,11 @@ async def poll_university_email():
                 existing_message = await get_email_by_message_id(db, message["id"])
 
                 if existing_message:
-                    print(f"Email {message["id"]} is already processed")
+                    print(
+                        f"Email {message["id"]} is already processed, making it unread"
+                    )
+
+                    mark_email_as_read(service, message["id"])
                     continue
 
                 print(f"Storing New Email with ID: {message["id"]}")
