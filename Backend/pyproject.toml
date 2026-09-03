@@ -21,6 +21,10 @@ dependencies = [
     "pandas>=3.0.5",
     "authlib>=1.8.0",
     "itsdangerous>=2.2.0",
+    "google-api-python-client>=2.200.0",
+    "google-auth>=2.57.0",
+    "google-auth-oauthlib>=1.4.1",
+    "apscheduler>=3.11.3",
 ]
 
 [project.scripts]

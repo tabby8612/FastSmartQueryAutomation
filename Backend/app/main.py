@@ -1,16 +1,27 @@
-from fastapi import FastAPI
-from starlette.middleware.cors import CORSMiddleware
-
-from starlette.middleware.sessions import SessionMiddleware
-from dotenv import load_dotenv
 import os
+from fastapi import FastAPI
+from dotenv import load_dotenv
+
+from contextlib import asynccontextmanager
+
+from starlette.middleware.cors import CORSMiddleware
+from starlette.middleware.sessions import SessionMiddleware
+
+from app.routes import roles, departments, tickets, users, auth, categories, email
+from app.scheduler.scheduler import scheduler, start_scheduler
+
+
+@asynccontextmanager
+async def lifespan(app: FastAPI):
+    start_scheduler()
+    yield
+    scheduler.shutdown()
+
 
 load_dotenv()
 SESSION_SECRET_KEY = os.getenv("SESSION_SECRET_KEY")
 
-from app.routes import roles, departments, tickets, users, auth, categories, email
-
-app = FastAPI()
+app = FastAPI(lifespan=lifespan)
 
 app.add_middleware(SessionMiddleware, secret_key=SESSION_SECRET_KEY)
 

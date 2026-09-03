@@ -1,4 +1,6 @@
 alembic/versions_old
+gmail_credentials.json
+token.json
 
 @ -1,218 +0,0 @@
 # Byte-compiled / optimized / DLL files

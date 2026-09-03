@@ -11,6 +11,8 @@ from app.models.category import Category
 
 from app.models.ticket import Ticket
 
+from app.models.incoming_email import IncomingEmail
+
 __all__ = [
     "Base",
     "TimestampMixin",
@@ -20,4 +22,5 @@ __all__ = [
     "User_Roles",
     "Category",
     "Ticket",
+    "IncomingEmail",
 ]
