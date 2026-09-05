@@ -86,10 +86,9 @@ import {
 import { Drawer, DrawerClose, DrawerContent, DrawerDescription, DrawerFooter, DrawerHeader, DrawerTitle, DrawerTrigger } from "../ui/drawer"
 import { type ChartConfig } from "../ui/chart"
 import { useIsMobile } from "@/hooks/use-mobile"
-import { Input } from "@base-ui/react"
 import { useAuth } from "@/contexts/auth-context"
 import { Link, useNavigate } from "react-router-dom"
-import { Eye, Search } from "lucide-react"
+import { Search } from "lucide-react"
 
 // New in v9: declare the features this table uses — anything you don't
 // register is tree-shaken out of the bundle.
@@ -200,7 +199,7 @@ const columns = columnHelper.columns([
   columnHelper.accessor("tracking_id", {
     header: "Tracking ID",
     cell: ({ row }) => {
-      return <div className="flex items-center gap-2"><Link className="font-medium text-primary hover:underline" to={`/officer/issues/${row.original.id}`}>{row.original.tracking_id}</Link><TableCellViewer item={row.original} /></div>
+      return <div className="flex items-center gap-2"><Link className="font-medium text-primary hover:underline" to={`/student/issues/${row.original.id}`}>{row.original.tracking_id}</Link><TableCellViewer item={row.original} /></div>
     },
     enableHiding: false,
   }),
@@ -288,7 +287,7 @@ function DraggableRow({
   )
 }
 
-export function OfficerDataTable({
+export function StudentDataTable({
   data: initialData,
 }: {
   data: z.infer<typeof schema>[]
@@ -557,15 +556,14 @@ export function OfficerDataTable({
   )
 }
 
-
 function TableCellViewer({ item }: { item: z.infer<typeof schema> }) {
   const isMobile = useIsMobile()
 
   return (
     <Drawer swipeDirection={isMobile ? "down" : "down"} showSwipeHandle={isMobile}>
       <DrawerTrigger>
-        <Button variant="link" className="w-fit px-0 text-left text-foreground/50 text-xs cursor-pointer">
-          <Search className="size-3"/>
+        <Button variant="link" className="w-fit px-0 text-left text-foreground text-xs">
+          <Search className="size-3" />
         </Button>
       </DrawerTrigger>
       <DrawerContent>
@@ -606,7 +604,15 @@ function TableCellViewer({ item }: { item: z.infer<typeof schema> }) {
           </div>
           <div className="flex flex-col gap-2">
             <Label htmlFor="status" className="font-bold">Status</Label>
-            <Badge className={item.status === "open" ? "bg-green-700 text-white" : "bg-red-600 text-white"}>{item.status}</Badge>
+            {
+              item.status === "open" && <Badge className="bg-green-700 text-white">{item.status}</Badge>
+            }
+            {
+              item.status === "pending" && <Badge className="bg-orange-400 text-white">{item.status}</Badge>
+            }
+            {
+              item.status === "closed" && <Badge>{item.status}</Badge>
+            }
           </div>
           <div className="flex flex-col gap-2">
             <Label htmlFor="intent" className="font-bold">Awaiting Student Response</Label>
@@ -616,19 +622,19 @@ function TableCellViewer({ item }: { item: z.infer<typeof schema> }) {
             
           </div>
           <div className="flex flex-col gap-2">
-            <Label htmlFor="intent" className="font-bold">Created At</Label>
+            <Label htmlFor="created_at" className="font-bold">Created At</Label>
             <p>{item.created_at ? new Intl.DateTimeFormat("en-US").format(new Date(item.created_at)) : "None"}</p>
           </div>
           <div className="flex flex-col gap-2">
-            <Label htmlFor="intent" className="font-bold">Resolved At</Label>
+            <Label htmlFor="resolved_at" className="font-bold">Resolved At</Label>
             <p>{item.resolved_at ? new Intl.DateTimeFormat("en-US").format(new Date(item.resolved_at)) : "None"}</p>
           </div>
           <div className="flex flex-col gap-2 col-span-full">
-            <Label htmlFor="intent" className="font-bold">Subject</Label>
+            <Label htmlFor="subject" className="font-bold">Subject</Label>
             <p>{item.subject}</p>
           </div>
           <div className="flex flex-col gap-2 col-span-full">
-            <Label htmlFor="intent" className="font-bold">Description</Label>
+            <Label htmlFor="description" className="font-bold">Description</Label>
             <p>{item.body}</p>
           </div>
         </div>

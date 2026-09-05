@@ -5,6 +5,7 @@ import { SidebarInset, SidebarProvider } from "@/components/ui/sidebar"
 import { useEffect, useState } from "react"
 import { useAuth } from "@/contexts/auth-context"
 import api from "@/lib/axios"
+import { StudentDataTable } from "@/components/student/student-data-table"
 
 export function MyIssues() {
   const { role_name, access_token, user } = useAuth()
@@ -50,7 +51,7 @@ export function MyIssues() {
                 </p>
                 </div>
               <div className="py-2 mx-6 rounded-2xl pt-5 bg-white">
-                <DataTable data={queries} />
+                <StudentDataTable data={queries} />
               </div>
             </div>
           </div>

@@ -28,9 +28,14 @@ async def send(
 
 def can_manage_replies(user: User, ticket: Ticket) -> bool:
     roles = {role.name for role in user.roles}
-    return "admin" in roles or (
-        bool(roles & {"staff", "hod", "officer"}) and ticket.assigned_id == user.id
-    )
+    if user.is_admin:
+        return True
+    elif user.is_officer and ticket.assigned_id == user.id:
+        return True
+    elif user.is_student and ticket.student_id == user.id:
+        return True
+    else:
+        return False
 
 
 async def get_accessible_ticket(
@@ -41,13 +46,18 @@ async def get_accessible_ticket(
     ticket = await TicketService.get_by_id(db, ticket_id)
     if ticket is None:
         raise HTTPException(status_code=404, detail="Ticket not found")
-    if (
-        not can_manage_replies(current_user, ticket)
-        and ticket.assigned_id != current_user.id
-    ):
+
+    if current_user.is_student and ticket.student_id != current_user.id:
         raise HTTPException(
-            status_code=403, detail="You do not have permission to access these replies"
+            status_code=status.HTTP_403_FORBIDDEN,
+            detail="You do not have permission to access these replies",
         )
+    elif current_user.is_officer and ticket.assigned_id != current_user.id:
+        raise HTTPException(
+            status_code=status.HTTP_403_FORBIDDEN,
+            detail="You do not have permission to access these replies",
+        )
+
     return ticket
 
 
@@ -55,10 +65,17 @@ async def get_manageable_ticket(
     ticket: Ticket = Depends(get_accessible_ticket),
     current_user: User = Depends(get_current_user),
 ) -> Ticket:
-    if not can_manage_replies(current_user, ticket):
+    if current_user.is_student and ticket.student_id != current_user.id:
         raise HTTPException(
-            status_code=403, detail="You do not have permission to manage these replies"
+            status_code=status.HTTP_403_FORBIDDEN,
+            detail="You do not have permission to access these replies",
         )
+    elif current_user.is_officer and ticket.assigned_id != current_user.id:
+        raise HTTPException(
+            status_code=status.HTTP_403_FORBIDDEN,
+            detail="You do not have permission to access these replies",
+        )
+
     return ticket
 
 

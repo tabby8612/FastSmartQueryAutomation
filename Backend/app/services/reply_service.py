@@ -3,9 +3,12 @@ from fastapi import HTTPException, status
 from datetime import datetime, timezone
 
 from sqlalchemy import select
+from sqlalchemy.orm import joinedload
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from app.Enums.ReplyStatusEnum import ReplyStatusEnum
+from app.Enums.QueryStatusEnum import QueryStatusEnum
+
 from app.models.reply import Reply
 from app.models.ticket import Ticket
 from app.models.user import User
@@ -71,6 +74,7 @@ class ReplyService:
         stmt = (
             select(Reply)
             .where(Reply.ticket_id == ticket_id)
+            .options(joinedload(Reply.creator))
             .order_by(Reply.created_at.asc(), Reply.id.asc())
         )
 
@@ -118,14 +122,19 @@ class ReplyService:
                 status_code=status.HTTP_404_NOT_FOUND, detail="Ticket not found"
             )
 
-        if (
-            not any(role.name == "officer" for role in current_user.roles)
-            or ticket.assigned_id != current_user.id
-        ):
-            raise HTTPException(
-                status_code=status.HTTP_403_FORBIDDEN,
-                detail="Only the officer assigned to this ticket can send replies",
-            )
+        if current_user.is_student:
+            if ticket.student_id != current_user.id:
+                raise HTTPException(
+                    status_code=status.HTTP_403_FORBIDDEN,
+                    detail="Only the student created this ticket can send replies",
+                )
+        elif current_user.is_officer:
+            if ticket.assigned_id != current_user.id:
+                raise HTTPException(
+                    status_code=status.HTTP_403_FORBIDDEN,
+                    detail="Only the officer assigned to this ticket can send replies",
+                )
+
         if reply.status != ReplyStatusEnum.DRAFT:
             raise HTTPException(
                 status_code=status.HTTP_409_CONFLICT,
@@ -134,7 +143,13 @@ class ReplyService:
 
         reply.status = ReplyStatusEnum.SENT
         reply.send_at = datetime.now(timezone.utc)
+        reply.creator_id = (
+            ticket.student_id if current_user.is_student else ticket.assigned_id
+        )
+        ticket.awaiting_student_input = False if current_user.is_student else True
+        ticket.status = QueryStatusEnum.PENDING
 
         await db.flush()
         await db.refresh(reply)
+        await db.refresh(ticket)
         return reply

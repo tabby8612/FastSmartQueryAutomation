@@ -80,6 +80,7 @@ def ai_reply_generator(context: str):
     - Do not include internal system information.
     - Produce only draft only.
     - Use all the information about student ticket provided below.
+    - Don't generate subject or title, just provide description
     - Go through conversation history in the ticket (if available) before creating reply
 
     Here is the context of the ticket

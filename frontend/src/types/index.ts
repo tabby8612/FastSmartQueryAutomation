@@ -17,8 +17,19 @@ export type Ticket = {
     "created_at": string,
     "student": Student,
     "assigned": Officer,
-    "department": Department
+    "department": Department,
+    "category": Category,
   }
+
+  export type Reply = {
+  id: number
+  text: string
+  status: "draft" | "sent"
+  created_at: string
+  send_at: string | null
+  creator: Pick<User, "id" | "full_name" | "is_admin" | "is_student" | "is_officer">
+}
+
 
 export type Student = {
     "id": number,
@@ -46,6 +57,9 @@ export type User = {
     full_name?: string,
     email: string,
     is_active: boolean,
+    is_student: boolean,
+    is_officer: boolean,
+    is_admin: boolean,
     on_leave: boolean,
     auto_reply_message: boolean,
     leave_start_day: string,

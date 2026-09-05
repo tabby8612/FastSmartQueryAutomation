@@ -6,6 +6,7 @@ import { ProtectedRoute } from "./components/protected-route"
 import SubmitIssue from './pages/student/SubmitIssue'
 import { MyIssues } from './pages/student/MyIssues'
 import { OfficerIssues } from './pages/officer/OfficerIssues'
+import { TicketDetail } from './pages/officer/TicketDetail'
 import { AdminIssues } from './pages/admin/AdminIssues'
 import { Users } from './pages/admin/Users'
 import { CreateStudent } from './pages/admin/CreateStudent'
@@ -14,11 +15,14 @@ import { CreateAdmin } from './pages/admin/CreateAdmin'
 import { Categories } from './pages/admin/Categories'
 import { Departments } from './pages/admin/Departments'
 import GoogleCallback from './pages/GoogleCallback'
+import { StudentTicketDetail } from './pages/student/TicketDetail'
 function App() {
   return (
     <AuthProvider>
       <BrowserRouter>
         <Routes>
+          <Route path="/officer/issues/:ticketId" element={<ProtectedRoute><TicketDetail /></ProtectedRoute>} />
+          <Route path="/student/issues/:ticketId" element={<ProtectedRoute><StudentTicketDetail /></ProtectedRoute>} />
           <Route path="/" element={<LoginPage />} />
           <Route path="/auth/callback" element={<GoogleCallback />} />
           <Route
