@@ -82,7 +82,7 @@ async def show(
     if has_role(current_user, ["admin"]):
         return ticket
     if (
-        has_role(current_user, ["staff", "hod"])
+        has_role(current_user, ["staff", "hod", "officer"])
         and ticket.assigned_id == current_user.id
     ):
         return ticket
