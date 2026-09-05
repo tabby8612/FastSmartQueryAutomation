@@ -7,7 +7,13 @@ from app.services.TicketService import TicketService
 from app.helpers.security import get_current_user
 from app.models.user import User
 from app.Enums.ChannelEnum import ChannelEnum
+from app.Enums.ReplyStatusEnum import ReplyStatusEnum
 from ml.train import classify_issue
+from app.services.ai_reply_generator_service import (
+    build_ticket_context,
+    ai_reply_generator,
+)
+from app.models.reply import Reply
 
 router = APIRouter(prefix="/tickets", tags=["tickets"])
 
@@ -224,9 +230,9 @@ async def delete(
     db: AsyncSession = Depends(get_db),
     current_user: User = Depends(require_roles("admin")),
 ):
-    query = await TicketService.get_by_id(db, ticket_id)
-    if not query:
+    ticket = await TicketService.get_by_id(db, ticket_id)
+    if not ticket:
         raise HTTPException(
-            status_code=status.HTTP_404_NOT_FOUND, detail="Query not found"
+            status_code=status.HTTP_404_NOT_FOUND, detail="ticket not found"
         )
-    await TicketService.delete(db, query)
+    await TicketService.delete(db, ticket)

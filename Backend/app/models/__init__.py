@@ -13,6 +13,8 @@ from app.models.ticket import Ticket
 
 from app.models.incoming_email import IncomingEmail
 
+from app.models.reply import Reply
+
 __all__ = [
     "Base",
     "TimestampMixin",
@@ -23,4 +25,5 @@ __all__ = [
     "Category",
     "Ticket",
     "IncomingEmail",
+    "Reply",
 ]

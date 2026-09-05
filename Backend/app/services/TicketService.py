@@ -1,15 +1,23 @@
+from fastapi import HTTPException
+
 from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy.future import select
 from sqlalchemy.orm import joinedload, selectinload
 from ml.train import classify_issue
 
 from app.models.ticket import Ticket
+from app.models.reply import Reply
 from app.Enums.QueryStatusEnum import QueryStatusEnum
 from app.models.user import User
 from app.models.user import Role
 from app.helpers.utils import generate_tracking_number
 from app.Enums.RolesEnum import RolesEnum
 from app.Enums.TicketPriorityEnum import TicketPriorityEnum
+from app.services.ai_reply_generator_service import (
+    ai_reply_generator,
+    build_ticket_context,
+)
+from app.Enums.ReplyStatusEnum import ReplyStatusEnum
 
 
 class TicketService:
@@ -80,6 +88,7 @@ class TicketService:
                 selectinload(Ticket.assigned),
                 selectinload(Ticket.department),
                 selectinload(Ticket.category),
+                selectinload(Ticket.replies).options(joinedload(Reply.creator)),
             )
             .where(Ticket.id == query_id)
         )
