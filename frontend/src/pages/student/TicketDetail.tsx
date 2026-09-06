@@ -129,7 +129,7 @@ function TicketDetailContent({ ticketId }: { ticketId: string }) {
       <AppSidebar variant="inset" roleName={getRoleName()} />
       <SidebarInset>
         <SiteHeader />
-        <main className="mx-auto flex w-full max-w-5xl flex-col gap-5 p-4 md:p-8">
+        <main className="mx-auto flex w-full max-w-7xl flex-col gap-5 p-4 md:p-8">
           <Link to={`/student/my-issues`} className="flex items-center gap-2 text-sm text-muted-foreground hover:text-foreground"><ArrowLeft className="size-4" /> Back to issues</Link>
           {loading ? (
             <div role="status" className="flex items-center justify-center gap-3 rounded-xl border bg-card p-16"><Loader2 className="size-5 animate-spin" /> Loading ticket and conversation…</div>

@@ -2,6 +2,7 @@ from datetime import datetime
 from decimal import Decimal
 
 from pydantic import BaseModel, ConfigDict, Field
+from typing import Literal
 from app.schemas.user import UserResponse
 
 
@@ -63,6 +64,26 @@ class Category(BaseModel):
     name: str
 
 
+class Creator(BaseModel):
+    id: int
+    full_name: str
+    is_student: bool
+    is_officer: bool
+    is_admin: bool
+
+
+class Reply(BaseModel):
+    id: int
+    ticket_id: int
+    creator_id: int
+    is_ai_draft: int
+    text: str
+    status: Literal["sent", "draft"]
+    send_at: datetime
+    created_at: datetime
+    creator: Creator
+
+
 class TicketResponse(TicketBase):
     id: int
     created_at: datetime | None
@@ -70,5 +91,6 @@ class TicketResponse(TicketBase):
     assigned: Officer | None
     department: Department | None
     category: Category | None
+    replies: list[Reply] | None
 
     model_config = ConfigDict(from_attributes=True)

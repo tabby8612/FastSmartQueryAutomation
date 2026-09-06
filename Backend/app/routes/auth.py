@@ -81,7 +81,14 @@ async def google_login(request: Request):
 
 @router.get("/google/callback")
 async def google_authorize(request: Request, db: AsyncSession = Depends(get_db)):
-    token = await oauth.google.authorize_access_token(request)
+    try:
+        token = await oauth.google.authorize_access_token(request)
+    except:
+        raise HTTPException(
+            status.HTTP_503_SERVICE_UNAVAILABLE,
+            "Unable to connect to Google OAuth Server. Try Again Later",
+        )
+
     userinfo = token["userinfo"]
 
     user = await AuthService.authorize_google_account(db, userinfo)

@@ -7,13 +7,6 @@ from app.services.TicketService import TicketService
 from app.helpers.security import get_current_user
 from app.models.user import User
 from app.Enums.ChannelEnum import ChannelEnum
-from app.Enums.ReplyStatusEnum import ReplyStatusEnum
-from ml.train import classify_issue
-from app.services.ai_reply_generator_service import (
-    build_ticket_context,
-    ai_reply_generator,
-)
-from app.models.reply import Reply
 
 router = APIRouter(prefix="/tickets", tags=["tickets"])
 
@@ -57,7 +50,7 @@ async def create(
     }
 
 
-@router.get("/", response_model=list[TicketResponse])
+@router.get("/", response_model=None)
 async def index(
     db: AsyncSession = Depends(get_db), current_user: User = Depends(get_current_user)
 ):
