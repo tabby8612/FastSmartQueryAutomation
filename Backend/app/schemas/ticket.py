@@ -79,7 +79,7 @@ class Reply(BaseModel):
     is_ai_draft: int
     text: str
     status: Literal["sent", "draft"]
-    send_at: datetime
+    send_at: datetime | None
     created_at: datetime
     creator: Creator
 

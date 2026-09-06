@@ -11,6 +11,9 @@ import { Textarea } from "@/components/ui/textarea"
 import { useAuth } from "@/contexts/auth-context"
 import api from "@/lib/axios"
 import type { Reply, Ticket } from "@/types"
+import { Select, SelectContent, SelectGroup, SelectItem, SelectLabel, SelectTrigger, SelectValue } from "@/components/ui/select"
+import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle } from "@/components/ui/dialog"
+import { toast } from "sonner"
 
 function errorMessage(error: unknown) {
   if (isAxiosError(error) && typeof error.response?.data?.detail === "string") {
@@ -25,7 +28,7 @@ function formatDate(value: string | null) {
   return Number.isNaN(date.getTime()) ? "" : date.toLocaleString()
 }
 
-export function StudentTicketDetail() {
+export function TicketDetail() {
   const { ticketId } = useParams()
   // Reset editor and request state when navigating between tickets.
   return <TicketDetailContent key={ticketId} ticketId={ticketId ?? ""} />
@@ -43,6 +46,11 @@ function TicketDetailContent({ ticketId }: { ticketId: string }) {
   const [error, setError] = useState("")
   const [notice, setNotice] = useState("")
   const [attempt, setAttempt] = useState(0)
+  const [pendingStatus, setPendingStatus] = useState<string | null>(null)
+  const [updatingStatus, setUpdatingStatus] = useState(false)
+  const [statusError, setStatusError] = useState("")
+  const [statusNotice, setStatusNotice] = useState("")
+  const statusRequestPending = useRef(false)
   const [action, setAction] = useState<"generate" | "save" | "send" | null>(null)
   const pending = useRef(false)
   const busy = action !== null
@@ -121,16 +129,44 @@ function TicketDetailContent({ ticketId }: { ticketId: string }) {
     }
   }
 
+  async function updateStatus() {
+    if (statusRequestPending.current || !ticket || !pendingStatus || pendingStatus === ticket.status) return
+    statusRequestPending.current = true
+    setUpdatingStatus(true)
+    setStatusError("")
+    try {
+      const response = await api.put<Ticket>(`/tickets/${ticketId}/status`, { status: pendingStatus }, { headers })
+      setTicket(response.data)
+      setPendingStatus(null)
+      setStatusNotice("Ticket status updated successfully.")
+      toast.success("Ticket status updated successfully", { "className": "bg-green-100! border-green-800!", position: "top-center" })
+    } catch (error) {
+      setStatusError(errorMessage(error))
+    } finally {
+      statusRequestPending.current = false
+      setUpdatingStatus(false)
+    }
+  }
+
   const priority = ["LOW", "MEDIUM", "HIGH"][ticket?.escalation_level ?? 0] ?? "LOW"
   const drafts = replies.filter(reply => reply.status === "draft")
+  const roleName = getRoleName()
+
+  const items = [
+    { label: "Open", value: "open" },
+    { label: "Pending", value: "pending" },
+    { label: "In Progress", value: "in_progress" },
+    { label: "Assigned", value: "assigned" },
+    { label: "Closed", value: "closed" },
+  ]
 
   return (
     <SidebarProvider style={{ "--sidebar-width": "calc(var(--spacing) * 72)", "--header-height": "calc(var(--spacing) * 16)" } as CSSProperties}>
-      <AppSidebar variant="inset" roleName={getRoleName()} />
+      <AppSidebar variant="inset" roleName={roleName} />
       <SidebarInset>
         <SiteHeader />
         <main className="mx-auto flex w-full max-w-7xl flex-col gap-5 p-4 md:p-8">
-          <Link to={`/student/my-issues`} className="flex items-center gap-2 text-sm text-muted-foreground hover:text-foreground"><ArrowLeft className="size-4" /> Back to issues</Link>
+          <Link to={`${roleName === "student" ? "/student/my-issues" : roleName === "officer" ? "/officer/issues" : "/admin/issues"}`} className="flex items-center gap-2 text-sm text-muted-foreground hover:text-foreground"><ArrowLeft className="size-4" /> Back to issues</Link>
           {loading ? (
             <div role="status" className="flex items-center justify-center gap-3 rounded-xl border bg-card p-16"><Loader2 className="size-5 animate-spin" /> Loading ticket and conversation…</div>
           ) : loadError ? (
@@ -150,7 +186,53 @@ function TicketDetailContent({ ticketId }: { ticketId: string }) {
                   <div><dt className="text-muted-foreground">Category</dt><dd className="mt-1 font-medium capitalize">{ticket.category?.name ?? "Uncategorized"}</dd></div>
                   <div><dt className="text-muted-foreground">Department</dt><dd className="mt-1 font-medium capitalize">{ticket.department?.name ?? "Unassigned"}</dd></div>
                   <div><dt className="text-muted-foreground">Channel</dt><dd className="mt-1 font-medium capitalize">{ticket.channel}</dd></div>
-                  <div><dt className="text-muted-foreground">Status</dt><dd className="mt-1 font-medium capitalize">{ticket.status}</dd></div>
+                  <div><dt className="text-muted-foreground">Status</dt>
+                    {
+                      roleName === "student" ? <dd className="mt-1 font-medium capitalize">{ticket.status}</dd> : (
+                        <Select items={items} value={ticket.status} disabled={updatingStatus} onValueChange={value => {
+                          if (!value || value === ticket.status) return
+                          setStatusError("")
+                          setStatusNotice("")
+                          setPendingStatus(value)
+                        }}>
+                          <SelectTrigger aria-label="Ticket status" className="w-full max-w-48 border-muted-foreground mt-1">
+                            <SelectValue />
+                          </SelectTrigger>
+                          <SelectContent alignItemWithTrigger={false}>
+                            <SelectGroup>
+                              <SelectLabel>Status</SelectLabel>
+                              {items.map((item) => (
+                                <SelectItem key={item.value} value={item.value}>
+                                  {item.label}
+                                </SelectItem>
+                              ))}
+                            </SelectGroup>
+                          </SelectContent>
+                        </Select>
+                      )
+                    }
+
+                    <Dialog open={pendingStatus !== null} onOpenChange={open => {
+                      if (!open && !statusRequestPending.current) setPendingStatus(null)
+                    }}>
+                      <DialogContent showCloseButton={!updatingStatus}>
+                        <DialogHeader>
+                          <DialogTitle>Change ticket status?</DialogTitle>
+                          <DialogDescription>
+                            Change the status from {items.find(item => item.value === ticket.status)?.label ?? ticket.status} to {items.find(item => item.value === pendingStatus)?.label}?
+                          </DialogDescription>
+                        </DialogHeader>
+                        {statusError && <p role="alert" className="text-sm text-destructive">{statusError}</p>}
+                        <DialogFooter>
+                          <Button variant="outline" disabled={updatingStatus} onClick={() => setPendingStatus(null)}>Cancel</Button>
+                          <Button disabled={updatingStatus} onClick={() => void updateStatus()}>
+                            {updatingStatus && <Loader2 className="animate-spin" />}
+                            {updatingStatus ? "Updating..." : "OK"}
+                          </Button>
+                        </DialogFooter>
+                      </DialogContent>
+                    </Dialog>
+                  </div>
                   <div><dt className="text-muted-foreground">Priority</dt><dd className="mt-1 font-medium capitalize">{priority}</dd></div>
                   <div><dt className="text-muted-foreground">Awaiting Student Input</dt><dd className="mt-1 font-medium capitalize">{ticket.awaiting_student_input ? 'Yes' : 'No'}</dd></div>
                   <div><dt className="text-muted-foreground">Assign To</dt><dd className="mt-1 font-medium capitalize">{ticket.assigned?.full_name ?? "-"}</dd></div>
@@ -178,10 +260,18 @@ function TicketDetailContent({ ticketId }: { ticketId: string }) {
               <section className="space-y-4 p-6" aria-labelledby="reply-heading" aria-busy={busy}>
                 <h2 id="reply-heading" className="text-lg font-semibold">Reply</h2>
                 {drafts.length > 0 && <div className="space-y-2"><label htmlFor="saved-draft" className="text-sm font-medium">Saved drafts</label><select id="saved-draft" className="w-full rounded-lg border bg-background p-2 text-sm" disabled={busy || dirty} value={draft?.id ?? ""} onChange={event => { const selected = drafts.find(reply => reply.id === Number(event.target.value)); if (selected) { setDraft(selected); setText(selected.text); setError(""); setNotice("") } }}><option value="" disabled>Select a draft</option>{drafts.map(reply => <option key={reply.id} value={reply.id}>Draft #{reply.id} · {formatDate(reply.created_at)}</option>)}</select></div>}
-                
+                {
+                  roleName !== "student" && (
+                    <Button variant="outline" disabled={busy || dirty || !!draft} onClick={() => void perform("generate")}>
+                      {action === "generate" ? <Loader2 className="animate-spin" /> : <Sparkles />}
+                      {action === "generate" ? "Generating AI draft…" : "Generate AI Draft"}
+                    </Button>
+                  )
+                }
+
                 <p className="text-sm text-muted-foreground">{action === "generate" ? "This may take a little while. Please wait while your draft is generated." : draft ? "Review your saved draft and edit it before sending." : "Generate a draft or write your own reply below."}</p>
                 <label htmlFor="reply-text" className="sr-only">Reply text</label>
-                <Textarea id="reply-text" value={text} onChange={event => setText(event.target.value)} disabled={busy} placeholder="Hello Sir,…" className="min-h-64 p-4 leading-7" />
+                <Textarea id="reply-text" value={text} onChange={event => setText(event.target.value)} disabled={busy} placeholder="Assalam Walaikum,…" className="min-h-64 p-4 leading-7" />
                 {error && <p role="alert" className="text-sm text-destructive">{error}</p>}
                 <p role="status" className="text-sm text-muted-foreground">{busy ? (action === "save" ? "Saving draft…" : action === "send" ? "Saving changes and sending reply…" : "Generating draft…") : notice || (dirty ? "Unsaved changes" : "")}</p>
                 <div className="flex flex-wrap justify-end gap-3">
