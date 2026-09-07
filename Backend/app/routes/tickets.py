@@ -2,6 +2,7 @@ from fastapi import APIRouter, Depends, HTTPException, status, Cookie
 from fastapi.responses import StreamingResponse
 from sqlalchemy.ext.asyncio import AsyncSession
 import json
+import asyncio
 
 
 from app.database import get_db
@@ -275,11 +276,19 @@ async def ticket_stream(
 
     async def event_generator():
         try:
+            yield ": connected\n\n"
             while True:
-                event = await queue.get()
-
-                yield f"data: {json.dumps(event)}"
+                try:
+                    event = await asyncio.wait_for(queue.get(), timeout=15)
+                except asyncio.TimeoutError:
+                    yield ": keep-alive\n\n"
+                    continue
+                yield f"data: {json.dumps(event)}\n\n"
         finally:
             ticket_events.unsubscribe(ticket_id, queue)
 
-    return StreamingResponse(event_generator(), media_type="text/event-stream")
+    return StreamingResponse(
+        event_generator(),
+        media_type="text/event-stream",
+        headers={"Cache-Control": "no-cache", "X-Accel-Buffering": "no"},
+    )

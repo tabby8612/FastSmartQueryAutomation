@@ -50,7 +50,7 @@ function TicketDetailContent({ ticketId }: { ticketId: string }) {
   const [pendingStatus, setPendingStatus] = useState<string | null>(null)
   const [updatingStatus, setUpdatingStatus] = useState(false)
   const [statusError, setStatusError] = useState("")
-  const [statusNotice, setStatusNotice] = useState("")
+  const [streamError, setStreamError] = useState("")
   const statusRequestPending = useRef(false)
   const [action, setAction] = useState<"generate" | "save" | "send" | null>(null)
   const pending = useRef(false)
@@ -87,24 +87,50 @@ function TicketDetailContent({ ticketId }: { ticketId: string }) {
   }, [ticketId, token, attempt])
 
   useEffect(() => {
-    const baseURL = import.meta.env.VITE_API_BASE_URL
-    const streamURL = `${baseURL}/tickets/${ticketId}/stream`
+    if (loading || loadError || !token || !/^\d+$/.test(ticketId)) return
+    const streamURL = api.getUri({ url: `/tickets/${ticketId}/stream` })
+    let refreshController: AbortController | undefined
+    const eventSource = new EventSource(streamURL, { withCredentials: true })
 
-    const eventSource = new EventSource(streamURL, {withCredentials: true})
-
-    eventSource.onmessage = (event) => {
-      const data = JSON.parse(event.data)
-
-      if (data.type === "status_change") {
-        console.log("from event")
-        console.log(data.ticket)
-      }
-
-      return () => {
-        eventSource.close()
+    async function refreshTicket() {
+      refreshController?.abort()
+      const controller = new AbortController()
+      refreshController = controller
+      try {
+        const response = await api.get<Ticket>(`/tickets/${ticketId}`, {
+          headers: { Authorization: `Bearer ${token}` },
+          signal: controller.signal,
+        })
+        if (!controller.signal.aborted) {
+          setTicket(response.data)
+          setStreamError("")
+        }
+      } catch (error) {
+        if (!controller.signal.aborted) setStreamError(errorMessage(error))
       }
     }
-  }, [ticketId])
+
+    // Fetch the latest status on connection/reconnection to recover missed events.
+    eventSource.onopen = () => { void refreshTicket() }
+    eventSource.onmessage = (event) => {
+      try {
+        const data = JSON.parse(event.data)
+        if (data?.type === "status_change" && data.ticket_id === Number(ticketId)) {
+          void refreshTicket()
+        }
+      } catch {
+        setStreamError("Could not read a live ticket update. Refresh the page to see the latest status.")
+      }
+    }
+    eventSource.onerror = () => {
+      setStreamError("Live updates disconnected. If they do not reconnect, refresh the page or sign in again.")
+    }
+
+    return () => {
+      eventSource.close()
+      refreshController?.abort()
+    }
+  }, [ticketId, token, loading, loadError])
 
   function remember(reply: Reply) {
     setReplies(previous => [...previous.filter(item => item.id !== reply.id), reply].sort((a, b) => a.id - b.id))
@@ -159,7 +185,6 @@ function TicketDetailContent({ ticketId }: { ticketId: string }) {
       const response = await api.put<Ticket>(`/tickets/${ticketId}/status`, { status: pendingStatus }, { headers })
       setTicket(response.data)
       setPendingStatus(null)
-      setStatusNotice("Ticket status updated successfully.")
       toast.success("Ticket status updated successfully", { "className": "bg-green-100! border-green-800!", position: "top-center" })
     } catch (error) {
       setStatusError(errorMessage(error))
@@ -187,6 +212,7 @@ function TicketDetailContent({ ticketId }: { ticketId: string }) {
       <SidebarInset>
         <SiteHeader />
         <main className="mx-auto flex w-full max-w-7xl flex-col gap-5 p-4 md:p-8">
+          {streamError && <p role="status" className="text-sm text-muted-foreground">{streamError}</p>}
           <Link to={`${roleName === "student" ? "/student/my-issues" : roleName === "officer" ? "/officer/issues" : "/admin/issues"}`} className="flex items-center gap-2 text-sm text-muted-foreground hover:text-foreground"><ArrowLeft className="size-4" /> Back to issues</Link>
           {loading ? (
             <div role="status" className="flex items-center justify-center gap-3 rounded-xl border bg-card p-16"><Loader2 className="size-5 animate-spin" /> Loading ticket and conversation…</div>
@@ -213,7 +239,6 @@ function TicketDetailContent({ ticketId }: { ticketId: string }) {
                         <Select items={items} value={ticket.status} disabled={updatingStatus} onValueChange={value => {
                           if (!value || value === ticket.status) return
                           setStatusError("")
-                          setStatusNotice("")
                           setPendingStatus(value)
                         }}>
                           <SelectTrigger aria-label="Ticket status" className="w-full max-w-48 border-muted-foreground mt-1">
