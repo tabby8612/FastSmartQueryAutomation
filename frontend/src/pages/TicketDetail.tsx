@@ -86,6 +86,26 @@ function TicketDetailContent({ ticketId }: { ticketId: string }) {
     return () => controller.abort()
   }, [ticketId, token, attempt])
 
+  useEffect(() => {
+    const baseURL = import.meta.env.VITE_API_BASE_URL
+    const streamURL = `${baseURL}/tickets/${ticketId}/stream`
+
+    const eventSource = new EventSource(streamURL, {withCredentials: true})
+
+    eventSource.onmessage = (event) => {
+      const data = JSON.parse(event.data)
+
+      if (data.type === "status_change") {
+        console.log("from event")
+        console.log(data.ticket)
+      }
+
+      return () => {
+        eventSource.close()
+      }
+    }
+  }, [ticketId])
+
   function remember(reply: Reply) {
     setReplies(previous => [...previous.filter(item => item.id !== reply.id), reply].sort((a, b) => a.id - b.id))
     setDraft(reply.status === "draft" ? reply : null)

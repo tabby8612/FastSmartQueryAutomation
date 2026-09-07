@@ -1,4 +1,4 @@
-from fastapi import APIRouter, Depends, HTTPException, status, Request, Cookie
+from fastapi import APIRouter, Depends, HTTPException, status, Request, Cookie, Response
 from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy.future import select
 from dotenv import load_dotenv
@@ -10,7 +10,7 @@ from app.helpers.security import get_current_user, create_access_token, verify_t
 from app.database import get_db
 from app.models.user import User
 from app.schemas.auth import UserRegister
-from app.schemas.user import UserResponse, ProfileResponse
+from app.schemas.user import UserResponse
 from app.services.auth import AuthService
 from app.resources.AuthResource import AuthResource
 from app.auth.oauth import oauth
@@ -48,9 +48,11 @@ async def register(user_data: UserRegister, db: AsyncSession = Depends(get_db)):
     return user
 
 
-@router.post("/login")
+@router.post("/login", response_model=None)
 async def login(
-    user_data: OAuth2PasswordRequestForm = Depends(), db: AsyncSession = Depends(get_db)
+    response: Response,
+    user_data: OAuth2PasswordRequestForm = Depends(),
+    db: AsyncSession = Depends(get_db),
 ):
     user = await AuthService.login(db, user_data)
     if not user:
@@ -59,6 +61,16 @@ async def login(
             detail="Invalid email or password",
         )
     access_token = create_access_token({"sub": str(user.id)})
+
+    response.set_cookie(
+        key="access_token",
+        value=access_token,
+        httponly=True,
+        secure=False,  # make it true in production https
+        samesite="lax",
+        max_age=24 * 60 * 60,
+    )
+
     return {
         "user": AuthResource.userResource(user),
         "access_token": access_token,

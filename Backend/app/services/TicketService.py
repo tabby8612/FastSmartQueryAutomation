@@ -19,6 +19,8 @@ from app.services.TicketStatusHistoryService import TicketStatusHistoryService
 
 from app.helpers.utils import generate_tracking_number
 
+from app.events.ticket_event_manager import ticket_events
+
 
 class TicketService:
     @staticmethod
@@ -150,8 +152,15 @@ class TicketService:
             ticket.awaiting_student_input = awaiting_student_input
         if resolved_at is not None:
             ticket.resolved_at = resolved_at
+
         await db.flush()
+        await db.commit()
         await db.refresh(ticket)
+
+        await ticket_events.publish(
+            ticket.id, {"type": "status_change", "ticket_id": ticket.id}
+        )
+
         return ticket
 
     @staticmethod

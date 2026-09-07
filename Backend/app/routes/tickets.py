@@ -1,12 +1,17 @@
-from fastapi import APIRouter, Depends, HTTPException, status
+from fastapi import APIRouter, Depends, HTTPException, status, Cookie
+from fastapi.responses import StreamingResponse
 from sqlalchemy.ext.asyncio import AsyncSession
+import json
+
 
 from app.database import get_db
 from app.schemas.ticket import TicketCreate, TicketResponse, TicketUpdate
 from app.services.TicketService import TicketService
-from app.helpers.security import get_current_user
+from app.helpers.security import get_current_user, get_active_user_by_token
 from app.models.user import User
 from app.Enums.ChannelEnum import ChannelEnum
+
+from app.events.ticket_event_manager import ticket_events
 
 router = APIRouter(prefix="/tickets", tags=["tickets"])
 
@@ -231,3 +236,50 @@ async def delete(
             status_code=status.HTTP_404_NOT_FOUND, detail="ticket not found"
         )
     await TicketService.delete(db, ticket)
+
+
+@router.get("/{ticket_id}/stream")
+async def ticket_stream(
+    ticket_id: int,
+    db: AsyncSession = Depends(get_db),
+    access_token: str | None = Cookie(default=None),
+):
+    if not access_token:
+        raise HTTPException(status.HTTP_401_UNAUTHORIZED, detail="Not Authenticated")
+
+    user = await get_active_user_by_token(access_token, db)
+
+    if not user:
+        raise HTTPException(status.HTTP_401_UNAUTHORIZED, detail="Invalid User")
+
+    ticket = await TicketService.get_by_id(db, ticket_id)
+
+    if ticket is None:
+        raise HTTPException(status.HTTP_404_NOT_FOUND, detail="Ticket Not Found")
+
+    if user.is_student:
+        if ticket.student_id != user.id:
+            raise HTTPException(
+                status.HTTP_401_UNAUTHORIZED,
+                detail="You are not authorized to access this resource",
+            )
+
+    if user.is_officer:
+        if ticket.assigned_id != user.id:
+            raise HTTPException(
+                status.HTTP_401_UNAUTHORIZED,
+                detail="You are not authorized to access this resource",
+            )
+
+    queue = await ticket_events.subscribe(ticket_id)
+
+    async def event_generator():
+        try:
+            while True:
+                event = await queue.get()
+
+                yield f"data: {json.dumps(event)}"
+        finally:
+            ticket_events.unsubscribe(ticket_id, queue)
+
+    return StreamingResponse(event_generator(), media_type="text/event-stream")
