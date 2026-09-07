@@ -19,6 +19,7 @@ export type Ticket = {
     "assigned": Officer,
     "department": Department,
     "category": Category,
+    "ticket_status_history": TicketStatusHistory[]
   }
 
   export type Reply = {
@@ -78,3 +79,16 @@ export type Category = {
     description: string,
     ticket_count: number
 }
+
+export type TicketStatusHistory = {
+    id: number,
+    new_status: TicketStatus,
+    new_status_label: string
+    created_at: string,
+    old_status: TicketStatus,
+    ticket_id: number,
+    changed_by: number,
+    updated_at: string
+}
+
+export type TicketStatus = "open" | "pending" | "assigned" | "in_progress" | "resolved" | "closed"

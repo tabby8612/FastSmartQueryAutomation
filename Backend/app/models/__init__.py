@@ -15,6 +15,8 @@ from app.models.incoming_email import IncomingEmail
 
 from app.models.reply import Reply
 
+from app.models.ticket_status_history import TicketStatusHistory
+
 __all__ = [
     "Base",
     "TimestampMixin",
@@ -26,4 +28,5 @@ __all__ = [
     "Ticket",
     "IncomingEmail",
     "Reply",
+    "TicketStatusHistory",
 ]

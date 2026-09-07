@@ -7,7 +7,17 @@ from contextlib import asynccontextmanager
 from starlette.middleware.cors import CORSMiddleware
 from starlette.middleware.sessions import SessionMiddleware
 
-from app.routes import roles, departments, tickets, users, auth, categories, email, replies
+from app.routes import (
+    roles,
+    departments,
+    tickets,
+    users,
+    auth,
+    categories,
+    email,
+    replies,
+    ticket_status_history,
+)
 from app.scheduler.scheduler import scheduler, start_scheduler
 
 
@@ -48,3 +58,4 @@ app.include_router(tickets.router)
 app.include_router(replies.router)
 app.include_router(replies.send_router)
 app.include_router(email.router)
+app.include_router(ticket_status_history.router)

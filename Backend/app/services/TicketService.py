@@ -7,17 +7,17 @@ from ml.train import classify_issue
 
 from app.models.ticket import Ticket
 from app.models.reply import Reply
-from app.Enums.QueryStatusEnum import QueryStatusEnum
 from app.models.user import User
-from app.models.user import Role
-from app.helpers.utils import generate_tracking_number
+from app.models.role import Role
+from app.models.ticket_status_history import TicketStatusHistory
+
+from app.Enums.QueryStatusEnum import QueryStatusEnum
 from app.Enums.RolesEnum import RolesEnum
 from app.Enums.TicketPriorityEnum import TicketPriorityEnum
-from app.services.ai_reply_generator_service import (
-    ai_reply_generator,
-    build_ticket_context,
-)
-from app.Enums.ReplyStatusEnum import ReplyStatusEnum
+
+from app.services.TicketStatusHistoryService import TicketStatusHistoryService
+
+from app.helpers.utils import generate_tracking_number
 
 
 class TicketService:
@@ -57,9 +57,22 @@ class TicketService:
             escalation_level=TicketPriorityEnum.to_level(priority_level),
             awaiting_student_input=False,
         )
+
         db.add(new_ticket)
         await db.flush()
         await db.refresh(new_ticket)
+
+        history = TicketStatusHistory(
+            ticket_id=new_ticket.id,
+            old_status=QueryStatusEnum.PENDING,
+            new_status=QueryStatusEnum.PENDING,
+            changed_by=student_id,
+        )
+
+        db.add(history)
+        await db.flush()
+        await db.refresh(history)
+
         return new_ticket
 
     @staticmethod
@@ -89,6 +102,7 @@ class TicketService:
                 selectinload(Ticket.department),
                 selectinload(Ticket.category),
                 selectinload(Ticket.replies).options(joinedload(Reply.creator)),
+                selectinload(Ticket.ticket_status_history),
             )
             .where(Ticket.id == query_id)
         )
@@ -98,6 +112,7 @@ class TicketService:
     async def update(
         db: AsyncSession,
         ticket: Ticket,
+        user_id: int,
         assigned_id: int | None,
         channel: str | None,
         subject: str | None,
@@ -122,7 +137,13 @@ class TicketService:
         if confidence_level is not None:
             ticket.confidence_level = confidence_level
         if status is not None:
-            ticket.status = status
+            if ticket.status != status:
+                history = await TicketStatusHistoryService.create(
+                    db, ticket, status, user_id
+                )
+                ticket.status = status
+                await db.refresh(history)
+
         if escalation_level is not None:
             ticket.escalation_level = escalation_level
         if awaiting_student_input is not None:

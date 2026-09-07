@@ -7,7 +7,9 @@ from sqlalchemy import String, Text, Numeric, SmallInteger, ForeignKey, Index
 from sqlalchemy.orm import Mapped, mapped_column, relationship
 from app.database import Base
 from app.models.base import TimestampMixin
+
 from app.models.reply import Reply
+from app.models.ticket_status_history import TicketStatusHistory
 
 
 class Ticket(Base, TimestampMixin):
@@ -42,3 +44,4 @@ class Ticket(Base, TimestampMixin):
     department: Mapped[Department] = relationship(foreign_keys=[department_id])
     category: Mapped[Category] = relationship(foreign_keys=[category_id])
     replies = relationship(Reply, back_populates="ticket")
+    ticket_status_history = relationship(TicketStatusHistory, back_populates="ticket")

@@ -1,9 +1,11 @@
 from datetime import datetime
 from decimal import Decimal
 
-from pydantic import BaseModel, ConfigDict, Field
+from pydantic import BaseModel, ConfigDict, Field, computed_field
 from typing import Literal
 from app.schemas.user import UserResponse
+
+from app.Enums.QueryStatusEnum import QueryStatusEnum
 
 
 class TicketBase(BaseModel):
@@ -84,6 +86,20 @@ class Reply(BaseModel):
     creator: Creator
 
 
+class TicketStatusHistory(BaseModel):
+    id: int
+    new_status: str
+    created_at: datetime
+    old_status: str
+    ticket_id: int
+    changed_by: int
+
+    @computed_field(return_type=str | None)
+    @property
+    def new_status_label(self):
+        return QueryStatusEnum.to_label(self.new_status)
+
+
 class TicketResponse(TicketBase):
     id: int
     created_at: datetime | None
@@ -92,5 +108,6 @@ class TicketResponse(TicketBase):
     department: Department | None
     category: Category | None
     replies: list[Reply] | None
+    ticket_status_history: list[TicketStatusHistory] | None
 
     model_config = ConfigDict(from_attributes=True)

@@ -182,6 +182,7 @@ async def ticket_status(
         return await TicketService.update(
             db=db,
             ticket=ticket,
+            user_id=current_user.id,
             assigned_id=None,
             channel=None,
             subject=None,
@@ -200,6 +201,7 @@ async def ticket_status(
         return await TicketService.update(
             db=db,
             ticket=ticket,
+            user_id=current_user.id,
             assigned_id=None,
             channel=None,
             subject=None,

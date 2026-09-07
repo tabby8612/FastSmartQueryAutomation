@@ -14,6 +14,7 @@ import type { Reply, Ticket } from "@/types"
 import { Select, SelectContent, SelectGroup, SelectItem, SelectLabel, SelectTrigger, SelectValue } from "@/components/ui/select"
 import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle } from "@/components/ui/dialog"
 import { toast } from "sonner"
+import Timeline from "@/components/ui/timeline"
 
 function errorMessage(error: unknown) {
   if (isAxiosError(error) && typeof error.response?.data?.detail === "string") {
@@ -241,6 +242,10 @@ function TicketDetailContent({ ticketId }: { ticketId: string }) {
                   <p className="text-muted-foreground">Ticket Query</p>
                   <p className="whitespace-pre-wrap break-words text-sm leading-7">{ticket.body}</p>
                 </div>
+              </section>
+              <section className="space-y-4 border-b p-6" aria-labelledby="ticket-status-history">
+                <h2 id="ticket-status-history" className="text-2xl font-semibold">Ticket Status History</h2>
+                    <Timeline timeline={ticket.ticket_status_history} />
               </section>
               <section className="space-y-4 border-b p-6" aria-labelledby="conversation-heading">
                 <h2 id="conversation-heading" className="text-lg font-semibold">Conversation</h2>
