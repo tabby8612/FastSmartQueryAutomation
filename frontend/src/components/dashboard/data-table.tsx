@@ -39,6 +39,7 @@ import {
   createFilteredRowModel,
   createPaginatedRowModel,
   createSortedRowModel,
+  filterFn_equals,
   filterFn_includesString,
   FlexRender,
   rowPaginationFeature,
@@ -205,6 +206,8 @@ const columns = columnHelper.columns([
   // }),
   columnHelper.accessor("tracking_id", {
     header: "Tracking ID",
+    filterFn: filterFn_includesString,
+    enableColumnFilter: true,
     cell: ({ row }) => {
       return <div className="flex justify-center items-center gap-2 ">
         <Link to={`/ticket/${row.original.id}`}>
@@ -224,8 +227,11 @@ const columns = columnHelper.columns([
     ),
     enableSorting: false,
   }),
-  columnHelper.accessor("department", {
+  columnHelper.accessor((row) => row.department?.id, {
+    id: "department",
     header: "Department",
+    filterFn: filterFn_equals,
+    enableColumnFilter: true,
     cell: ({ row }) => (
       <div className="capitalize">
         {row.original.department?.name ? `${row.original.department?.name.slice(0,20)}...` : "-"}
@@ -250,6 +256,8 @@ const columns = columnHelper.columns([
       </div>
     ),
     enableSorting: true,
+    sortFn: sortFn_text,
+    filterFn: filterFn_includesString,
     enableColumnFilter: true
   }),
   columnHelper.accessor("status", {
@@ -350,6 +358,15 @@ export function DataTable({
 
   const dataIds = React.useMemo<UniqueIdentifier[]>(
     () => data?.map(({ id }) => id) || [],
+    [data]
+  )
+
+  const departments = React.useMemo(
+    () => Array.from(
+      new Map(data.flatMap(({ department }) =>
+        department ? [[department.id, department] as const] : []
+      )).values()
+    ).sort((a, b) => a.name.localeCompare(b.name)),
     [data]
   )
 
@@ -459,15 +476,44 @@ export function DataTable({
         value="issues"
         className="relative flex flex-col gap-4 overflow-auto px-4 lg:px-6"
       >
-        <div className="flex items-center py-4">
+        <div className="flex flex-wrap items-center gap-2 py-4">
         <Input
-          placeholder="Filter status..."
-          value={(table.getColumn("channel")?.getFilterValue() as string) ?? ""}
+          placeholder="Filter by tracking ID..."
+          aria-label="Filter by tracking ID"
+          value={(table.getColumn("tracking_id")?.getFilterValue() as string) ?? ""}
           onChange={(event) =>
-            table.getColumn("channel")?.setFilterValue(event.target.value)
+            table.getColumn("tracking_id")?.setFilterValue(event.target.value)
           }
           className="max-w-sm"
         />
+        <Select
+          items={[
+            { value: "all", label: "All departments" },
+            ...departments.map((department) => ({
+              value: String(department.id),
+              label: department.name.slice(0,1).toUpperCase() + department.name.slice(1,),
+            })),
+          ]}
+          value={String(table.getColumn("department")?.getFilterValue() ?? "all")}
+          onValueChange={(value) => {
+            table.getColumn("department")?.setFilterValue(
+              value === "all" || value === null ? undefined : Number(value)
+            )
+            table.setPageIndex(0)
+          }}
+        >
+          <SelectTrigger className="w-56" aria-label="Filter by department">
+            <SelectValue placeholder="All departments" />
+          </SelectTrigger>
+          <SelectContent>
+            <SelectItem value="all">All departments</SelectItem>
+            {departments.map((department) => (
+              <SelectItem key={department.id} value={String(department.id)}>
+                {department.name}
+              </SelectItem>
+            ))}
+          </SelectContent>
+        </Select>
       </div>
         <div className="overflow-hidden rounded-lg border">
           <DndContext
