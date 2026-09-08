@@ -4,17 +4,19 @@ import { SidebarInset, SidebarProvider } from "@/components/ui/sidebar"
 import { useEffect, useState } from "react"
 import { useAuth } from "@/contexts/auth-context"
 import api from "@/lib/axios"
-import { OfficerDataTable, type Query } from "@/components/officer/officer-data-table"
+import { OfficerDataTable } from "@/components/officer/officer-data-table"
+import { DataTable } from "@/components/dashboard/data-table"
+import type { Ticket } from "@/types"
 
 export function OfficerIssues() {
   const { role_name, access_token } = useAuth()
-  const [queries, setQueries] = useState<Query[]>([])
+  const [queries, setQueries] = useState<Ticket[]>([])
   const [loading, setLoading] = useState(true)
 
   useEffect(() => {
     const fetchQueries = async () => {
       try {
-        const response = await api.get<Query[]>("/tickets", {
+        const response = await api.get<Ticket[]>("/tickets", {
           headers: {
             Authorization: `Bearer ${access_token}`,
           },
@@ -30,7 +32,7 @@ export function OfficerIssues() {
     fetchQueries()
   }, [access_token])
 
-  const myQueries = queries
+  const tickets = queries
 
   return (
     <SidebarProvider
@@ -52,7 +54,8 @@ export function OfficerIssues() {
                 </p>
                 </div>
               <div className="py-2 mx-6 rounded-2xl pt-5 bg-white">
-                <OfficerDataTable data={myQueries} />
+                {/* <OfficerDataTable data={myQueries} /> */}
+                <DataTable data={tickets} />
               </div>
             </div>
           </div>

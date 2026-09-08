@@ -5,6 +5,8 @@
 3. [Done] Add form to create student, officer, and admin in frontend
 4. Add edit form and consume update route for all category, departments, roles, users etc.
 5. Add length and proper validation in pydamic
-6. Add name in the sidebar footer
+6. [Done] Add name in the sidebar footer
 7. Improve header like adding user photo, notification etc.
 8. Add multiple filters 
+9. Combine data table into one for each 
+10. 

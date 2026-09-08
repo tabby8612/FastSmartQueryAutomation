@@ -59,7 +59,7 @@ export default function SubmitIssue() {
     <SidebarProvider
       style={
         {
-          "--sidebar-width": "calc(var(--spacing) * 72)",
+          "--sidebar-width": "calc(var(--spacing) * 60)",
           "--header-height": "calc(var(--spacing) * 16)",
         } as React.CSSProperties
       }
@@ -79,8 +79,8 @@ export default function SubmitIssue() {
                   </div>
                 ) : (
                   <>
-                <h1 className="text-4xl font-bold">Submit New Issue</h1>
-                <p className="text-muted-foreground text-2xl">Tell us what problem you are facing</p>
+                <h1 className="text-2xl md:text-4xl font-bold">Submit New Issue</h1>
+                <p className="text-muted-foreground text-sm md:text-2xl">Tell us what problem you are facing</p>
                 <form onSubmit={handleSubmit} className="flex flex-col gap-4 max-w-xl  w-full mt-5">
                   {
                     submissionError && (

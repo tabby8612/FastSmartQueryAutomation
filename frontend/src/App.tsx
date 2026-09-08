@@ -21,8 +21,7 @@ function App() {
     <AuthProvider>
       <BrowserRouter>
         <Routes>
-          <Route path="/officer/issues/:ticketId" element={<ProtectedRoute><TicketDetail /></ProtectedRoute>} />
-          <Route path="/student/issues/:ticketId" element={<ProtectedRoute><TicketDetail /></ProtectedRoute>} />
+          <Route path="/ticket/:ticketId" element={<ProtectedRoute><TicketDetail /></ProtectedRoute>} />
           <Route path="/" element={<LoginPage />} />
           <Route path="/auth/callback" element={<GoogleCallback />} />
           <Route

@@ -5,6 +5,7 @@ import { useEffect, useState } from "react"
 import { useAuth } from "@/contexts/auth-context"
 import api from "@/lib/axios"
 import { AdminDataTable, type Query } from "@/components/admin/admin-data-table"
+import { DataTable } from "@/components/dashboard/data-table"
 
 export function AdminIssues() {
   const { role_name, access_token } = useAuth()
@@ -52,7 +53,7 @@ export function AdminIssues() {
                 </p>
                 </div>
               <div className="py-2 mx-6 rounded-2xl pt-5 bg-white">
-                <AdminDataTable data={myQueries} />
+                <DataTable data={myQueries} />
               </div>
             </div>
           </div>

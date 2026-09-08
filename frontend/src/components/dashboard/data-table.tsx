@@ -39,10 +39,13 @@ import {
   createFilteredRowModel,
   createPaginatedRowModel,
   createSortedRowModel,
+  filterFn_includesString,
   FlexRender,
   rowPaginationFeature,
   rowSelectionFeature,
   rowSortingFeature,
+  sortFn_alphanumeric,
+  sortFn_text,
   tableFeatures,
   useTable,
   type ColumnFiltersState,
@@ -87,7 +90,9 @@ import { Drawer, DrawerClose, DrawerContent, DrawerDescription, DrawerFooter, Dr
 import { type ChartConfig } from "../ui/chart"
 import { useIsMobile } from "@/hooks/use-mobile"
 import { useAuth } from "@/contexts/auth-context"
-import { useNavigate } from "react-router-dom"
+import { Link, useNavigate } from "react-router-dom"
+import { ArrowUpDown, Search } from "lucide-react"
+import { Input } from "../ui/input"
 
 // New in v9: declare the features this table uses — anything you don't
 // register is tree-shaken out of the bundle.
@@ -100,6 +105,9 @@ const features = tableFeatures({
   filteredRowModel: createFilteredRowModel(),
   paginatedRowModel: createPaginatedRowModel(),
   sortedRowModel: createSortedRowModel(),
+  filterFns: {includesString: filterFn_includesString},
+  sortFns: { alphanumeric: sortFn_alphanumeric, text: sortFn_text },
+
 })
 
 
@@ -169,56 +177,80 @@ const columns = columnHelper.columns([
     header: () => null,
     cell: ({ row }) => <DragHandle id={row.original.id} />,
   }),
-  columnHelper.display({
-    id: "select",
-    header: ({ table }) => (
-      <div className="flex items-center justify-center">
-        <Checkbox
-          checked={
-            table.getIsAllPageRowsSelected() ||
-            (table.getIsSomePageRowsSelected() && "indeterminate")
-          }
-          onCheckedChange={(value) => table.toggleAllPageRowsSelected(!!value)}
-          aria-label="Select all"
-        />
-      </div>
-    ),
-    cell: ({ row }) => (
-      <div className="flex items-center justify-center">
-        <Checkbox
-          checked={row.getIsSelected()}
-          onCheckedChange={(value) => row.toggleSelected(!!value)}
-          aria-label="Select row"
-        />
-      </div>
-    ),
-    enableSorting: false,
-    enableHiding: false,
-  }),
+  // columnHelper.display({
+  //   id: "select",
+  //   header: ({ table }) => (
+  //     <div className="flex items-center justify-center">
+  //       <Checkbox
+  //         checked={
+  //           table.getIsAllPageRowsSelected() ||
+  //           (table.getIsSomePageRowsSelected() && "indeterminate")
+  //         }
+  //         onCheckedChange={(value) => table.toggleAllPageRowsSelected(!!value)}
+  //         aria-label="Select all"
+  //       />
+  //     </div>
+  //   ),
+  //   cell: ({ row }) => (
+  //     <div className="flex items-center justify-center">
+  //       <Checkbox
+  //         checked={row.getIsSelected()}
+  //         onCheckedChange={(value) => row.toggleSelected(!!value)}
+  //         aria-label="Select row"
+  //       />
+  //     </div>
+  //   ),
+  //   enableSorting: false,
+  //   enableHiding: false,
+  // }),
   columnHelper.accessor("tracking_id", {
     header: "Tracking ID",
     cell: ({ row }) => {
-      return <TableCellViewer item={row.original} />
+      return <div className="flex justify-center items-center gap-2 ">
+        <Link to={`/ticket/${row.original.id}`}>
+        <p className="font-semibold hover:border-b-2 hover:cursor-pointer hover:text-primary border-primary h-6 cursor-default text-sm leading-6 tracking-wide">{row.original.tracking_id}</p>
+        </Link>
+        <TableCellViewer item={row.original} />
+      </div>
     },
     enableHiding: false,
+  }),
+  columnHelper.accessor("subject", {
+    header: "Title",
+    cell: ({ row }) => (
+      <div className="capitalize">
+        {`${row.original.subject?.slice(0,20)}...`}
+      </div>
+    ),
+    enableSorting: false,
   }),
   columnHelper.accessor("department", {
     header: "Department",
     cell: ({ row }) => (
       <div className="capitalize">
-        {row.original.department?.name}
+        {row.original.department?.name ? `${row.original.department?.name.slice(0,20)}...` : "-"}
       </div>
     ),
     enableSorting: false,
   }),
   columnHelper.accessor("channel", {
-    header: "Channel",
+    header: ({column}) => {
+      return <div
+          className="flex gap-1 justify-center items-center"
+          onClick={() => column.toggleSorting(column.getIsSorted() === "asc")}
+        >
+          Channel
+          <ArrowUpDown className="ml-2 h-4 w-4 cursor-pointer hover:text-primary" />
+        </div>
+    },
     cell: ({ row }) => (
       <div className="">
         <Badge>{row.original.channel}
         </Badge>
       </div>
     ),
+    enableSorting: true,
+    enableColumnFilter: true
   }),
   columnHelper.accessor("status", {
     header: "Status",
@@ -241,7 +273,7 @@ const columns = columnHelper.columns([
     ),
   }),
   columnHelper.accessor("awaiting_student_input", {
-    header: "Awaiting Response",
+    header: "Awaiting Student Response",
     cell: ({ row }) => (
       <div className="flex justify-center items-center">
         {row.original.awaiting_student_input ? <Badge className="bg-green-200 text-black">Yes</Badge> : <Badge className="bg-red-200 text-black">No</Badge>}
@@ -304,6 +336,7 @@ export function DataTable({
     []
   )
   const [sorting, setSorting] = React.useState<SortingState>([])
+  
   const [pagination, setPagination] = React.useState({
     pageIndex: 0,
     pageSize: 10,
@@ -355,14 +388,14 @@ export function DataTable({
   
   return (
     <Tabs
-      defaultValue="outline"
+      defaultValue="issues"
       className="w-full flex-col justify-start gap-6"
     >
       <div className="flex items-center justify-between px-4 lg:px-6">
         <Label htmlFor="view-selector" className="sr-only">
           View
         </Label>
-        <Select defaultValue="outline">
+        <Select defaultValue="issues">
           <SelectTrigger
             className="flex w-fit @4xl/main:hidden"
             size="sm"
@@ -380,12 +413,12 @@ export function DataTable({
         <div className="flex items-center gap-2">
           <DropdownMenu>
             <DropdownMenuTrigger>
-              <Button variant="outline" size="sm">
-                <IconLayoutColumns />
+              <div className="flex text-xs gap-1.5 shadow border-slate-800 font-semibold justify-center items-center bg-muted/70 px-3 py-1 rounded-lg hover:bg-muted-foreground/10">
+                <IconLayoutColumns className="size-4"/>
                 <span className="hidden lg:inline">Customize Columns</span>
                 <span className="lg:hidden">Columns</span>
                 <IconChevronDown />
-              </Button>
+              </div>
             </DropdownMenuTrigger>
             <DropdownMenuContent align="end" className="w-56">
               {table
@@ -413,10 +446,10 @@ export function DataTable({
           </DropdownMenu>
           {
             role_name == "student" && (
-              <Button variant="outline" size="sm" onClick={() => navigate("/student/submit-issue")}>
-                <IconPlus />
+              <div className="flex text-xs gap-1.5 shadow border-slate-800 font-semibold justify-center cursor-default items-center bg-muted/70 px-4 py-2 rounded-lg hover:bg-muted-foreground/10" onClick={() => navigate("/student/submit-issue")}>
+                <IconPlus className="size-4"/>
                 <span className="hidden lg:inline">Add New Issue</span>
-              </Button>
+              </div>
             )
           }
 
@@ -426,6 +459,16 @@ export function DataTable({
         value="issues"
         className="relative flex flex-col gap-4 overflow-auto px-4 lg:px-6"
       >
+        <div className="flex items-center py-4">
+        <Input
+          placeholder="Filter status..."
+          value={(table.getColumn("channel")?.getFilterValue() as string) ?? ""}
+          onChange={(event) =>
+            table.getColumn("channel")?.setFilterValue(event.target.value)
+          }
+          className="max-w-sm"
+        />
+      </div>
         <div className="overflow-hidden rounded-lg border">
           <DndContext
             collisionDetection={closestCenter}
@@ -561,9 +604,7 @@ function TableCellViewer({ item }: { item: z.infer<typeof schema> }) {
   return (
     <Drawer swipeDirection={isMobile ? "down" : "down"} showSwipeHandle={isMobile}>
       <DrawerTrigger>
-        <Button variant="link" className="w-fit px-0 text-left text-foreground">
-          {item.tracking_id}
-        </Button>
+        <Search className="size-3 hover:text-blue-600 cursor-pointer" />
       </DrawerTrigger>
       <DrawerContent>
         <DrawerHeader className="gap-10 mb-7">

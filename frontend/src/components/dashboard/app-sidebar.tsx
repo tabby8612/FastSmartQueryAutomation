@@ -107,7 +107,7 @@ export function AppSidebar({ roleName, ...props }: React.ComponentProps<typeof S
       <SidebarHeader>
         <SidebarMenu>
           <SidebarMenuItem className=" flex items-center justify-center">
-            <img src="https://static.vecteezy.com/system/resources/previews/020/150/775/non_2x/email-automation-icon-design-vector.jpg" alt="email automation" className="size-52"/>
+            <img src="https://static.vecteezy.com/system/resources/previews/020/150/775/non_2x/email-automation-icon-design-vector.jpg" alt="email automation" className="size-40"/>
             </SidebarMenuItem>
         </SidebarMenu>
       </SidebarHeader>

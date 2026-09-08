@@ -40,12 +40,12 @@ export function SectionCard({
     >
         
       <CardHeader>
-        <CardDescription className="text-2xl font-bold">{title}</CardDescription>
-        <CardTitle className="text-4xl font-semibold tabular-nums @[250px]/card:text-3xl">
+        <CardDescription className="md:text-2xl font-bold">{title}</CardDescription>
+        <CardTitle className="text-2xl lg:text-4xl font-semibold tabular-nums @[250px]/card:text-3xl">
           {value}
         </CardTitle>
         <CardAction>
-            <Icon className="size-20 opacity-10" />
+            <Icon className="hidden lg:inline size-20 opacity-10" />
           
         </CardAction>
       </CardHeader>

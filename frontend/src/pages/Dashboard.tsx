@@ -59,7 +59,7 @@ export default function Page() {
     <SidebarProvider
       style={
         {
-          "--sidebar-width": "calc(var(--spacing) * 72)",
+          "--sidebar-width": "calc(var(--spacing) * 60)",
           "--header-height": "calc(var(--spacing) * 16)",
         } as React.CSSProperties
       }
@@ -70,7 +70,7 @@ export default function Page() {
         <div className="flex flex-1 flex-col">
           <div className="@container/main flex flex-1 flex-col gap-2">
             <div className="flex flex-col gap-4 py-4 md:gap-6 md:py-6">
-              <div className="md:py-6 bg-white mx-5 px-6 rounded-2xl flex flex-col gap-5">
+              <div className="py-2 md:py-6 bg-white mx-5 px-6 rounded-2xl flex flex-col gap-5">
                 <h1 className="text-3xl font-bold">Hello, {user?.name ? user.name : "Anyonmous"}</h1>
                 {
                   ROLE_NAME === "officer" && <h1 className="text-2xl font-bold text-muted-foreground">Department Name: <span className="text-primary capitalize">{user?.department?.name || "Not Assigned Yet"}</span></h1>
@@ -82,9 +82,9 @@ export default function Page() {
                   ROLE_NAME === "officer" && <h1 className="text-xl font-bold text-muted-foreground">Here is the overview of tickets assigned to you</h1>
                 }
                 {
-                  ROLE_NAME === "admin" && <h1 className="text-xl font-bold text-muted-foreground">Here is the overview of all tickets</h1>
+                  ROLE_NAME === "admin" && <h1 className="lg:text-xl font-bold text-muted-foreground">Here is the overview of all tickets</h1>
                 }
-                <div className="grid grid-cols-4 gap-5">
+                <div className="grid grid-cols-2 lg:grid-cols-4 gap-5">
                   {loading ? (
                     <>
                       <SectionCard title="Open" value="—" description="Loading..." icon={BookOpenIcon} />
@@ -106,15 +106,7 @@ export default function Page() {
                 </div>
               </div>
               <div className="py-2 mx-6 rounded-2xl pt-5 bg-white">
-                {
-                  ROLE_NAME === "student" && <DataTable data={tickets} />
-                }
-                {
-                  ROLE_NAME === "officer" && <OfficerDataTable data={tickets} />
-                }
-                {
-                  ROLE_NAME === "admin" && <AdminDataTable data={tickets} /> 
-                }
+                <DataTable data={tickets} />
               </div>
             </div>
           </div>
