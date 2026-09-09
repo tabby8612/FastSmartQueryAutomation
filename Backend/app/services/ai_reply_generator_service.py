@@ -21,7 +21,7 @@ def build_ticket_context(ticket: Ticket) -> str:
         {getattr(ticket.student, "full_name") if ticket.student else "Student"}
     
         Priority:
-        {TicketPriorityEnum.to_label(getattr(ticket, "escalation_level", 0))}
+        {getattr(ticket, "priority", "low")}
     
         Department:
         {getattr(ticket.department, "name") if ticket.department else "General Administration"}

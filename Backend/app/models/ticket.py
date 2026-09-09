@@ -3,7 +3,7 @@ from __future__ import annotations
 from datetime import datetime
 from decimal import Decimal
 
-from sqlalchemy import String, Text, Numeric, SmallInteger, ForeignKey, Index
+from sqlalchemy import String, Text, Numeric, SmallInteger, ForeignKey, text
 from sqlalchemy.orm import Mapped, mapped_column, relationship
 from app.database import Base
 from app.models.base import TimestampMixin
@@ -31,6 +31,7 @@ class Ticket(Base, TimestampMixin):
     subject: Mapped[str] = mapped_column(String(255), nullable=False)
     body: Mapped[str] = mapped_column(Text, nullable=False)
     intent: Mapped[str] = mapped_column(String(255), nullable=True)
+    priority: Mapped[str] = mapped_column(String(255), nullable=True)
     confidence_level: Mapped[Decimal] = mapped_column(Numeric(4, 3), nullable=True)
     status: Mapped[str] = mapped_column(String(255), nullable=False)
     escalation_level: Mapped[int] = mapped_column(

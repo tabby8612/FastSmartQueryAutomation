@@ -17,6 +17,7 @@ class TicketBase(BaseModel):
     channel: str
     subject: str
     body: str
+    priority: str | None = None
     intent: str | None = None
     confidence_level: Decimal | None = None
     status: str
@@ -36,6 +37,7 @@ class TicketUpdate(BaseModel):
     subject: str | None = None
     body: str | None = None
     intent: str | None = None
+    priority: str | None = None
     confidence_level: Decimal | None = None
     status: str | None = None
     escalation_level: int | None = None
@@ -90,9 +92,9 @@ class TicketStatusHistory(BaseModel):
     id: int
     new_status: str
     created_at: datetime
-    old_status: str
+    old_status: str | None
     ticket_id: int
-    changed_by: int
+    changed_by: int | None
 
     @computed_field(return_type=str | None)
     @property

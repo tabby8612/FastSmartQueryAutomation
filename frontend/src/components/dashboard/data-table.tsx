@@ -124,6 +124,7 @@ export const schema = z.object({
   channel: z.string(),
   subject: z.string(),
   body: z.string(),
+  priority: z.string(),
   intent: z.string(),
   status: z.string(),
   awaiting_student_input: z.boolean(),
@@ -274,10 +275,10 @@ const columns = columnHelper.columns([
     ),
     enableSorting: false,
   }),
-  columnHelper.accessor("category", {
-    header: "Category",
+  columnHelper.accessor("priority", {
+    header: "Priority",
     cell: ({ row }) => (
-      <Badge>{row.original.category?.name[0].toUpperCase() + row.original.category?.name.slice(1, row.original.category?.name.length)}</Badge>
+      row.original.priority ? <Badge className={row.original.priority.toLowerCase() == "low" ? "bg-green-200 text-green-700" : row.original.priority?.toLowerCase() == "medium" ? "bg-orange-200 text-orange-600" : "bg-red-200 text-red-800"}>{row.original.priority}</Badge> : "-"
     ),
   }),
   columnHelper.accessor("awaiting_student_input", {
@@ -502,13 +503,13 @@ export function DataTable({
             table.setPageIndex(0)
           }}
         >
-          <SelectTrigger className="w-56" aria-label="Filter by department">
+          <SelectTrigger className="w-1/3" aria-label="Filter by department">
             <SelectValue placeholder="All departments" />
           </SelectTrigger>
           <SelectContent>
             <SelectItem value="all">All departments</SelectItem>
             {departments.map((department) => (
-              <SelectItem key={department.id} value={String(department.id)}>
+              <SelectItem key={department.id} value={String(department.id)} className="capitalize">
                 {department.name}
               </SelectItem>
             ))}

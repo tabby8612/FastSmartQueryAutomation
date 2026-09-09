@@ -50,13 +50,14 @@ async def create(
 
     return {
         "message": f"Your Ticket is Successfully Created. Use Tracking Id {new_ticket.tracking_id} to track your ticket",
+        "ticket_id": new_ticket.id,
         "tracking_id": new_ticket.tracking_id,
         "success": True,
         "channel": ChannelEnum.WEB_FORM.lower(),
     }
 
 
-@router.get("/", response_model=None)
+@router.get("/", response_model=list[TicketResponse])
 async def index(
     db: AsyncSession = Depends(get_db), current_user: User = Depends(get_current_user)
 ):
@@ -114,6 +115,7 @@ async def update(
             subject=ticket_update.subject,
             body=ticket_update.body,
             intent=ticket_update.intent,
+            priority=ticket_update.priority,
             confidence_level=ticket_update.confidence_level,
             status=ticket_update.status,
             escalation_level=ticket_update.escalation_level,
@@ -131,6 +133,7 @@ async def update(
             channel=ticket_update.channel,
             subject=ticket_update.subject,
             body=ticket_update.body,
+            priority=ticket_update.priority,
             intent=ticket_update.intent,
             confidence_level=ticket_update.confidence_level,
             status=ticket_update.status,
@@ -163,6 +166,7 @@ async def assign(
         channel=None,
         subject=None,
         body=None,
+        priority=None,
         intent=None,
         confidence_level=None,
         status=None,
@@ -193,6 +197,7 @@ async def ticket_status(
             channel=None,
             subject=None,
             body=None,
+            priority=None,
             intent=None,
             confidence_level=None,
             status=ticket_update.status,
@@ -212,6 +217,7 @@ async def ticket_status(
             channel=None,
             subject=None,
             body=None,
+            priority=None,
             intent=None,
             confidence_level=None,
             status=ticket_update.status,

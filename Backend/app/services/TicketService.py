@@ -56,7 +56,8 @@ class TicketService:
             intent=category if category else "general",
             confidence_level=predication_score,
             status=QueryStatusEnum.PENDING,
-            escalation_level=TicketPriorityEnum.to_level(priority_level),
+            priority=priority_level,
+            escalation_level=0,
             awaiting_student_input=False,
         )
 
@@ -66,7 +67,7 @@ class TicketService:
 
         history = TicketStatusHistory(
             ticket_id=new_ticket.id,
-            old_status=QueryStatusEnum.PENDING,
+            old_status=None,
             new_status=QueryStatusEnum.PENDING,
             changed_by=student_id,
         )
@@ -82,10 +83,12 @@ class TicketService:
         db: AsyncSession, student_id: int | None = None, assigned_id: int | None = None
     ) -> list[Ticket]:
         stmt = select(Ticket).options(
-            joinedload(Ticket.student),
-            joinedload(Ticket.assigned),
-            joinedload(Ticket.department),
-            joinedload(Ticket.category),
+            selectinload(Ticket.student),
+            selectinload(Ticket.assigned),
+            selectinload(Ticket.department),
+            selectinload(Ticket.category),
+            selectinload(Ticket.replies).options(joinedload(Reply.creator)),
+            selectinload(Ticket.ticket_status_history),
         )
         if student_id is not None:
             stmt = stmt.where(Ticket.student_id == student_id)
@@ -119,6 +122,7 @@ class TicketService:
         channel: str | None,
         subject: str | None,
         body: str | None,
+        priority: str | None,
         intent: str | None,
         confidence_level: float | None,
         status: str | None,
@@ -134,6 +138,8 @@ class TicketService:
             ticket.subject = subject
         if body is not None:
             ticket.body = body
+        if priority is not None:
+            ticket.priority = priority
         if intent is not None:
             ticket.intent = intent
         if confidence_level is not None:
