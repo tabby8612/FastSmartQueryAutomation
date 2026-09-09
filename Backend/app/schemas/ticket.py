@@ -79,13 +79,13 @@ class Creator(BaseModel):
 class Reply(BaseModel):
     id: int
     ticket_id: int
-    creator_id: int
+    creator_id: int | None
     is_ai_draft: int
     text: str
     status: Literal["sent", "draft"]
     send_at: datetime | None
     created_at: datetime
-    creator: Creator
+    creator: Creator | None
 
 
 class TicketStatusHistory(BaseModel):

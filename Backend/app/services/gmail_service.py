@@ -14,6 +14,7 @@ from googleapiclient.discovery import build
 from google.oauth2.credentials import Credentials
 from google.auth.transport.requests import Request
 from google_auth_oauthlib.flow import InstalledAppFlow
+from google.auth.exceptions import RefreshError
 
 from app.services.email_processing import process_incoming_email
 from app.schemas.incoming_email import IncomingEmail as IncomingEmailSchema
@@ -41,7 +42,26 @@ def get_gmail_service():
 
         # Existing token expired → refresh it
         if creds and creds.expired and creds.refresh_token:
-            creds.refresh(Request())
+            try:
+                print("Refreshing Gmail access token...")
+
+                creds.refresh(Request())
+
+                print("Gmail token refreshed successfully")
+            except RefreshError as error:
+                print(f"Gmail refresh token invalid: {error}")
+
+                if TOKEN_FILE.exists():
+                    TOKEN_FILE.unlink()
+
+                print("token.json deleted. Google authorization is required again.")
+
+                flow = InstalledAppFlow.from_client_secrets_file(
+                    str(CREDENTIALS_FILE),
+                    SCOPES,
+                )
+
+                creds = flow.run_local_server(port=0)
 
         # No token yet → login through browser
         else:

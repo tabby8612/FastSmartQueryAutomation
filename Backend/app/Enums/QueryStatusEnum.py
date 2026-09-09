@@ -4,8 +4,11 @@ from enum import Enum
 class QueryStatusEnum(str, Enum):
     OPEN = "open"
     PENDING = "pending"
-    IN_PROGRESS = "in_progress"
     ASSIGNED = "assigned"
+    IN_PROGRESS = "in_progress"
+    AWAITING_STUDENT = "awaiting_student"
+    ESCALATED = "escalated"
+    RESOLVED = "resolved"
     CLOSED = "closed"
 
     @classmethod
@@ -19,6 +22,12 @@ class QueryStatusEnum(str, Enum):
                 return "In Progress"
             case "assigned":
                 return "Assigned"
+            case "awaiting_student":
+                return "Awaiting Student"
+            case "escalated":
+                return "Escalated"
+            case "resolved":
+                return "Resolved"
             case "closed":
                 return "Closed"
             case _:

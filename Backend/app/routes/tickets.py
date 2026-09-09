@@ -8,6 +8,7 @@ import asyncio
 from app.database import get_db
 from app.schemas.ticket import TicketCreate, TicketResponse, TicketUpdate
 from app.services.TicketService import TicketService
+from app.services.escalation_service import EscalationService
 from app.helpers.security import get_current_user, get_active_user_by_token
 from app.models.user import User
 from app.Enums.ChannelEnum import ChannelEnum
@@ -298,3 +299,10 @@ async def ticket_stream(
         media_type="text/event-stream",
         headers={"Cache-Control": "no-cache", "X-Accel-Buffering": "no"},
     )
+
+
+@router.post("/escalation/process")
+async def process_escalation(db: AsyncSession = Depends(get_db)):
+    count = await EscalationService.process_overdue_ticket(db)
+
+    return {"message": "Escalation process completed", "escalated": count}
