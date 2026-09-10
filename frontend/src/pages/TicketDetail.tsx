@@ -223,7 +223,7 @@ function TicketDetailContent({ ticketId }: { ticketId: string }) {
               <header className="space-y-4 border-b p-6">
                 <div className="flex flex-wrap items-center justify-between gap-3">
                   <p className="font-medium text-muted-foreground">Ticket #{ticket.tracking_id}</p>
-                  <div className="flex gap-2"><Badge variant="outline" className="capitalize">{ticket.status}</Badge><Badge className={priority === "HIGH" ? "bg-red-100 text-red-800" : priority === "MEDIUM" ? "bg-amber-100 text-amber-800" : "bg-green-100 text-green-800"}>{priority}</Badge></div>
+                  <div className="flex gap-2"><Badge variant="outline" className="capitalize">{ticket.status}</Badge><Badge className={ticket.priority?.toLowerCase() === "high" ? "bg-red-100 text-red-800 capitalize" : ticket.priority?.toLowerCase() === "medium" ? "bg-amber-100 text-amber-800 capitalize" : "bg-green-100 text-green-800 capitalize"}>{ticket.priority ?? "-"}</Badge></div>
                 </div>
                 <h1 className="break-words text-2xl font-semibold md:text-3xl capitalize">{ticket.subject}</h1>
               </header>
@@ -279,7 +279,7 @@ function TicketDetailContent({ ticketId }: { ticketId: string }) {
                       </DialogContent>
                     </Dialog>
                   </div>
-                  <div><dt className="text-muted-foreground">Priority</dt><dd className="mt-1 font-medium capitalize">{priority}</dd></div>
+                  <div><dt className="text-muted-foreground">Priority</dt><dd className="mt-1 font-medium capitalize">{ticket.priority}</dd></div>
                   <div><dt className="text-muted-foreground">Awaiting Student Input</dt><dd className="mt-1 font-medium capitalize">{ticket.awaiting_student_input ? 'Yes' : 'No'}</dd></div>
                   <div><dt className="text-muted-foreground">Assign To</dt><dd className="mt-1 font-medium capitalize">{ticket.assigned?.full_name ?? "-"}</dd></div>
                 </dl>

@@ -18,7 +18,7 @@ def start_scheduler():
     scheduler.add_job(
         run_escalation_job,
         "interval",
-        hours=12,
+        minutes=15,
         id="ticket_escalation_job",
         replace_existing=True,
         max_instances=1,

@@ -28,8 +28,8 @@ priority_model = LogisticRegression(max_iter=1000)
 priority_model.fit(X, priorities)
 
 
-CONFIDENCE_THRESHOLD = 0.35
-DEFAULT_CATEGORY = "general"
+CONFIDENCE_THRESHOLD = 0.30
+DEFAULT_CATEGORY = "General"
 
 
 async def classify_issue(db: AsyncSession, text: str) -> dict:

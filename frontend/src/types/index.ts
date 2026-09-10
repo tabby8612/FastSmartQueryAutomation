@@ -8,6 +8,7 @@ export type Ticket = {
     "channel": "web_form" | "email" | "whatsapp",
     "subject": string,
     "body": string,
+    "priority": string,
     "intent": string,
     "confidence_level": string,
     "status": "open" | "closed" | "in_progress",
