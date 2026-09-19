@@ -12,14 +12,18 @@ class IncomingEmail(Base, TimestampMixin):
     id: Mapped[int] = mapped_column(primary_key=True, autoincrement=True)
     message_id: Mapped[str] = mapped_column(String(255), unique=True, nullable=False)
     email_from: Mapped[str] = mapped_column(String(255), nullable=False)
-    creator_id: Mapped[int] = mapped_column(ForeignKey("users.id"), nullable=True)
+    creator_id: Mapped[int | None] = mapped_column(
+        ForeignKey("users.id", ondelete="SET NULL"), nullable=True
+    )
     subject: Mapped[str] = mapped_column(String(255), nullable=True)
     body: Mapped[str] = mapped_column(Text, nullable=True)
     is_processed: Mapped[int] = mapped_column(SmallInteger, nullable=False, default=0)
-    ticket_id: Mapped[int] = mapped_column(ForeignKey("tickets.id"), nullable=True)
+    ticket_id: Mapped[int | None] = mapped_column(
+        ForeignKey("tickets.id", ondelete="SET NULL"), nullable=True
+    )
     received_on: Mapped[datetime | None] = mapped_column(nullable=True)
 
     creator: Mapped[User] = relationship(foreign_keys=[creator_id])
-    ticket: Mapped[Ticket] = relationship(foreign_keys=[ticket_id])
+    ticket: Mapped[Ticket] = relationship("Ticket")
 
     pass

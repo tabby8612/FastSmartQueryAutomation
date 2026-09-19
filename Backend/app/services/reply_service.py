@@ -8,12 +8,18 @@ from sqlalchemy.ext.asyncio import AsyncSession
 
 from app.Enums.ReplyStatusEnum import ReplyStatusEnum
 from app.Enums.QueryStatusEnum import QueryStatusEnum
+from app.Enums.NotificationTypeEnum import NotificationTypeEnum
+from app.Enums.NotificationChannelEnum import NotificationChannelEnum
+from app.Enums.NotificationStatusEnum import NotificationStatusEnum
 
 from app.models.reply import Reply
 from app.models.ticket import Ticket
 from app.models.user import User
 
 from app.services.TicketService import TicketService
+from app.services.notification_template import NotificationTemplate
+from app.services.notification_service import NotificationService
+
 
 from app.services.ai_reply_generator_service import (
     ai_reply_generator,
@@ -141,15 +147,32 @@ class ReplyService:
                 detail="Only draft replies can be sent",
             )
 
-        reply.status = ReplyStatusEnum.SENT
-        reply.send_at = datetime.now(timezone.utc)
-        reply.creator_id = (
+        creator_id = (
             ticket.student_id if current_user.is_student else ticket.assigned_id
         )
+        reply.status = ReplyStatusEnum.SENT
+        reply.send_at = datetime.now(timezone.utc)
+        reply.creator_id = creator_id
         ticket.awaiting_student_input = False if current_user.is_student else True
         ticket.status = QueryStatusEnum.PENDING
 
         await db.flush()
         await db.refresh(reply)
         await db.refresh(ticket)
+
+        new_reply_notification_template = NotificationTemplate.new_reply(ticket, reply)
+
+        await NotificationService.create_notification(
+            db,
+            recipient_id=(
+                ticket.assigned_id if current_user.is_student else ticket.student_id
+            ),
+            subject=new_reply_notification_template["subject"],
+            message_body=new_reply_notification_template["body"],
+            notification_type=NotificationTypeEnum.NEW_REPLY,
+            ticket_id=ticket.id,
+            notification_channel=NotificationChannelEnum.EMAIL,
+            notification_status=NotificationStatusEnum.PENDING,
+        )
+
         return reply

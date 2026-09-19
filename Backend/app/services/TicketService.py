@@ -10,12 +10,18 @@ from app.models.reply import Reply
 from app.models.user import User
 from app.models.role import Role
 from app.models.ticket_status_history import TicketStatusHistory
+from app.models.notification import Notification
 
 from app.Enums.QueryStatusEnum import QueryStatusEnum
 from app.Enums.RolesEnum import RolesEnum
 from app.Enums.TicketPriorityEnum import TicketPriorityEnum
+from app.Enums.NotificationTypeEnum import NotificationTypeEnum
+from app.Enums.NotificationChannelEnum import NotificationChannelEnum
+from app.Enums.NotificationStatusEnum import NotificationStatusEnum
 
 from app.services.TicketStatusHistoryService import TicketStatusHistoryService
+from app.services.notification_template import NotificationTemplate
+from app.services.notification_service import NotificationService
 
 from app.helpers.utils import generate_tracking_number
 
@@ -75,6 +81,42 @@ class TicketService:
         db.add(history)
         await db.flush()
         await db.refresh(history)
+
+        new_ticket_notification_template = NotificationTemplate.ticket_created(
+            new_ticket
+        )
+
+        new_ticket_notification = await NotificationService.create_notification(
+            db,
+            recipient_id=student_id,
+            subject=new_ticket_notification_template["subject"],
+            message_body=new_ticket_notification_template["body"],
+            notification_type=NotificationTypeEnum.TICKET_CREATED,
+            ticket_id=new_ticket.id,
+            notification_status=NotificationStatusEnum.PENDING,
+            notification_channel=NotificationChannelEnum.EMAIL,
+        )
+
+        db.add(new_ticket_notification)
+        await db.flush()
+
+        if assigned_id is not None:
+            assigned_notification_template = NotificationTemplate.ticket_assigned(
+                new_ticket
+            )
+
+            new_assigned_officer_notification = (
+                await NotificationService.create_notification(
+                    db,
+                    recipient_id=assigned_id,
+                    subject=assigned_notification_template["subject"],
+                    message_body=assigned_notification_template["body"],
+                    notification_type=NotificationTypeEnum.TICKET_ASSIGNED,
+                    ticket_id=new_ticket.id,
+                    notification_status=NotificationStatusEnum.PENDING,
+                    notification_channel=NotificationChannelEnum.EMAIL,
+                )
+            )
 
         return new_ticket
 

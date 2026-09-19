@@ -14,8 +14,14 @@ from app.models.department import Department
 from app.models.ticket_status_history import TicketStatusHistory
 
 from app.Enums.QueryStatusEnum import QueryStatusEnum
+from app.Enums.NotificationStatusEnum import NotificationStatusEnum
+from app.Enums.NotificationChannelEnum import NotificationChannelEnum
+from app.Enums.NotificationTypeEnum import NotificationTypeEnum
 
 from app.database import AsyncSessionLocal
+
+from app.services.notification_template import NotificationTemplate
+from app.services.notification_service import NotificationService
 
 
 class EscalationService:
@@ -89,6 +95,21 @@ class EscalationService:
             )
 
             db.add(history)
+
+            escalated_notification_template = NotificationTemplate.ticket_escalated(
+                ticket
+            )
+
+            await NotificationService.create_notification(
+                db,
+                recipient_id=hod_id,
+                subject=escalated_notification_template["subject"],
+                message_body=escalated_notification_template["body"],
+                notification_type=NotificationTypeEnum.ESCALATED,
+                ticket_id=ticket.id,
+                notification_status=NotificationStatusEnum.PENDING,
+                notification_channel=NotificationChannelEnum.EMAIL,
+            )
 
             escalated += 1
 

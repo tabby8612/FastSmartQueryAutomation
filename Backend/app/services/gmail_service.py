@@ -1,12 +1,16 @@
 import os
 import asyncio
 import traceback
+import base64
+
+from dotenv import load_dotenv
+
 from datetime import timezone
 from pathlib import Path
-import base64
 from email.utils import parseaddr
 from apscheduler.schedulers.asyncio import AsyncIOScheduler
 from email.utils import parsedate_to_datetime
+from email.message import EmailMessage
 
 from sqlalchemy import select
 
@@ -22,12 +26,16 @@ from app.database import AsyncSessionLocal
 from app.schemas.incoming_email import NewTicketEmail
 from app.models.incoming_email import IncomingEmail as IncomingEmailModel
 
+load_dotenv()
+
 SCOPES = ["https://www.googleapis.com/auth/gmail.modify"]
 
 BASE_DIR = Path(__file__).resolve().parents[2]
 
 CREDENTIALS_FILE = BASE_DIR / "gmail_credentials.json"
 TOKEN_FILE = BASE_DIR / "token.json"
+
+SYSTEM_EMAIL = os.getenv("UNIVERSITY_GMAIL_ADDRESS")
 
 
 def get_gmail_service():
@@ -79,11 +87,10 @@ def get_gmail_service():
 
 
 def get_unread_inbox_messages(service):
+    query = "in:inbox is:unread"
+
     result = (
-        service.users()
-        .messages()
-        .list(userId="me", q="in:inbox is:unread")
-        .execute(num_retries=3)
+        service.users().messages().list(userId="me", q=query).execute(num_retries=3)
     )
 
     return result.get("messages", [])
@@ -208,6 +215,14 @@ async def poll_university_email():
 
             parsed_email = parse_email(full_message)
 
+            sender_email = parsed_email["sender_email"]
+            subject = parsed_email["subject"]
+
+            if should_ignore_email(sender_email, subject):
+                print(f"Ignoring system email: {subject} from {sender_email}")
+                mark_email_as_read(service, message["id"])
+                continue
+
             try:
                 print(f"Processing Message with ID: {message["id"]}")
                 existing_message = await get_email_by_message_id(db, message["id"])
@@ -258,3 +273,63 @@ async def poll_university_email():
                     f"{parsed_email['gmail_message_id']}: {e}"
                 )
                 # traceback.print_exc()
+
+
+def should_ignore_email(sender_email: str, subject: str):
+    sender = sender_email.lower().strip()
+    subject = subject.lower().strip()
+
+    ignored_senders = [
+        "mailer-daemon@googlemail.com",
+        "mailer-daemon@gmail.com",
+        "postmaster@googlemail.com",
+        "postmaster@gmail.com",
+    ]
+
+    ignored_subjects = [
+        "delivery status notification",
+        "delivery status notification (failure)",
+        "undelivered mail returned to sender",
+        "mail delivery failed",
+        "delivery failure",
+        "returned mail",
+    ]
+
+    if sender == SYSTEM_EMAIL.lower().strip():
+        return True
+
+    if sender in ignored_senders:
+        return True
+
+    if subject in ignored_subjects:
+        return True
+
+    return False
+
+
+def send_email(body: str, receipient_email: str, subject: str, gmail_service):
+    message = EmailMessage()
+
+    message.set_content(body)
+
+    message["To"] = receipient_email
+    message["Subject"] = subject
+
+    encoded_message = base64.urlsafe_b64encode(message.as_bytes()).decode()
+
+    send_message = {"raw": encoded_message}
+
+    return (
+        gmail_service.users().messages().send(userId="me", body=send_message).execute()
+    )
+
+
+if __name__ == "__main__":
+    service = get_gmail_service()
+
+    send_email(
+        "FR-08 email notification test",
+        "bc230203410tsa@vu.edu.pk",
+        "Smart Query Test",
+        service,
+    )

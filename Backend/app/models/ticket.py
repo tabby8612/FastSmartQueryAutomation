@@ -19,14 +19,18 @@ class Ticket(Base, TimestampMixin):
     tracking_id: Mapped[str] = mapped_column(
         String(255), unique=True, nullable=False, index=True
     )
-    student_id: Mapped[int] = mapped_column(ForeignKey("users.id"), nullable=True)
+    student_id: Mapped[int | None] = mapped_column(
+        ForeignKey("users.id", ondelete="SET NULL"), nullable=True
+    )
     assigned_id: Mapped[int | None] = mapped_column(
-        ForeignKey("users.id"), nullable=True
+        ForeignKey("users.id", ondelete="SET NULL"), nullable=True
     )
-    department_id: Mapped[int] = mapped_column(
-        ForeignKey("departments.id"), nullable=True
+    department_id: Mapped[int | None] = mapped_column(
+        ForeignKey("departments.id", ondelete="SET NULL"), nullable=True
     )
-    category_id: Mapped[int] = mapped_column(ForeignKey("categories.id"), nullable=True)
+    category_id: Mapped[int | None] = mapped_column(
+        ForeignKey("categories.id", ondelete="SET NULL"), nullable=True
+    )
     channel: Mapped[str] = mapped_column(String(255), nullable=False)
     subject: Mapped[str] = mapped_column(String(255), nullable=False)
     body: Mapped[str] = mapped_column(Text, nullable=False)

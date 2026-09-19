@@ -12,8 +12,8 @@ class Category(Base, TimestampMixin):
     id: Mapped[int] = mapped_column(primary_key=True, autoincrement=True)
     name: Mapped[str] = mapped_column(String(255), nullable=False)
     description: Mapped[str | None] = mapped_column(Text, nullable=True)
-    department_id: Mapped[int] = mapped_column(
-        ForeignKey("departments.id"), nullable=True
+    department_id: Mapped[int | None] = mapped_column(
+        ForeignKey("departments.id", ondelete="SET NULL"), nullable=True
     )
 
     department: Mapped["Department"] = relationship(foreign_keys=[department_id])

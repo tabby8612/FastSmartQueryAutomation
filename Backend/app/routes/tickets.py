@@ -232,7 +232,7 @@ async def ticket_status(
     )
 
 
-@router.delete("/{ticket_id}", status_code=status.HTTP_204_NO_CONTENT)
+@router.delete("/{ticket_id}")
 async def delete(
     ticket_id: int,
     db: AsyncSession = Depends(get_db),
@@ -243,7 +243,10 @@ async def delete(
         raise HTTPException(
             status_code=status.HTTP_404_NOT_FOUND, detail="ticket not found"
         )
+
     await TicketService.delete(db, ticket)
+
+    return {"message": "Ticket has been deleted successfully", "success": True}
 
 
 @router.get("/{ticket_id}/stream")

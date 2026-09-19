@@ -17,6 +17,7 @@ from app.routes import (
     email,
     replies,
     ticket_status_history,
+    notification,
 )
 from app.scheduler.scheduler import scheduler, start_scheduler
 
@@ -59,3 +60,4 @@ app.include_router(replies.router)
 app.include_router(replies.send_router)
 app.include_router(email.router)
 app.include_router(ticket_status_history.router)
+app.include_router(notification.router)
