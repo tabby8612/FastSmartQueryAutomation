@@ -284,6 +284,7 @@ def should_ignore_email(sender_email: str, subject: str):
         "mailer-daemon@gmail.com",
         "postmaster@googlemail.com",
         "postmaster@gmail.com",
+        "no-reply@accounts.google.com",
     ]
 
     ignored_subjects = [
