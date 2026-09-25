@@ -64,7 +64,11 @@ async def index(
 ):
     if has_role(current_user, ["admin"]):
         return await TicketService.get_all(db)
-    if has_role(current_user, ["staff", "hod", "officer"]):
+    if has_role(current_user, ["hod"]):
+        return await TicketService.get_all(
+            db, assigned_id=current_user.id, department_id=current_user.department_id
+        )
+    if has_role(current_user, ["staff", "officer"]):
         return await TicketService.get_all(db, assigned_id=current_user.id)
     return await TicketService.get_all(db, student_id=current_user.id)
 
@@ -80,15 +84,25 @@ async def show(
         raise HTTPException(
             status_code=status.HTTP_404_NOT_FOUND, detail="ticket not found"
         )
+
     if has_role(current_user, ["admin"]):
         return ticket
+
     if (
-        has_role(current_user, ["staff", "hod", "officer"])
+        has_role(current_user, ["hod"])
+        and ticket.department_id == current_user.department_id
+    ):
+        return ticket
+
+    if (
+        has_role(current_user, ["staff", "officer"])
         and ticket.assigned_id == current_user.id
     ):
         return ticket
+
     if ticket.student_id == current_user.id:
         return ticket
+
     raise HTTPException(
         status_code=status.HTTP_403_FORBIDDEN,
         detail="You do not have permission to access this query",
@@ -124,7 +138,7 @@ async def update(
             resolved_at=ticket_update.resolved_at,
         )
     if (
-        has_role(current_user, ["staff", "hod"])
+        has_role(current_user, ["officer", "hod"])
         and ticket.assigned_id == current_user.id
     ):
         return await TicketService.update(
@@ -268,14 +282,14 @@ async def ticket_stream(
     if ticket is None:
         raise HTTPException(status.HTTP_404_NOT_FOUND, detail="Ticket Not Found")
 
-    if user.is_student:
+    if has_role(user, ["student"]):
         if ticket.student_id != user.id:
             raise HTTPException(
                 status.HTTP_401_UNAUTHORIZED,
                 detail="You are not authorized to access this resource",
             )
 
-    if user.is_officer:
+    if has_role(user, ["officer"]):
         if ticket.assigned_id != user.id:
             raise HTTPException(
                 status.HTTP_401_UNAUTHORIZED,
@@ -309,3 +323,10 @@ async def process_escalation(db: AsyncSession = Depends(get_db)):
     count = await EscalationService.process_overdue_ticket(db)
 
     return {"message": "Escalation process completed", "escalated": count}
+
+
+@router.get("/{department_id}/escalated", response_model=list[TicketResponse])
+async def escalated_ticket(department_id: int, db: AsyncSession = Depends(get_db)):
+    tickets = await TicketService.esclated_tickets(department_id, db)
+
+    return tickets

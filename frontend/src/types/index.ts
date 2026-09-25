@@ -20,7 +20,8 @@ export type Ticket = {
     "assigned": Officer,
     "department": Department,
     "category": Category,
-    "ticket_status_history": TicketStatusHistory[]
+    "ticket_status_history": TicketStatusHistory[],
+    "replies": Reply[]
   }
 
   export type Reply = {

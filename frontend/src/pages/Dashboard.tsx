@@ -49,9 +49,10 @@ export default function Page() {
   }, [ACCESS_TOKEN])
 
 
-  const openCount = tickets.filter((q) => q.status.toLowerCase() === "open").length
-  const closeCount = tickets.filter((q) => q.status.toLowerCase() === "closed").length
-  const inProgressCount = tickets.filter((q) => q.status.toLowerCase() === "pending").length
+  const pendingCount = tickets.filter((q) => q.status.toLowerCase() === "pending").length
+  const inProgressCount = tickets.filter((q) => q.status.toLowerCase() === "in_progress").length
+  const escalatedCount = tickets.filter((q) => q.status.toLowerCase() === "escalated").length
+  const closedCount = tickets.filter((q) => q.status.toLowerCase() === "closed").length
   const totalCount = tickets.length
 
 
@@ -73,7 +74,7 @@ export default function Page() {
               <div className="py-2 md:py-6 bg-white mx-5 px-6 rounded-2xl flex flex-col gap-5">
                 <h1 className="text-3xl font-bold">Hello, {user?.name ? user.name : "Anyonmous"}</h1>
                 {
-                  ROLE_NAME === "officer" && <h1 className="text-2xl font-bold text-muted-foreground">Department Name: <span className="text-primary capitalize">{user?.department?.name || "Not Assigned Yet"}</span></h1>
+                  (ROLE_NAME === "officer" || ROLE_NAME === "hod") && <h1 className="text-2xl font-bold text-muted-foreground">Department Name: <span className="text-primary capitalize">{user?.department?.name || "Not Assigned Yet"}</span></h1>
                 }
                 {
                   ROLE_NAME === "student" && <h1 className="text-xl font-bold text-muted-foreground">Here is the overview of tickets you have created</h1>
@@ -84,7 +85,7 @@ export default function Page() {
                 {
                   ROLE_NAME === "admin" && <h1 className="lg:text-xl font-bold text-muted-foreground">Here is the overview of all tickets</h1>
                 }
-                <div className="grid grid-cols-2 lg:grid-cols-4 gap-5">
+                <div className="grid grid-cols-2 lg:grid-cols-5 gap-5">
                   {loading ? (
                     <>
                       <SectionCard title="Open" value="—" description="Loading..." icon={BookOpenIcon} />
@@ -94,9 +95,10 @@ export default function Page() {
                     </>
                   ) : (
                     <>
-                      <SectionCard title="Open" value={String(openCount)} description="These are tickets that are opened" icon={BookOpenIcon} />
-                      <SectionCard title="In Progress" value={String(inProgressCount)} description="These are tickets that are pending" icon={Loader} />
-                      <SectionCard title="Closed" value={String(closeCount)} description="These are tickets that are closed" icon={BookOpenCheck} />
+                      <SectionCard title="Pending" value={String(pendingCount)} description="These are pending tickets" icon={BookOpenIcon} />
+                      <SectionCard title="Progress" value={String(inProgressCount)} description="These are in progress tickets" icon={Loader} />
+                      <SectionCard title="Escalated" value={String(escalatedCount)} description="These are escalated tickets" icon={BookOpenCheck} />
+                      <SectionCard title="Closed" value={String(closedCount)} description="These are closed tickets" icon={Hash} />
                       <SectionCard title="Total" value={String(totalCount)} description="These are total tickets" icon={Hash} />
                     </>
                   )}

@@ -118,11 +118,17 @@ class TicketService:
                 )
             )
 
+            db.add(new_assigned_officer_notification)
+            await db.flush()
+
         return new_ticket
 
     @staticmethod
     async def get_all(
-        db: AsyncSession, student_id: int | None = None, assigned_id: int | None = None
+        db: AsyncSession,
+        student_id: int | None = None,
+        assigned_id: int | None = None,
+        department_id: int | None = None,
     ) -> list[Ticket]:
         stmt = select(Ticket).options(
             selectinload(Ticket.student),
@@ -136,6 +142,9 @@ class TicketService:
             stmt = stmt.where(Ticket.student_id == student_id)
         if assigned_id is not None:
             stmt = stmt.where(Ticket.assigned_id == assigned_id)
+        if department_id is not None:
+            stmt = stmt.where(Ticket.department_id == department_id)
+
         result = await db.execute(stmt)
         return list(result.scalars().all())
 
@@ -215,6 +224,29 @@ class TicketService:
     async def delete(db: AsyncSession, query: Ticket) -> None:
         await db.delete(query)
         await db.flush()
+
+    @staticmethod
+    async def esclated_tickets(department_id: int, db: AsyncSession, is_Resolved: bool):
+        stmt = (
+            select(Ticket)
+            .where(Ticket.department_id == department_id, Ticket.escalation_level > 0)
+            .options(
+                selectinload(Ticket.student),
+                selectinload(Ticket.assigned),
+                selectinload(Ticket.category),
+                selectinload(Ticket.category),
+                selectinload(Ticket.department),
+                selectinload(Ticket.replies),
+                selectinload(Ticket.ticket_status_history),
+            )
+            .order_by(Ticket.created_at.desc())
+        )
+
+        result = await db.execute(stmt)
+
+        tickets = result.scalars().all()
+
+        return tickets
 
 
 async def get_officer_id_by_department_id(db: AsyncSession, deptID):

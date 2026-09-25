@@ -83,7 +83,7 @@ class EscalationService:
         for ticket, hod_id in tickets:
             old_status = ticket.status
 
-            ticket.assigned_id = hod_id
+            # ticket.assigned_id = hod_id  # FR-09 - Provides option for HOD to take owernship of ticket
             ticket.status = QueryStatusEnum.ESCALATED
             ticket.escalation_level = 1
 

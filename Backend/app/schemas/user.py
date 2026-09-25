@@ -41,8 +41,8 @@ class UserResponse(UserBase):
 
 
 class OfficerOptionResponse(BaseModel):
-    user_id: int
-    name: str
+    id: int
+    full_name: str
 
     model_config = ConfigDict(from_attributes=True)
 

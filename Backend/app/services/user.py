@@ -109,7 +109,7 @@ class UserService:
         )
         officers = result.scalars().all()
         return [
-            {"user_id": officer.id, "name": officer.full_name} for officer in officers
+            {"id": officer.id, "full_name": officer.full_name} for officer in officers
         ]
 
     @staticmethod

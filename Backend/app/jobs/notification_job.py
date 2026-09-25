@@ -49,7 +49,7 @@ async def process_notification(notification: Notification, db: AsyncSession):
         notification.retry_count += 1
         notification.error_message = str(e)
 
-        if notification.error_message >= 3:
+        if notification.retry_count >= 3:
             notification.status = NotificationStatusEnum.FAILED
 
     await db.commit()

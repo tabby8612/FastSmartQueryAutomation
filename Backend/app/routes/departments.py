@@ -48,7 +48,7 @@ async def get_department(department_id: int, db: AsyncSession = Depends(get_db))
     return department
 
 
-@router.put("/{department_id}", response_model=DepartmentResponse)
+@router.put("/{department_id}")
 async def update_department(
     department_id: int,
     department_update: DepartmentUpdate,

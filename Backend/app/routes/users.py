@@ -10,7 +10,10 @@ from app.Enums.RolesEnum import RolesEnum
 router = APIRouter(
     prefix="/users",
     tags=["users"],
-    dependencies=[Depends(get_current_user), Depends(allowed_roles([RolesEnum.ADMIN]))],
+    dependencies=[
+        Depends(get_current_user),
+        Depends(allowed_roles([RolesEnum.ADMIN, RolesEnum.HOD])),
+    ],
 )
 
 

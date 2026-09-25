@@ -70,6 +70,21 @@ def allowed_roles(allowed_roles):
     return check_roles
 
 
+def allowed_rolenames(roleNames: list[str]):
+    def check_rolenames(current_user: User = Depends(get_current_user)):
+
+        for roleName in roleNames:
+            if any(roleName == role.name for role in current_user.roles):
+                return current_user
+
+        raise HTTPException(
+            status_code=status.HTTP_401_UNAUTHORIZED,
+            detail="You are not allowed to access this resource",
+        )
+
+    return check_rolenames
+
+
 async def get_active_user_by_token(token: str, db: AsyncSession):
     payload = verify_token(token)
 

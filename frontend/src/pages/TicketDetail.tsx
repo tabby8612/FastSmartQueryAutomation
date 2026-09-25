@@ -10,7 +10,7 @@ import { Badge } from "@/components/ui/badge"
 import { Textarea } from "@/components/ui/textarea"
 import { useAuth } from "@/contexts/auth-context"
 import api from "@/lib/axios"
-import type { Reply, Ticket } from "@/types"
+import type { Reply, Ticket, User } from "@/types"
 import { Select, SelectContent, SelectGroup, SelectItem, SelectLabel, SelectTrigger, SelectValue } from "@/components/ui/select"
 import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle } from "@/components/ui/dialog"
 import { toast } from "sonner"
@@ -36,9 +36,10 @@ export function TicketDetail() {
 }
 
 function TicketDetailContent({ ticketId }: { ticketId: string }) {
-  const { getAccessToken, getRoleName } = useAuth()
+  const { getAccessToken, getRoleName, getUser } = useAuth()
   const token = getAccessToken()
   const [ticket, setTicket] = useState<Ticket | null>(null)
+  const [officers, setOfficers] = useState<User[] | null>(null)
   const [replies, setReplies] = useState<Reply[]>([])
   const [draft, setDraft] = useState<Reply | null>(null)
   const [text, setText] = useState("")
@@ -50,8 +51,16 @@ function TicketDetailContent({ ticketId }: { ticketId: string }) {
   const [pendingStatus, setPendingStatus] = useState<string | null>(null)
   const [updatingStatus, setUpdatingStatus] = useState(false)
   const [statusError, setStatusError] = useState("")
+  const [pendingPriority, setPendingPriority] = useState<string | null>(null)
+  const [updatingPriority, setUpdatingPriority] = useState(false)
+  const [priorityError, setPriorityError] = useState("")
+  const [pendingOfficer, setPendingOfficer] = useState<number | null>(null)
+  const [updatingOfficer, setUpdatingOfficer] = useState(false)
+  const [officerError, setOfficerError] = useState("")
   const [streamError, setStreamError] = useState("")
   const statusRequestPending = useRef(false)
+  const priorityRequestPending = useRef(false)
+  const officerRequestPending = useRef(false)
   const [action, setAction] = useState<"generate" | "save" | "send" | null>(null)
   const pending = useRef(false)
   const busy = action !== null
@@ -66,14 +75,11 @@ function TicketDetailContent({ ticketId }: { ticketId: string }) {
       try {
         if (!/^\d+$/.test(ticketId)) throw new Error("Invalid ticket ID")
         const config = { headers: { Authorization: `Bearer ${token}` }, signal: controller.signal }
-        const [ticketResponse, repliesResponse] = await Promise.all([
-          api.get<Ticket>(`/tickets/${ticketId}`, config),
-          api.get<Reply[]>(`/tickets/${ticketId}/replies/`, config),
-        ])
+        const ticketResponse = await api.get<Ticket>(`/tickets/${ticketId}`, config)
         if (controller.signal.aborted) return
         setTicket(ticketResponse.data)
-        setReplies(repliesResponse.data)
-        const savedDraft = repliesResponse.data.filter(reply => reply.status === "draft").at(-1) ?? null
+        setReplies(ticketResponse.data.replies)
+        const savedDraft = ticketResponse.data.replies.filter(reply => reply.status === "draft").at(-1) ?? null
         setDraft(savedDraft)
         setText(savedDraft?.text ?? "")
       } catch (error) {
@@ -85,6 +91,28 @@ function TicketDetailContent({ ticketId }: { ticketId: string }) {
     void load()
     return () => controller.abort()
   }, [ticketId, token, attempt])
+  
+  useEffect(() => {
+    const controller = new AbortController()
+    async function loadOfficers() {
+      setLoading(true)
+      setLoadError("")
+      try {
+        if (!ticket || !ticket.department_id || officers) return
+
+        const config = { headers: { Authorization: `Bearer ${token}` }, signal: controller.signal }
+        const officerResponse = await api.get<User[]>(`/users/department_officers/${ticket.department_id}`, config)
+        if (controller.signal.aborted) return
+        setOfficers(officerResponse.data)
+      } catch (error) {
+        if (!controller.signal.aborted) setLoadError(errorMessage(error))
+      } finally {
+        if (!controller.signal.aborted) setLoading(false)
+      }
+    }
+    void loadOfficers()
+    return () => controller.abort()
+  }, [ticket])
 
   useEffect(() => {
     if (loading || loadError || !token || !/^\d+$/.test(ticketId)) return
@@ -193,18 +221,83 @@ function TicketDetailContent({ ticketId }: { ticketId: string }) {
       setUpdatingStatus(false)
     }
   }
+  async function updatePriority() {
+    if (priorityRequestPending.current || !ticket || !pendingPriority || pendingPriority === ticket.priority) return
+    priorityRequestPending.current = true
+    setUpdatingPriority(true)
+    setPriorityError("")
+    try {
+      const response = await api.put<Ticket>(`/hod/tickets/${ticketId}/priority`, { priority: pendingPriority }, { headers })
+      setTicket(response.data)
+      setPendingPriority(null)
+      toast.success("Ticket priority updated successfully", { "className": "bg-green-100! border-green-800!", position: "top-center" })
+    } catch (error) {
+      setPriorityError(errorMessage(error))
+    } finally {
+      priorityRequestPending.current = false
+      setUpdatingPriority(false)
+    }
+  }
 
-  const priority = ["LOW", "MEDIUM", "HIGH"][ticket?.escalation_level ?? 0] ?? "LOW"
+  async function updateAssignedOfficer() {
+    if (officerRequestPending.current || !ticket || !pendingOfficer || pendingOfficer === ticket.assigned_id) return
+    officerRequestPending.current = true
+    setUpdatingOfficer(true)
+    setOfficerError("")
+    try {
+      const response = await api.put<Ticket>(`/hod/tickets/${ticketId}/assign`, { officer_id: pendingOfficer }, { headers })
+      setTicket(response.data)
+      setPendingOfficer(null)
+      toast.success("Ticket is assigned to new officer successfully", { "className": "bg-green-100! border-green-800!", position: "top-center" })
+    } catch (error) {
+      setOfficerError(errorMessage(error))
+    } finally {
+      officerRequestPending.current = false
+      setUpdatingOfficer(false)
+    }
+  }
+
+  async function takeOver() {
+    setUpdatingStatus(true)
+    setStatusError("")
+    try {
+      const response = await api.patch<Ticket>(`/hod/tickets/${ticketId}/take-over`, {},  { headers })
+      setTicket(response.data)
+      toast.success("Ticket is assigned to you", { "className": "bg-green-100! border-green-800!", position: "top-center" })
+    } catch (error) {
+      setStatusError(errorMessage(error))
+    } finally {
+      // statusRequestPending.current = false
+      setUpdatingStatus(false)
+    }
+  }
+
   const drafts = replies.filter(reply => reply.status === "draft")
   const roleName = getRoleName()
+  const user = getUser()
 
-  const items = [
+  const statusItems = [
     { label: "Open", value: "open" },
     { label: "Pending", value: "pending" },
     { label: "In Progress", value: "in_progress" },
     { label: "Assigned", value: "assigned" },
+    { label: "Escalated", value: "escalated" },
+    { label: "Resolved", value: "resolved" },
     { label: "Closed", value: "closed" },
   ]
+
+  const priorityItems = [
+    { label: "Low", value: "low" },
+    { label: "Medium", value: "medium" },
+    { label: "High", value: "high" },
+  ]
+
+  const departmentOfficers = officers ? officers.map(function (officer) {    
+    return {
+    label: officer.full_name, 
+    value: officer.id
+  }
+  }) : []  
 
   return (
     <SidebarProvider style={{ "--sidebar-width": "calc(var(--spacing) * 72)", "--header-height": "calc(var(--spacing) * 16)" } as CSSProperties}>
@@ -213,7 +306,7 @@ function TicketDetailContent({ ticketId }: { ticketId: string }) {
         <SiteHeader />
         <main className="mx-auto flex w-full max-w-7xl flex-col gap-5 p-4 md:p-8">
           {streamError && <p role="status" className="text-sm text-muted-foreground">{streamError}</p>}
-          <Link to={`${roleName === "student" ? "/student/my-issues" : roleName === "officer" ? "/officer/issues" : "/admin/issues"}`} className="flex items-center gap-2 text-sm text-muted-foreground hover:text-foreground"><ArrowLeft className="size-4" /> Back to issues</Link>
+          <Link to={`${roleName === "student" ? "/student/my-issues" : roleName === "officer" ? "/officer/issues" : roleName === "hod" ? "/hod/escalated-issues" : "/admin/issues"}`} className="flex items-center gap-2 text-sm text-muted-foreground hover:text-foreground"><ArrowLeft className="size-4" /> Back to issues</Link>
           {loading ? (
             <div role="status" className="flex items-center justify-center gap-3 rounded-xl border bg-card p-16"><Loader2 className="size-5 animate-spin" /> Loading ticket and conversation…</div>
           ) : loadError ? (
@@ -236,7 +329,7 @@ function TicketDetailContent({ ticketId }: { ticketId: string }) {
                   <div><dt className="text-muted-foreground">Status</dt>
                     {
                       roleName === "student" ? <dd className="mt-1 font-medium capitalize">{ticket.status}</dd> : (
-                        <Select items={items} value={ticket.status} disabled={updatingStatus} onValueChange={value => {
+                        <Select items={statusItems} value={ticket.status} disabled={updatingStatus} onValueChange={value => {
                           if (!value || value === ticket.status) return
                           setStatusError("")
                           setPendingStatus(value)
@@ -247,7 +340,7 @@ function TicketDetailContent({ ticketId }: { ticketId: string }) {
                           <SelectContent alignItemWithTrigger={false}>
                             <SelectGroup>
                               <SelectLabel>Status</SelectLabel>
-                              {items.map((item) => (
+                              {statusItems.map((item) => (
                                 <SelectItem key={item.value} value={item.value}>
                                   {item.label}
                                 </SelectItem>
@@ -265,7 +358,7 @@ function TicketDetailContent({ ticketId }: { ticketId: string }) {
                         <DialogHeader>
                           <DialogTitle>Change ticket status?</DialogTitle>
                           <DialogDescription>
-                            Change the status from {items.find(item => item.value === ticket.status)?.label ?? ticket.status} to {items.find(item => item.value === pendingStatus)?.label}?
+                            Change the status from {statusItems.find(item => item.value === ticket.status)?.label ?? ticket.status} to {statusItems.find(item => item.value === pendingStatus)?.label}?
                           </DialogDescription>
                         </DialogHeader>
                         {statusError && <p role="alert" className="text-sm text-destructive">{statusError}</p>}
@@ -279,9 +372,99 @@ function TicketDetailContent({ ticketId }: { ticketId: string }) {
                       </DialogContent>
                     </Dialog>
                   </div>
-                  <div><dt className="text-muted-foreground">Priority</dt><dd className="mt-1 font-medium capitalize">{ticket.priority}</dd></div>
+                  <div><dt className="text-muted-foreground">Priority</dt>{
+                      roleName !== "hod" ? <dd className="mt-1 font-medium capitalize">{ticket.priority}</dd> : (
+                        <Select items={priorityItems} value={ticket.priority} disabled={updatingPriority} onValueChange={value => {
+                          if (!value || value === ticket.priority) return
+                          setPriorityError("")
+                          setPendingPriority(value)
+                        }}>
+                          <SelectTrigger aria-label="Ticket priority" className="w-full max-w-48 border-muted-foreground mt-1">
+                            <SelectValue />
+                          </SelectTrigger>
+                          <SelectContent alignItemWithTrigger={false}>
+                            <SelectGroup>
+                              <SelectLabel>Priority</SelectLabel>
+                              {priorityItems.map((item) => (
+                                <SelectItem key={item.value} value={item.value}>
+                                  {item.label}
+                                </SelectItem>
+                              ))}
+                            </SelectGroup>
+                          </SelectContent>
+                        </Select>
+                      )
+                    }
+
+                    <Dialog open={pendingPriority !== null} onOpenChange={open => {
+                      if (!open && !priorityRequestPending.current) setPendingPriority(null)
+                    }}>
+                      <DialogContent showCloseButton={!updatingPriority}>
+                        <DialogHeader>
+                          <DialogTitle>Change ticket priority?</DialogTitle>
+                          <DialogDescription>
+                            Change the status from {priorityItems.find(item => item.value === ticket.priority)?.label ?? ticket.priority} to {priorityItems.find(item => item.value === pendingPriority)?.label}?
+                          </DialogDescription>
+                        </DialogHeader>
+                        {priorityError && <p role="alert" className="text-sm text-destructive">{priorityError}</p>}
+                        <DialogFooter>
+                          <Button variant="outline" disabled={updatingPriority} onClick={() => setPendingPriority(null)}>Cancel</Button>
+                          <Button disabled={updatingPriority} onClick={() => void updatePriority()}>
+                            {updatingPriority && <Loader2 className="animate-spin" />}
+                            {updatingPriority ? "Updating..." : "OK"}
+                          </Button>
+                        </DialogFooter>
+                      </DialogContent>
+                    </Dialog>
+                    
+                    
+                    </div>
                   <div><dt className="text-muted-foreground">Awaiting Student Input</dt><dd className="mt-1 font-medium capitalize">{ticket.awaiting_student_input ? 'Yes' : 'No'}</dd></div>
-                  <div><dt className="text-muted-foreground">Assign To</dt><dd className="mt-1 font-medium capitalize">{ticket.assigned?.full_name ?? "-"}</dd></div>
+                  <div><dt className="text-muted-foreground">Assign To</dt>{
+                      roleName !== "hod" && officers ? <dd className="mt-1 font-medium capitalize">{ticket.assigned?.full_name ?? '-'}</dd> : (
+                        <Select items={departmentOfficers} value={ticket.assigned_id} disabled={false} onValueChange={value => {
+                          if (!value || value === ticket.assigned_id) return
+                          setOfficerError("")
+                          setPendingOfficer(+value)
+                        }}>
+                          <SelectTrigger aria-label="Ticket Officer" className="w-full max-w-48 border-muted-foreground mt-1">
+                            <SelectValue />
+                          </SelectTrigger>
+                          <SelectContent alignItemWithTrigger={false}>
+                            <SelectGroup>
+                              <SelectLabel>Department Officer</SelectLabel>
+                              {departmentOfficers.map((item) => (
+                                <SelectItem key={item.value} value={item.value}>
+                                  {item.label}
+                                </SelectItem>
+                              ))}
+                            </SelectGroup>
+                          </SelectContent>
+                        </Select>
+                      )
+                    }
+                    
+                    <Dialog open={pendingOfficer !== null} onOpenChange={open => {
+                      if (!open && !officerRequestPending.current) setPendingOfficer(null)
+                    }}>
+                      <DialogContent showCloseButton={!updatingOfficer}>
+                        <DialogHeader>
+                          <DialogTitle>Change Assigned Officer?</DialogTitle>
+                          <DialogDescription>
+                            Change the assigned officer from {departmentOfficers.find(item => item.value === ticket.assigned?.id)?.label ?? ticket.assigned?.full_name} to {departmentOfficers.find(item => item.value === pendingOfficer)?.label}?
+                          </DialogDescription>
+                        </DialogHeader>
+                        {officerError && <p role="alert" className="text-sm text-destructive">{officerError}</p>}
+                        <DialogFooter>
+                          <Button variant="outline" disabled={updatingOfficer} onClick={() => setPendingOfficer(null)}>Cancel</Button>
+                          <Button disabled={updatingOfficer} onClick={() => void updateAssignedOfficer()}>
+                            {updatingOfficer && <Loader2 className="animate-spin" />}
+                            {updatingOfficer ? "Updating..." : "OK"}
+                          </Button>
+                        </DialogFooter>
+                      </DialogContent>
+                    </Dialog>
+                    </div>
                 </dl>
                 <div className="text-sm">
                   <p className="text-muted-foreground">Ticket Query</p>
@@ -307,7 +490,7 @@ function TicketDetailContent({ ticketId }: { ticketId: string }) {
                   </div>
                 ))}
               </section>
-              <section className="space-y-4 p-6" aria-labelledby="reply-heading" aria-busy={busy}>
+              <section className="space-y-4 p-6 space-x-2" aria-labelledby="reply-heading" aria-busy={busy}>
                 <h2 id="reply-heading" className="text-lg font-semibold">Reply</h2>
                 {drafts.length > 0 && <div className="space-y-2"><label htmlFor="saved-draft" className="text-sm font-medium">Saved drafts</label><select id="saved-draft" className="w-full rounded-lg border bg-background p-2 text-sm" disabled={busy || dirty} value={draft?.id ?? ""} onChange={event => { const selected = drafts.find(reply => reply.id === Number(event.target.value)); if (selected) { setDraft(selected); setText(selected.text); setError(""); setNotice("") } }}><option value="" disabled>Select a draft</option>{drafts.map(reply => <option key={reply.id} value={reply.id}>Draft #{reply.id} · {formatDate(reply.created_at)}</option>)}</select></div>}
                 {
@@ -317,6 +500,11 @@ function TicketDetailContent({ ticketId }: { ticketId: string }) {
                       {action === "generate" ? "Generating AI draft…" : "Generate AI Draft"}
                     </Button>
                   )
+                }
+                {
+                  roleName === "hod" && <Button variant="outline" disabled={ticket.assigned_id === user?.id} onClick={() => void takeOver()}>
+                      Take Over Ticket
+                    </Button>
                 }
 
                 <p className="text-sm text-muted-foreground">{action === "generate" ? "This may take a little while. Please wait while your draft is generated." : draft ? "Review your saved draft and edit it before sending." : "Generate a draft or write your own reply below."}</p>

@@ -12,7 +12,7 @@ function formatDate(value: string | null) {
 }
 
 export default function Timeline({ timeline }: TimelineProps) {
-  if (timeline.length === 0) {
+  if (timeline?.length === 0) {
     return <p className="p-4 text-sm text-muted-foreground">No status history yet.</p>
   }
 

@@ -53,6 +53,18 @@ const data = {
       icon: IconAddressBook,
     },
   ],
+  hod: [
+    {
+      title: "Dashboard",
+      url: "/hod/dashboard",
+      icon: IconDashboard,
+    },
+    {
+      title: "Escalated Issues",
+      url: "/hod/escalated-issues",
+      icon: IconAddressBook,
+    },
+  ],
   admin: [
     {
       title: "Dashboard",

@@ -39,6 +39,8 @@ export function LoginForm({
         return navigate("/officer/dashboard")
       } else if (user.rolename === "admin") {
         return navigate("/admin/dashboard")
+      } else if (user.rolename === "hod") {
+        return navigate("/hod/dashboard")
       }
 
       return navigate("/student/dashboard")

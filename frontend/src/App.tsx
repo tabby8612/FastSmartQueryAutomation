@@ -15,6 +15,7 @@ import { Categories } from './pages/admin/Categories'
 import { Departments } from './pages/admin/Departments'
 import GoogleCallback from './pages/GoogleCallback'
 import { TicketDetail } from './pages/TicketDetail'
+import { HodIssues } from './pages/hod/HodIssues'
 
 function App() {
   return (
@@ -51,10 +52,28 @@ function App() {
           <Route
             path="/admin/dashboard"
             element={
-                <ProtectedRoute>
+              <ProtectedRoute>
                 <Dashboard />
               </ProtectedRoute>
-              
+
+            }
+          />
+          <Route
+            path="/hod/dashboard"
+            element={
+              <ProtectedRoute allowedRoles={["hod"]}>
+                <Dashboard />
+              </ProtectedRoute>
+
+            }
+          />
+          <Route
+            path="/hod/escalated-issues"
+            element={
+              <ProtectedRoute allowedRoles={["hod"]}>
+                <HodIssues />
+              </ProtectedRoute>
+
             }
           />
           <Route

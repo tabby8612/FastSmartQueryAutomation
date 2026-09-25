@@ -4,7 +4,7 @@ import { useEffect, useState } from "react"
 import { useAuth } from "@/contexts/auth-context"
 import { useNavigate } from "react-router-dom"
 
-export function ProtectedRoute({ children }: { children: React.ReactNode }) {
+export function ProtectedRoute({ children, allowedRoles = null }: { children: React.ReactNode, allowedRoles?: string[] | null }) {
   const { profile } = useAuth()
   const navigate = useNavigate()
   const [checkingProfile, setCheckingProfile] = useState(true)
@@ -18,6 +18,11 @@ export function ProtectedRoute({ children }: { children: React.ReactNode }) {
       if (!isMounted) return
 
       if (!currentUser) {
+        navigate("/", { replace: true })
+        return
+      }
+
+      if (allowedRoles && !allowedRoles.includes(currentUser.rolename)) {
         navigate("/", { replace: true })
         return
       }
