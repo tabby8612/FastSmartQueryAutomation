@@ -97,7 +97,7 @@ export type TicketStatus = "open" | "pending" | "assigned" | "in_progress" | "re
 
 export type AnalyticsSummary = {
     total_tickets: number
-    open_tickets: number
+    pending_tickets: number
     resolved_tickets: number
     escalated_tickets: number
 }
@@ -116,4 +116,12 @@ export type Escalation = {
     total_escalated: number,
     not_escalated: number,
     escalation_rate: string
+}
+
+export type DepartmentPerformance = {
+    department: string,
+    total: number,
+    pending: number,
+    escalated: number,
+    closed: number
 }

@@ -16,6 +16,7 @@ import { Departments } from './pages/admin/Departments'
 import GoogleCallback from './pages/GoogleCallback'
 import { TicketDetail } from './pages/TicketDetail'
 import { HodIssues } from './pages/hod/HodIssues'
+import { AdminDashboard } from './pages/admin/AdminDashboard'
 
 function App() {
   return (
@@ -53,7 +54,7 @@ function App() {
             path="/admin/dashboard"
             element={
               <ProtectedRoute allowedRoles={["admin"]}>
-                <Dashboard />
+                <AdminDashboard />
               </ProtectedRoute>
 
             }
