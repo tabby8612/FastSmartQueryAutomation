@@ -19,6 +19,7 @@ from app.routes import (
     ticket_status_history,
     notification,
     hod,
+    analytics,
 )
 from app.scheduler.scheduler import scheduler, start_scheduler
 
@@ -63,3 +64,4 @@ app.include_router(email.router)
 app.include_router(ticket_status_history.router)
 app.include_router(notification.router)
 app.include_router(hod.router)
+app.include_router(analytics.router)

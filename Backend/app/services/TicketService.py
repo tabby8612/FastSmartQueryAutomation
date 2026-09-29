@@ -1,5 +1,7 @@
 from fastapi import HTTPException
 
+from datetime import datetime, timezone
+
 from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy.future import select
 from sqlalchemy.orm import joinedload, selectinload
@@ -197,11 +199,42 @@ class TicketService:
             ticket.confidence_level = confidence_level
         if status is not None:
             if ticket.status != status:
-                history = await TicketStatusHistoryService.create(
-                    db, ticket, status, user_id
+
+                if status == QueryStatusEnum.RESOLVED:
+                    ticket.resolved_at = datetime.now()
+
+                if status == QueryStatusEnum.OPEN:
+                    ticket.resolved_at = None
+
+                history = TicketStatusHistory(
+                    ticket_id=ticket.id,
+                    old_status=ticket.status,
+                    new_status=status,
+                    changed_by=user_id,
                 )
+
+                status_change_notification_template = (
+                    NotificationTemplate.status_changed(ticket, ticket.status, status)
+                )
+
+                status_change_notification = (
+                    await NotificationService.create_notification(
+                        db,
+                        recipient_id=ticket.student_id,
+                        subject=status_change_notification_template["subject"],
+                        message_body=status_change_notification_template["body"],
+                        notification_type=NotificationTypeEnum.STATUS_CHANGED,
+                        ticket_id=ticket.id,
+                        notification_status=NotificationStatusEnum.PENDING,
+                        notification_channel=NotificationChannelEnum.EMAIL,
+                    )
+                )
+
                 ticket.status = status
-                await db.refresh(history)
+
+                db.add(history)
+                db.add(status_change_notification)
+                await db.flush()
 
         if escalation_level is not None:
             ticket.escalation_level = escalation_level

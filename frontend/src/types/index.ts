@@ -94,3 +94,26 @@ export type TicketStatusHistory = {
 }
 
 export type TicketStatus = "open" | "pending" | "assigned" | "in_progress" | "resolved" | "closed"
+
+export type AnalyticsSummary = {
+    total_tickets: number
+    open_tickets: number
+    resolved_tickets: number
+    escalated_tickets: number
+}
+
+export type TicketTrend = {
+    date: string,
+    count: number
+}
+
+export type AnalyticsCount = {
+    name: string,
+    count: number
+}
+
+export type Escalation = {
+    total_escalated: number,
+    not_escalated: number,
+    escalation_rate: string
+}
