@@ -40,6 +40,11 @@ const data = {
       title: "My Issue",
       url: "/student/my-issues",
       icon: IconAddressBook,
+    },
+    {
+      title: "Announcements",
+      url: "/students/announcements",
+      icon: IconSpeakerphone,
     }
   ],
   officer: [

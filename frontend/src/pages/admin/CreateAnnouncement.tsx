@@ -14,6 +14,7 @@ import { Field, FieldContent, FieldDescription, FieldLabel, FieldTitle } from "@
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
 import type { Department } from "@/types"
 import { isAxiosError } from "axios"
+import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle } from "@/components/ui/dialog"
 
 export default function CreateAnnouncement() {
     const { role_name, access_token } = useAuth()
@@ -21,7 +22,9 @@ export default function CreateAnnouncement() {
     const [successMessage, setSuccessMessage] = useState<string | null>(null)
     const [isDepartmentStudent, setIsDepartmentStudent] = useState(false)
     const [allDepartments, setAllDepartments] = useState<Department[] | null>(null)
-    const [errors, setErrors] = useState<{ title?: string; body?: string, audience_type?: string, department_id?: number | null }>({})
+    const [errors, setErrors] = useState<Partial<Record<"title" | "body" | "audience_type" | "department_id", string>>>({})
+    const [confirmationOpen, setConfirmationOpen] = useState(false)
+    const [isSubmitting, setIsSubmitting] = useState(false)
     const [submissionError, setSubmissionError] = useState<string>("")
     const [submissionData, setSubmissionData] = useState({
         title: "",
@@ -59,37 +62,51 @@ export default function CreateAnnouncement() {
         }
 
         fetchDepartments()
-    }, [access_token])
+    }, [access_token, navigate])
 
-    const handleSubmit = async (e: React.SubmitEvent) => {
+    const handleSubmit = (e: React.SubmitEvent) => {
         e.preventDefault()
+        if (isSubmitting) return
         setErrors({})
         setSubmissionError("")
+        if (submissionData.audience_type === "department" && !submissionData.department_id) {
+            setErrors({ department_id: "Please select a department." })
+            return
+        }
+        setConfirmationOpen(true)
+    }
+
+    const confirmSubmit = async () => {
+        if (isSubmitting) return
+        setIsSubmitting(true)
+        setSubmissionError("")
         try {
-            console.info(submissionData)
             const response = await api.post("/admin/announcements", submissionData, {
                 headers: { Authorization: `Bearer ${access_token}` },
             })
             setSuccessMessage(response.data.message)
-        } catch (error: any) {
+        } catch (error: unknown) {
             if (isAxiosError(error) && error.status == 408) navigate("/")
 
-            const fieldErrors: { title?: string; body?: string, audience_type?: string, department_id?: null | number } = {}
-            const detail = error.response?.data?.detail
+            const fieldErrors: typeof errors = {}
+            const detail = isAxiosError(error) ? error.response?.data?.detail : undefined
             if (Array.isArray(detail)) {
-                detail.forEach((err: any) => {
+                detail.forEach((err: { loc?: (string | number)[]; msg?: string }) => {
                     const field = err.loc?.[1] as string
                     if (field === "title" || field === "body" || field === "audience_type" || field === "department_id") {
                         fieldErrors[field] = err.msg
                     }
                 })
             } else {
-                setSubmissionError(detail)
+                setSubmissionError(typeof detail === "string" ? detail : "Failed to create announcement. Please try again.")
 
             }
             
-            setSubmissionError(error.response?.data?.detail[0].msg)
+            if (Array.isArray(detail)) setSubmissionError(detail[0]?.msg || "Please check the announcement details.")
             setErrors(fieldErrors)
+        } finally {
+            setIsSubmitting(false)
+            setConfirmationOpen(false)
         }
     }
 
@@ -113,7 +130,7 @@ export default function CreateAnnouncement() {
                                     <div className="flex flex-col items-center gap-4">
                                         <h1 className="text-4xl font-bold text-green-600">Success!</h1>
                                         <p className="text-lg text-center">{successMessage}</p>
-                                        <p className="text-sm text-muted-foreground">Redirecting to dashboard in 5 seconds...</p>
+                                        <p className="text-sm text-muted-foreground">Redirecting to announcements in 5 seconds...</p>
                                     </div>
                                 ) : (
                                     <>
@@ -141,7 +158,7 @@ export default function CreateAnnouncement() {
                                                                 "title": e.target.value
                                                             }
                                                         })
-                                                        if (errors) setErrors((prev) => ({ ...prev, subject: undefined }))
+                                                        if (errors.title) setErrors((prev) => ({ ...prev, title: undefined }))
                                                         if (submissionError) setSubmissionError('')
                                                     }}
                                                     className="border-stone-500"
@@ -204,7 +221,10 @@ export default function CreateAnnouncement() {
                                                 <Select
                                                     disabled={!isDepartmentStudent}
                                                     value={submissionData.department_id === null ? "all" : String(submissionData.department_id)}
-                                                    onValueChange={(value) => setSubmissionData(prev => ({ ...prev, audience_type: "department", "department_id": value ? +value : null }))}
+                                                    onValueChange={(value) => {
+                                                        setSubmissionData(prev => ({ ...prev, department_id: value && value !== "all" ? Number(value) : null }))
+                                                        setErrors(prev => ({ ...prev, department_id: undefined }))
+                                                    }}
                                                 >
                                                     <SelectTrigger id="departments" className="min-w-48  w-full border-stone-500" aria-label="Filter by department">
                                                         <SelectValue className="capitalize">{submissionData.department_id === null ? "Select Department" : allDepartments?.find(dept => dept.id === submissionData.department_id)?.name}</SelectValue>
@@ -222,7 +242,7 @@ export default function CreateAnnouncement() {
                                             </div>
                                             <div className="flex gap-4 mt-4 justify-end">
                                                 <Button type="button" className="w-1/2 bg-stone-300" variant="outline" onClick={() => navigate("/admin/announcements")}>Cancel</Button>
-                                                <Button type="submit" className="w-1/2">Submit New Announcement</Button>
+                                                <Button type="submit" className="w-1/2" disabled={isSubmitting}>Create Announcement</Button>
                                             </div>
                                         </form>
                                     </>
@@ -233,6 +253,23 @@ export default function CreateAnnouncement() {
                         </div>
                     </div>
                 </div>
+                <Dialog open={confirmationOpen} onOpenChange={(open) => { if (!isSubmitting) setConfirmationOpen(open) }}>
+                    <DialogContent showCloseButton={!isSubmitting}>
+                        <DialogHeader>
+                            <DialogTitle>Create this announcement?</DialogTitle>
+                            <DialogDescription>Review the details below before confirming. Students in the selected audience will be notified.</DialogDescription>
+                        </DialogHeader>
+                        <div className="max-h-80 space-y-4 overflow-y-auto break-words">
+                            <div><p className="font-semibold">Title</p><p>{submissionData.title}</p></div>
+                            <div><p className="font-semibold">Audience</p><p>{submissionData.audience_type === "all" ? "All students" : allDepartments?.find(dept => dept.id === submissionData.department_id)?.name}</p></div>
+                            <div><p className="font-semibold">Description</p><p className="whitespace-pre-wrap">{submissionData.body}</p></div>
+                        </div>
+                        <DialogFooter>
+                            <Button type="button" variant="outline" disabled={isSubmitting} onClick={() => setConfirmationOpen(false)}>Cancel</Button>
+                            <Button type="button" disabled={isSubmitting} onClick={confirmSubmit}>{isSubmitting ? "Creating..." : "Confirm and create"}</Button>
+                        </DialogFooter>
+                    </DialogContent>
+                </Dialog>
             </SidebarInset>
         </SidebarProvider>
     )

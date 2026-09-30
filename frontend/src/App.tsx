@@ -19,12 +19,14 @@ import { HodIssues } from './pages/hod/HodIssues'
 import { AdminDashboard } from './pages/admin/AdminDashboard'
 import { Announcement } from './pages/admin/Announcement'
 import CreateAnnouncement from './pages/admin/CreateAnnouncement'
+import { StudentAnnouncements } from './pages/student/Announcements'
 
 function App() {
   return (
     <AuthProvider>
       <BrowserRouter>
         <Routes>
+          <Route path="/students/announcements" element={<ProtectedRoute allowedRoles={["student"]}><StudentAnnouncements /></ProtectedRoute>} />
           <Route path="/ticket/:ticketId" element={<ProtectedRoute><TicketDetail /></ProtectedRoute>} />
           <Route path="/" element={<LoginPage />} />
           <Route path="/auth/callback" element={<GoogleCallback />} />
