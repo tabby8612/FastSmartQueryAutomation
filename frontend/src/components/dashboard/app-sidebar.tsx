@@ -8,7 +8,8 @@ import {
   IconUser,
   IconUserPlus,
   IconTabs,
-  IconBrandOffice
+  IconBrandOffice,
+  IconSpeakerphone
 } from "@tabler/icons-react"
 
 import { NavMain } from "@/components/dashboard/nav-main"
@@ -75,6 +76,11 @@ const data = {
       title: "All Issues",
       url: "/admin/issues",
       icon: IconAddressBook,
+    },
+    {
+      title: "Announcements",
+      url: "/admin/announcements",
+      icon: IconSpeakerphone,
     },
     {
       title: "Users",

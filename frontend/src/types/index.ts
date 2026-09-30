@@ -125,3 +125,15 @@ export type DepartmentPerformance = {
     escalated: number,
     closed: number
 }
+
+export type Announcement = {
+    id: number,
+    title: string,
+    body: string,
+    audience_type: string,
+    department_id?: number,
+    creator_id: number,
+    created_at: string,
+    creator: User,
+    department?: Department
+  }

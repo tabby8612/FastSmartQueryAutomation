@@ -19,6 +19,8 @@ from app.models.ticket_status_history import TicketStatusHistory
 
 from app.models.notification import Notification
 
+from app.models.announcements import Announcements
+
 __all__ = [
     "Base",
     "TimestampMixin",
@@ -32,4 +34,5 @@ __all__ = [
     "Reply",
     "TicketStatusHistory",
     "Notification",
+    "Announcements",
 ]

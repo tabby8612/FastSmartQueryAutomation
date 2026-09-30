@@ -17,6 +17,8 @@ import GoogleCallback from './pages/GoogleCallback'
 import { TicketDetail } from './pages/TicketDetail'
 import { HodIssues } from './pages/hod/HodIssues'
 import { AdminDashboard } from './pages/admin/AdminDashboard'
+import { Announcement } from './pages/admin/Announcement'
+import CreateAnnouncement from './pages/admin/CreateAnnouncement'
 
 function App() {
   return (
@@ -146,6 +148,22 @@ function App() {
             element={
               <ProtectedRoute>
                 <Departments />
+              </ProtectedRoute>
+            }
+          />
+          <Route
+            path="/admin/announcements"
+            element={
+              <ProtectedRoute allowedRoles={["admin"]}>
+                <Announcement />
+              </ProtectedRoute>
+            }
+          />
+          <Route
+            path="/admin/announcements/create"
+            element={
+              <ProtectedRoute allowedRoles={["admin"]}>
+                <CreateAnnouncement />
               </ProtectedRoute>
             }
           />
