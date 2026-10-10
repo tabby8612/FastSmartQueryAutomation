@@ -21,6 +21,7 @@ from app.routes import (
     hod,
     analytics,
     announcement,
+    report,
 )
 from app.scheduler.scheduler import scheduler, start_scheduler
 
@@ -67,3 +68,4 @@ app.include_router(notification.router)
 app.include_router(hod.router)
 app.include_router(analytics.router)
 app.include_router(announcement.router)
+app.include_router(report.router)

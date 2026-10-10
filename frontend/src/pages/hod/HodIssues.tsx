@@ -6,6 +6,11 @@ import { useAuth } from "@/contexts/auth-context"
 import api from "@/lib/axios"
 import { DataTable } from "@/components/dashboard/data-table"
 import type { Ticket } from "@/types"
+import { Card, CardContent, CardHeader } from "@/components/ui/card"
+import { Button } from "@/components/ui/button"
+import { exportToExcel, exportToPDF } from "@/services/export_service"
+import { IconFileExcel, IconPdf } from "@tabler/icons-react"
+import { toast } from "sonner"
 
 export function HodIssues() {
   const { role_name, access_token } = useAuth()
@@ -52,6 +57,38 @@ export function HodIssues() {
                   Here is the overview of Escalated Issues
                 </p>
                 </div>
+              {
+          tickets && (
+            <Card className="md:py-6 bg-white mx-5 px-6">
+              <CardHeader><h1 className="text-2xl font-bold">Export Report</h1><p className="text-muted-foreground">Choose the correct option to download the filtered report.</p></CardHeader>
+              <CardContent>
+                <h1 className="text-2xl font-bold mt-2">Number of Filtered Tickets: <span className="text-4xl text-primary">{tickets?.length}</span></h1>
+                <div className="mt-7 flex gap-3">
+                  <Button className="w-1/2 h-10" onClick={() => {
+                    if (tickets.length < 1) {
+                      toast.error("No data available to export", {
+                        richColors: true,
+                        position: "top-center"
+                      })
+                    } else {
+                      exportToExcel(tickets)
+                    }
+                  }}><IconFileExcel />Export to XLSX</Button>
+                  <Button className="w-1/2 h-10" onClick={() => {
+                    if (tickets.length < 1) {
+                      toast.error("No data available to export", {
+                        richColors: true,
+                        position: "top-center"
+                      })
+                    } else {
+                      exportToPDF(tickets)
+                    }
+                  }}><IconPdf />Export to PDF</Button>
+                </div>
+              </CardContent>
+            </Card>
+          )
+        }
               <div className="py-2 mx-6 rounded-2xl pt-5 bg-white">
                 {/* <OfficerDataTable data={myQueries} /> */}
                 <DataTable data={tickets} />

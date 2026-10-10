@@ -103,9 +103,9 @@ export default function Page() {
                 <div className="px-4 lg:px-6">
                 </div>
               </div>
-              <div className="py-2 mx-6 rounded-2xl pt-5 bg-white">
-                  {/* <ChartAreaInteractive /> */}
-              </div>
+              {/* <div className="py-2 mx-6 rounded-2xl pt-5 bg-white">
+                  <ChartAreaInteractive />
+              </div> */}
               <div className="py-2 mx-6 rounded-2xl pt-5 bg-white">
                 <DataTable data={tickets} />
               </div>

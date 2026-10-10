@@ -8,6 +8,8 @@ from app.database import get_db
 
 from app.helpers.security import allowed_rolenames
 
+from app.models.user import User
+
 from app.services.analytics_service import AnalyticsService
 
 router = APIRouter(
@@ -143,6 +145,7 @@ async def department_report(
     end_date: date | None = None,
     department_id: int | None = None,
     category_id: int | None = None,
+    allowed_roles: User = Depends(allowed_rolenames(["admin", "hod"])),
 ):
     escalated_ticket = await AnalyticsService.department_report(
         db, start_date, end_date, department_id, category_id

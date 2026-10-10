@@ -137,3 +137,34 @@ export type Announcement = {
     creator: User,
     department?: Department
   }
+
+export type QueryReport = {
+    id: number;
+    tracking_id: string;
+
+    subject: string;
+
+    student_name: string | null;
+
+    department_name: string | null;
+
+    category_name: string | null;
+
+    assigned_officer: string | null;
+
+    channel: string;
+
+    status: string;
+
+    priority: string;
+
+    intent: string | null;
+
+    confidence_level: number | null;
+
+    escalation_level: number;
+
+    created_at: string;
+
+    resolved_at: string | null;
+}
