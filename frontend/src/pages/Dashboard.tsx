@@ -7,7 +7,7 @@ import {
   SidebarProvider,
 } from "@/components/ui/sidebar"
 import { useAuth } from "@/contexts/auth-context"
-import { BookOpenCheck, BookOpenIcon, Hash, Loader } from "lucide-react"
+import { BookOpenCheck, BookOpenIcon, Circle, Hash, Loader } from "lucide-react"
 import { useEffect, useState } from "react"
 import api from "@/lib/axios"
 import { AxiosError } from "axios"
@@ -52,7 +52,6 @@ export default function Page() {
   const closedCount = tickets.filter((q) => q.status.toLowerCase() === "closed").length
   const totalCount = tickets.length
 
-
   return (
     <SidebarProvider
       style={
@@ -72,6 +71,9 @@ export default function Page() {
                 <h1 className="text-3xl font-bold">Hello, {user?.name ? user.name : "Anyonmous"}</h1>
                 {
                   (ROLE_NAME === "officer" || ROLE_NAME === "hod") && <h1 className="text-2xl font-bold text-muted-foreground">Department Name: <span className="text-primary capitalize">{user?.department?.name || "Not Assigned Yet"}</span></h1>
+                }
+                {
+                  ROLE_NAME === "officer" && <h1 className="text-2xl font-bold text-muted-foreground flex gap-3">Leave Status: <span className="text-primary capitalize flex items-center  gap-1"><Circle fill={user?.is_currently_on_leave ? "orange" : "green"} color={user?.is_currently_on_leave ? "orange" : "green"} size={20} /> {user?.is_currently_on_leave ? "Currently On Leave" : "Available"}</span></h1>
                 }
                 {
                   ROLE_NAME === "student" && <h1 className="text-xl font-bold text-muted-foreground">Here is the overview of tickets you have created</h1>

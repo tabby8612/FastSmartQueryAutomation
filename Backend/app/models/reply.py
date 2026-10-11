@@ -16,6 +16,9 @@ class Reply(Base, TimestampMixin):
     is_ai_draft: Mapped[int] = mapped_column(
         SmallInteger, nullable=False, default=0, server_default="0"
     )
+    is_auto_reply: Mapped[int] = mapped_column(
+        SmallInteger, nullable=False, default=0, server_default="0"
+    )
     text: Mapped[str] = mapped_column(Text, nullable=False)
     status: Mapped[str] = mapped_column(
         String, nullable=False, default="draft", server_default="draft"

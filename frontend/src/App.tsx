@@ -20,6 +20,7 @@ import { AdminDashboard } from './pages/admin/AdminDashboard'
 import { Announcement } from './pages/admin/Announcement'
 import CreateAnnouncement from './pages/admin/CreateAnnouncement'
 import { StudentAnnouncements } from './pages/student/Announcements'
+import LeaveAutoReply from './pages/officer/LeaveAutoReply'
 
 function App() {
   return (
@@ -94,6 +95,14 @@ function App() {
             element={
               <ProtectedRoute>
                 <OfficerIssues />
+              </ProtectedRoute>
+            }
+          />
+          <Route
+            path="/officer/leave"
+            element={
+              <ProtectedRoute allowedRoles={["officer"]}>
+                <LeaveAutoReply />
               </ProtectedRoute>
             }
           />

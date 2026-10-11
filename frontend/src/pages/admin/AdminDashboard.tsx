@@ -120,8 +120,6 @@ export function AdminDashboard() {
     return () => controller.abort();
   }, [access_token, range, navigate]);
 
-  console.log(tickets)
-
   return <SidebarProvider style={{ "--sidebar-width": "calc(var(--spacing) * 72)", "--header-height": "calc(var(--spacing) * 16)" } as CSSProperties}>
     <AppSidebar variant="inset" roleName="admin" />
     <SidebarInset>

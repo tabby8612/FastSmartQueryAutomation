@@ -9,7 +9,8 @@ import {
   IconUserPlus,
   IconTabs,
   IconBrandOffice,
-  IconSpeakerphone
+  IconSpeakerphone,
+  IconHelicopterLanding
 } from "@tabler/icons-react"
 
 import { NavMain } from "@/components/dashboard/nav-main"
@@ -57,6 +58,11 @@ const data = {
       title: "Assigned Issues",
       url: "/officer/issues",
       icon: IconAddressBook,
+    },
+    {
+      title: "Leave & Auto Reply",
+      url: "/officer/leave",
+      icon: IconHelicopterLanding,
     },
   ],
   hod: [

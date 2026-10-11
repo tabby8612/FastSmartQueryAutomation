@@ -22,6 +22,7 @@ from app.routes import (
     analytics,
     announcement,
     report,
+    instructor,
 )
 from app.scheduler.scheduler import scheduler, start_scheduler
 
@@ -69,3 +70,4 @@ app.include_router(hod.router)
 app.include_router(analytics.router)
 app.include_router(announcement.router)
 app.include_router(report.router)
+app.include_router(instructor.router)

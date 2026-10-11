@@ -95,6 +95,8 @@ function TicketDetailContent({ ticketId }: { ticketId: string }) {
   useEffect(() => {
     const controller = new AbortController()
     async function loadOfficers() {
+      if (roleName === "student" || roleName === "officer") return;
+
       setLoading(true)
       setLoadError("")
       try {
@@ -421,7 +423,7 @@ function TicketDetailContent({ ticketId }: { ticketId: string }) {
                     </div>
                   <div><dt className="text-muted-foreground">Awaiting Student Input</dt><dd className="mt-1 font-medium capitalize">{ticket.awaiting_student_input ? 'Yes' : 'No'}</dd></div>
                   <div><dt className="text-muted-foreground">Assign To</dt>{
-                      roleName !== "hod" && officers ? <dd className="mt-1 font-medium capitalize">{ticket.assigned?.full_name ?? '-'}</dd> : (
+                      roleName !== "hod" && !officers ? <dd className="mt-1 font-medium capitalize">{ticket.assigned?.full_name ?? '-'}</dd> : (
                         <Select items={departmentOfficers} value={ticket.assigned_id} disabled={false} onValueChange={value => {
                           if (!value || value === ticket.assigned_id) return
                           setOfficerError("")

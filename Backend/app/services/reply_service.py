@@ -19,6 +19,9 @@ from app.models.user import User
 from app.services.TicketService import TicketService
 from app.services.notification_template import NotificationTemplate
 from app.services.notification_service import NotificationService
+from app.services.user import UserService
+from app.services.instructor_leave_service import InstructorLeaveService
+from app.services.auto_reply_service import AutoReplyService
 
 
 from app.services.ai_reply_generator_service import (
@@ -112,6 +115,7 @@ class ReplyService:
 
     @staticmethod
     async def send_reply(db: AsyncSession, reply_id: int, current_user: User) -> Reply:
+        auto_reply = None
         stmt = select(Reply).where(Reply.id == reply_id).with_for_update()
         result = await db.execute(stmt)
         reply = result.scalar_one_or_none()
@@ -175,4 +179,53 @@ class ReplyService:
             notification_status=NotificationStatusEnum.PENDING,
         )
 
+        # Handles auto reply if officer is on leave
+        if current_user.is_student and ticket.assigned_id:
+            officer = await UserService.get_by_id(db, ticket.assigned_id)
+
+            existing = await ReplyService.is_auto_reply_exist(db, ticket, officer)
+
+            if not existing:
+                if InstructorLeaveService.is_currently_on_leave(officer):
+                    if officer.auto_reply_message:
+                        auto_reply = Reply(
+                            creator_id=officer.id,
+                            ticket_id=ticket.id,
+                            is_ai_draft=0,
+                            is_auto_reply=1,
+                            text=officer.auto_reply_message,
+                            status=ReplyStatusEnum.SENT,
+                        )
+
+                        db.add(auto_reply)
+                        await db.commit()
+                        await db.refresh(auto_reply)
+
+                        new_reply_notification_template = (
+                            NotificationTemplate.new_reply(ticket, auto_reply)
+                        )
+
+                        await NotificationService.create_notification(
+                            db,
+                            recipient_id=ticket.student_id,
+                            subject=new_reply_notification_template["subject"],
+                            message_body=new_reply_notification_template["body"],
+                            notification_type=NotificationTypeEnum.NEW_REPLY,
+                            ticket_id=ticket.id,
+                            notification_channel=NotificationChannelEnum.EMAIL,
+                            notification_status=NotificationStatusEnum.PENDING,
+                        )
+
         return reply
+
+    @staticmethod
+    async def is_auto_reply_exist(db: AsyncSession, ticket: Ticket, instructor: User):
+        existing = await db.execute(
+            select(Reply).where(
+                Reply.ticket_id == ticket.id,
+                Reply.creator_id == instructor.id,
+                Reply.is_auto_reply == 1,
+            )
+        )
+
+        return existing.scalar_one_or_none()

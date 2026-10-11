@@ -64,16 +64,19 @@ export type User = {
     is_officer: boolean,
     is_admin: boolean,
     on_leave: boolean,
-    auto_reply_message: boolean,
-    leave_start_day: string,
-    leave_end_day: string,
+    auto_reply_message?: string,
+    leave_start_day?: string,
+    leave_end_day?: string,
     department?: {
       id: number,
       name: string
     } | null,
     roles?: unknown[],
-    rolename: string
+    rolename: string,
+    is_currently_on_leave: boolean
 }
+
+export type LeaveStatus = Pick<User, "on_leave" | "leave_start_day" | "leave_end_day" | "auto_reply_message" | "is_currently_on_leave">
 
 export type Category = {
     id: number,

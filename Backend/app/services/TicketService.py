@@ -288,6 +288,8 @@ async def get_officer_id_by_department_id(db: AsyncSession, deptID):
         .options(joinedload(User.roles))
         .where(
             User.department_id == int(deptID),
+            User.is_officer == True,
+            User.is_active == True,
             User.on_leave == False,
             User.roles.any(Role.name == RolesEnum.OFFICER.name.lower()),
         )
