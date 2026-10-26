@@ -3,9 +3,16 @@ from sqlalchemy.ext.asyncio import AsyncSession
 
 from app.database import get_db
 from app.schemas.user import OfficerOptionResponse, UserCreate, UserResponse, UserUpdate
+
 from app.services.user import UserService
+from app.services.audit_service import AuditService
+
 from app.helpers.security import get_current_user, allowed_roles
+
 from app.Enums.RolesEnum import RolesEnum
+from app.Enums.AuditActionEnum import AuditActionEnum
+
+from app.models.user import User
 
 router = APIRouter(
     prefix="/users",
@@ -20,8 +27,12 @@ router = APIRouter(
 @router.post(
     "/create_student", response_model=UserResponse, status_code=status.HTTP_201_CREATED
 )
-async def create_student(user: UserCreate, db: AsyncSession = Depends(get_db)):
-    return await UserService.create(
+async def create_student(
+    user: UserCreate,
+    db: AsyncSession = Depends(get_db),
+    current_user=Depends(get_current_user),
+):
+    new_student = await UserService.create(
         db=db,
         student_id=user.student_id,
         email=user.email,
@@ -33,12 +44,27 @@ async def create_student(user: UserCreate, db: AsyncSession = Depends(get_db)):
         is_admin=False,
     )
 
+    await AuditService.record_audit(
+        db,
+        actor_id=current_user.id,
+        action=AuditActionEnum.STUDENT_CREATED,
+        entity_type="user",
+        entity_id=new_student.id,
+        description="new student has been created",
+    )
+
+    return new_student
+
 
 @router.post(
     "/create_officer", response_model=UserResponse, status_code=status.HTTP_201_CREATED
 )
-async def create_officer(user: UserCreate, db: AsyncSession = Depends(get_db)):
-    return await UserService.create(
+async def create_officer(
+    user: UserCreate,
+    db: AsyncSession = Depends(get_db),
+    current_user: User = Depends(get_current_user),
+):
+    new_officer = await UserService.create(
         db=db,
         email=user.email,
         password=user.password,
@@ -54,12 +80,27 @@ async def create_officer(user: UserCreate, db: AsyncSession = Depends(get_db)):
         leave_end_day=user.leave_end_day,
     )
 
+    await AuditService.record_audit(
+        db,
+        actor_id=current_user.id,
+        action=AuditActionEnum.OFFICER_CREATED,
+        entity_type="user",
+        entity_id=new_officer.id,
+        description="new officer has been created",
+    )
+
+    return new_officer
+
 
 @router.post(
     "/create_admin", response_model=UserResponse, status_code=status.HTTP_201_CREATED
 )
-async def create_officer(user: UserCreate, db: AsyncSession = Depends(get_db)):
-    return await UserService.create(
+async def create_admin(
+    user: UserCreate,
+    db: AsyncSession = Depends(get_db),
+    current_user: User = Depends(get_current_user),
+):
+    new_admin = await UserService.create(
         db=db,
         email=user.email,
         password=user.password,
@@ -73,6 +114,17 @@ async def create_officer(user: UserCreate, db: AsyncSession = Depends(get_db)):
         leave_start_day=user.leave_start_day,
         leave_end_day=user.leave_end_day,
     )
+
+    await AuditService.record_audit(
+        db,
+        actor_id=current_user.id,
+        action=AuditActionEnum.ADMIN_CREATED,
+        entity_type="user",
+        entity_id=new_admin.id,
+        description="new admin has been created",
+    )
+
+    return new_admin
 
 
 @router.get("/", response_model=list[UserResponse])
@@ -101,14 +153,17 @@ async def get_user(user_id: int, db: AsyncSession = Depends(get_db)):
 
 @router.put("/{user_id}", response_model=UserResponse)
 async def update_user(
-    user_id: int, user_update: UserUpdate, db: AsyncSession = Depends(get_db)
+    user_id: int,
+    user_update: UserUpdate,
+    db: AsyncSession = Depends(get_db),
+    current_user: User = Depends(get_current_user),
 ):
     user = await UserService.get_by_id(db, user_id)
     if not user:
         raise HTTPException(
             status_code=status.HTTP_404_NOT_FOUND, detail="User not found"
         )
-    return await UserService.update(
+    updated_user = await UserService.update(
         db=db,
         user=user,
         student_id=user_update.student_id,
@@ -123,6 +178,17 @@ async def update_user(
         leave_start_day=user_update.leave_start_day,
         leave_end_day=user_update.leave_end_day,
     )
+
+    await AuditService.record_audit(
+        db,
+        actor_id=current_user.id,
+        action=AuditActionEnum.USER_UPDATED,
+        entity_type="user",
+        entity_id=updated_user.id,
+        description="User has been updated",
+    )
+
+    return update_user
 
 
 @router.delete("/{user_id}", status_code=status.HTTP_204_NO_CONTENT)

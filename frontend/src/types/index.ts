@@ -22,15 +22,15 @@ export type Ticket = {
     "category": Category,
     "ticket_status_history": TicketStatusHistory[],
     "replies": Reply[]
-  }
+}
 
-  export type Reply = {
-  id: number
-  text: string
-  status: "draft" | "sent"
-  created_at: string
-  send_at: string | null
-  creator: Pick<User, "id" | "full_name" | "is_admin" | "is_student" | "is_officer">
+export type Reply = {
+    id: number
+    text: string
+    status: "draft" | "sent"
+    created_at: string
+    send_at: string | null
+    creator: Pick<User, "id" | "full_name" | "is_admin" | "is_student" | "is_officer">
 }
 
 
@@ -68,8 +68,8 @@ export type User = {
     leave_start_day?: string,
     leave_end_day?: string,
     department?: {
-      id: number,
-      name: string
+        id: number,
+        name: string
     } | null,
     roles?: unknown[],
     rolename: string,
@@ -139,35 +139,48 @@ export type Announcement = {
     created_at: string,
     creator: User,
     department?: Department
-  }
+}
 
 export type QueryReport = {
     id: number;
     tracking_id: string;
-
     subject: string;
-
     student_name: string | null;
-
     department_name: string | null;
-
     category_name: string | null;
-
     assigned_officer: string | null;
-
     channel: string;
-
     status: string;
-
     priority: string;
-
     intent: string | null;
-
     confidence_level: number | null;
-
     escalation_level: number;
-
     created_at: string;
-
     resolved_at: string | null;
+}
+
+export type AuditLogs = {
+    items: AuditLog[],
+    total: number
+}
+
+export type AuditLog = {
+    id: number,
+    actor_id: number,
+    actor_name: string | null,
+    actor_role: string | null,
+    action: string,
+    entity_type: string,
+    entity_id: string | null,
+    description: string,
+    old_values: Record<string, any> | null,
+    new_values: Record<string, any> | null,
+    status: string,
+    created_at: string,
+    user: Pick<User, "id" | "full_name" | "email"> 
+}
+
+export type Option = {
+    id: string,
+    name: string
 }

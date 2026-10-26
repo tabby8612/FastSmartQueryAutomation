@@ -2,14 +2,19 @@ from fastapi import APIRouter, Depends, HTTPException, Response, status
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from app.database import get_db
+
 from app.Enums.ReplyStatusEnum import ReplyStatusEnum
+from app.Enums.AuditActionEnum import AuditActionEnum
+
 from app.helpers.security import get_current_user
 from app.models.reply import Reply
 from app.models.ticket import Ticket
 from app.models.user import User
 from app.schemas.reply import ReplyCreate, ReplyResponse, ReplyUpdate
+
 from app.services.reply_service import ReplyService
 from app.services.TicketService import TicketService
+from app.services.audit_service import AuditService
 
 router = APIRouter(prefix="/tickets/{ticket_id}/replies", tags=["replies"])
 send_router = APIRouter(prefix="/replies", tags=["replies"])
@@ -22,6 +27,16 @@ async def send(
     current_user: User = Depends(get_current_user),
 ):
     reply = await ReplyService.send_reply(db, reply_id, current_user)
+
+    await AuditService.record_audit(
+        db,
+        actor_id=current_user.id,
+        action=AuditActionEnum.REPLY_CREATED,
+        entity_type="reply",
+        entity_id=reply.id,
+        description="New reply has been created",
+    )
+
     await db.commit()
     return reply
 
@@ -93,7 +108,18 @@ async def create(
     db: AsyncSession = Depends(get_db),
     current_user: User = Depends(get_current_user),
 ):
-    return await ReplyService.create(db, ticket.id, current_user.id, reply.text)
+    new_reply = await ReplyService.create(db, ticket.id, current_user.id, reply.text)
+
+    await AuditService.record_audit(
+        db,
+        actor_id=current_user.id,
+        action=AuditActionEnum.REPLY_CREATED,
+        entity_type="reply",
+        entity_id=new_reply.id,
+        description="New Reply has been created",
+    )
+
+    return new_reply
 
 
 @router.get("/", response_model=list[ReplyResponse])

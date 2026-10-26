@@ -11,9 +11,16 @@ from app.models.ticket import Ticket
 from app.models.category import Category
 from app.models.department import Department
 from app.models.role import Role
+
+from app.services.TicketService import TicketService
+from app.services.audit_service import AuditService
+
+from app.Enums.AuditActionEnum import AuditActionEnum
+
 from app.helpers.security import hash_password
 from app.schemas.incoming_email import IncomingEmail
-from app.services.TicketService import TicketService
+
+
 from app.Enums.ChannelEnum import ChannelEnum
 
 load_dotenv()
@@ -75,4 +82,13 @@ async def process_incoming_email(db: AsyncSession, sender_data: IncomingEmail):
         body=sender_data.body,
         channel=ChannelEnum.EMAIL,
     )
+
+    await AuditService.record_audit(
+        db,
+        action=AuditActionEnum.EMAIL_PROCESSED,
+        entity_type="ticket",
+        entity_id=new_ticket.id,
+        description="ticket created from email",
+    )
+
     return new_ticket

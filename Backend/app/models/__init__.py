@@ -21,6 +21,8 @@ from app.models.notification import Notification
 
 from app.models.announcements import Announcements
 
+from app.models.audit_logs import AuditLog
+
 __all__ = [
     "Base",
     "TimestampMixin",
@@ -35,4 +37,5 @@ __all__ = [
     "TicketStatusHistory",
     "Notification",
     "Announcements",
+    "AuditLog",
 ]

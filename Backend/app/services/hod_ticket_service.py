@@ -15,6 +15,7 @@ from app.models.reply import Reply
 
 from app.services.notification_template import NotificationTemplate
 from app.services.notification_service import NotificationService
+from app.services.audit_service import AuditService
 
 from app.Enums.NotificationChannelEnum import NotificationChannelEnum
 from app.Enums.NotificationStatusEnum import NotificationStatusEnum
@@ -22,6 +23,7 @@ from app.Enums.NotificationTypeEnum import NotificationTypeEnum
 from app.Enums.TicketPriorityEnum import TicketPriorityEnum
 from app.Enums.QueryStatusEnum import QueryStatusEnum
 from app.Enums.ReplyStatusEnum import ReplyStatusEnum
+from app.Enums.AuditActionEnum import AuditActionEnum
 
 
 from app.dependencies.hod import get_hod_ticket, get_hod_department

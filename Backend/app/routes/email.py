@@ -3,9 +3,15 @@ from pydantic import BaseModel
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from app.database import get_db
+
 from app.services.email_processing import process_incoming_email
+from app.services.audit_service import AuditService
+
 from app.schemas.ticket import TicketResponse
+
 from app.Enums.ChannelEnum import ChannelEnum
+from app.Enums.AuditActionEnum import AuditActionEnum
+
 from app.schemas.incoming_email import IncomingEmail
 
 router = APIRouter(prefix="/email", tags=["email"])

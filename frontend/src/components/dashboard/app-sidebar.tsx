@@ -24,6 +24,7 @@ import {
   SidebarMenuItem,
 } from "@/components/ui/sidebar"
 import { useAuth } from "@/contexts/auth-context"
+import { ChartBar } from "lucide-react"
 
 const data = {
   student: [
@@ -99,21 +100,6 @@ const data = {
       icon: IconUser,
     },
     {
-      title: "Create Student",
-      url: "/admin/users/create-student",
-      icon: IconUserPlus,
-    },
-    {
-      title: "Create Officer",
-      url: "/admin/users/create-officer",
-      icon: IconUserPlus,
-    },
-    {
-      title: "Create Admin",
-      url: "/admin/users/create-admin",
-      icon: IconUserPlus,
-    },
-    {
       title: "Categories",
       url: "/admin/categories",
       icon: IconTabs,
@@ -122,6 +108,11 @@ const data = {
       title: "Department",
       url: "/admin/department",
       icon: IconBrandOffice,
+    },
+    {
+      title: "Audit Logs",
+      url: "/admin/audit-logs",
+      icon: ChartBar,
     }
   ],
 }

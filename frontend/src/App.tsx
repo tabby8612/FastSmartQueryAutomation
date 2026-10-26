@@ -21,6 +21,7 @@ import { Announcement } from './pages/admin/Announcement'
 import CreateAnnouncement from './pages/admin/CreateAnnouncement'
 import { StudentAnnouncements } from './pages/student/Announcements'
 import LeaveAutoReply from './pages/officer/LeaveAutoReply'
+import { AuditLogs } from './pages/admin/AuditLogs'
 
 function App() {
   return (
@@ -175,6 +176,14 @@ function App() {
             element={
               <ProtectedRoute allowedRoles={["admin"]}>
                 <CreateAnnouncement />
+              </ProtectedRoute>
+            }
+          />
+          <Route
+            path="/admin/audit-logs"
+            element={
+              <ProtectedRoute allowedRoles={["admin"]}>
+                <AuditLogs />
               </ProtectedRoute>
             }
           />

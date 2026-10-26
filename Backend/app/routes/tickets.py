@@ -7,11 +7,16 @@ import asyncio
 
 from app.database import get_db
 from app.schemas.ticket import TicketCreate, TicketResponse, TicketUpdate
+
 from app.services.TicketService import TicketService
 from app.services.escalation_service import EscalationService
+from app.services.audit_service import AuditService
+
 from app.helpers.security import get_current_user, get_active_user_by_token
 from app.models.user import User
+
 from app.Enums.ChannelEnum import ChannelEnum
+from app.Enums.AuditActionEnum import AuditActionEnum
 
 from app.events.ticket_event_manager import ticket_events
 
@@ -47,6 +52,15 @@ async def create(
         subject=ticket.subject,
         body=ticket.body,
         channel=ChannelEnum.WEB_FORM,
+    )
+
+    await AuditService.record_audit(
+        db,
+        actor_id=current_user.id,
+        action=AuditActionEnum.TICKET_CREATED,
+        entity_type="ticket",
+        entity_id=new_ticket.id,
+        description="new ticket has been created",
     )
 
     return {

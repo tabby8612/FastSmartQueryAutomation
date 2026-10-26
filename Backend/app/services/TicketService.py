@@ -20,10 +20,12 @@ from app.Enums.TicketPriorityEnum import TicketPriorityEnum
 from app.Enums.NotificationTypeEnum import NotificationTypeEnum
 from app.Enums.NotificationChannelEnum import NotificationChannelEnum
 from app.Enums.NotificationStatusEnum import NotificationStatusEnum
+from app.Enums.AuditActionEnum import AuditActionEnum
 
 from app.services.TicketStatusHistoryService import TicketStatusHistoryService
 from app.services.notification_template import NotificationTemplate
 from app.services.notification_service import NotificationService
+from app.services.audit_service import AuditService
 
 from app.helpers.utils import generate_tracking_number
 
@@ -228,6 +230,17 @@ class TicketService:
                         notification_status=NotificationStatusEnum.PENDING,
                         notification_channel=NotificationChannelEnum.EMAIL,
                     )
+                )
+
+                await AuditService.record_audit(
+                    db,
+                    actor_id=user_id,
+                    action=AuditActionEnum.STATUS_CHANGED,
+                    entity_type="ticket",
+                    entity_id=ticket.id,
+                    description="ticket status has been changed",
+                    old_values={"priority": str(ticket.status)},
+                    new_values={"priority": status},
                 )
 
                 ticket.status = status

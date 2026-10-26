@@ -1,4 +1,4 @@
-from fastapi import APIRouter, Depends
+from fastapi import APIRouter, Depends, Request
 
 from sqlalchemy.ext.asyncio import AsyncSession
 
@@ -14,9 +14,12 @@ from app.helpers.security import (
 )
 
 from app.services.hod_ticket_service import HODTicketService
+from app.services.TicketService import TicketService
+from app.services.audit_service import AuditService
 
 from app.Enums.TicketPriorityEnum import TicketPriorityEnum
 from app.Enums.QueryStatusEnum import QueryStatusEnum
+from app.Enums.AuditActionEnum import AuditActionEnum
 
 from app.schemas.ticket import TicketResponse
 from app.schemas.hod import HODPriorityUpdate, HODOfficerUpdate
@@ -62,6 +65,17 @@ async def take_over(
 
     ticket = await HODTicketService.take_over(db, ticket_id, department, current_user)
 
+    await AuditService.record_audit(
+        db,
+        actor_id=current_user.id,
+        action=AuditActionEnum.TICKET_ASSIGNED,
+        entity_type="ticket",
+        entity_id=ticket.id,
+        description="HOD take charge of the ticket",
+        old_values={"assigned_id": str(ticket_id)},
+        new_values={"assigned_id": str(current_user.id)},
+    )
+
     return ticket
 
 
@@ -78,6 +92,17 @@ async def assign(
 
     ticket = await HODTicketService.reassign(db, ticket_id, department, officer)
 
+    await AuditService.record_audit(
+        db,
+        actor_id=current_user.id,
+        action=AuditActionEnum.TICKET_ASSIGNED,
+        entity_type="ticket",
+        entity_id=ticket.id,
+        description="HOD take charge of the ticket",
+        old_values={"assigned_id": str(ticket_id)},
+        new_values={"assigned_id": str(data.officer_id)},
+    )
+
     return ticket
 
 
@@ -90,8 +115,21 @@ async def change_status(
 ):
     department = await get_hod_department(current_user, db)
 
+    old_ticket = await HODTicketService.get_ticket(db, ticket_id, department)
+
     ticket = HODTicketService.change_status(
         db, ticket_id, department, status, current_user
+    )
+
+    await AuditService.record_audit(
+        db,
+        actor_id=current_user.id,
+        action=AuditActionEnum.STATUS_CHANGED,
+        entity_type="ticket",
+        entity_id=ticket.id,
+        description="HOD changed status of the ticket",
+        old_values={"status": old_ticket.status},
+        new_values={"status": status},
     )
 
     return {
@@ -109,8 +147,21 @@ async def change_priority(
 ):
     department = await get_hod_department(current_user, db)
 
+    old_ticket = await HODTicketService.get_ticket(db, ticket_id, department)
+
     ticket = await HODTicketService.change_priority(
         db, ticket_id, department, data.priority
+    )
+
+    await AuditService.record_audit(
+        db,
+        actor_id=current_user.id,
+        action=AuditActionEnum.PRIORITY_CHANGED,
+        entity_type="ticket",
+        entity_id=ticket.id,
+        description="HOD changed priority of the ticket",
+        old_values={"priority": old_ticket.priority},
+        new_values={"priority": data.priority},
     )
 
     return ticket
@@ -125,8 +176,17 @@ async def add_reply(
 ):
     department = await get_hod_department(current_user, db)
 
-    reply = HODTicketService.add_reply(
+    reply = await HODTicketService.add_reply(
         ticket_id, current_user, department, reply_text, db
+    )
+
+    await AuditService.record_audit(
+        db,
+        actor_id=current_user.id,
+        action=AuditActionEnum.REPLY_CREATED,
+        entity_type="reply",
+        entity_id=reply.id,
+        description="HOD created new reply",
     )
 
     return {

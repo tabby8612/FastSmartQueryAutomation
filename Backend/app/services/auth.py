@@ -1,11 +1,18 @@
 from fastapi import HTTPException, status
+from fastapi.security import OAuth2PasswordRequestForm
+
 from sqlalchemy.future import select
 from sqlalchemy.orm import joinedload
 
 from app.models.user import User
+
 from app.helpers.security import verify_password
+from app.helpers.utils import role_name, get_actor_ip
+
 from app.services.user import UserService
-from fastapi.security import OAuth2PasswordRequestForm
+from app.services.audit_service import AuditService
+
+from app.Enums.AuditActionEnum import AuditActionEnum
 
 
 class AuthService:
@@ -46,6 +53,17 @@ class AuthService:
             return None
         if not verify_password(user_data.password, user.password):
             return None
+
+        await AuditService.record_audit(
+            db,
+            actor_id=user.id,
+            actor_name=user.full_name,
+            actor_role=role_name(user),
+            action=AuditActionEnum.WEBFORM_LOGIN,
+            entity_type="user",
+            entity_id=user.id,
+            description="user logged in using web form",
+        )
         return user
 
     @staticmethod
@@ -64,6 +82,17 @@ class AuthService:
 
         if user is None:
             user = await AuthService.find_user_by_email(db, email, google_sub)
+
+        await AuditService.record_audit(
+            db,
+            actor_id=user.id,
+            actor_name=user.full_name,
+            actor_role=role_name(user),
+            action=AuditActionEnum.GOOGLE_LOGIN,
+            entity_type="user",
+            entity_id=user.id,
+            description="user logged in using google login",
+        )
 
         return user
 
