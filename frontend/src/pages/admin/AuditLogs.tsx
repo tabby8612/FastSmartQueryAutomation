@@ -70,8 +70,6 @@ export function AuditLogs() {
 
     const auditReport = auditLogs
 
-    console.log(filters)
-
     return (
         <SidebarProvider
             style={{

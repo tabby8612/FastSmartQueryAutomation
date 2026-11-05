@@ -18,6 +18,9 @@ class User(Base, TimestampMixin):
     password: Mapped[str] = mapped_column(String(255), nullable=True)
     google_sub: Mapped[str] = mapped_column(String(255), nullable=True, unique=True)
     full_name: Mapped[str] = mapped_column(String(255), nullable=False)
+    profile_image: Mapped[str | None] = mapped_column(
+        String(500), nullable=True, default=None
+    )
     department_id: Mapped[int] = mapped_column(
         ForeignKey("departments.id"), nullable=True
     )

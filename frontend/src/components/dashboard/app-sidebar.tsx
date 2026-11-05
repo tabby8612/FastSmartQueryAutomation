@@ -141,7 +141,7 @@ export function AppSidebar({ roleName, ...props }: React.ComponentProps<typeof S
         <NavUser user={{
           name: user?.name || user?.full_name || "User",
           email: user?.email || "user@example.com",
-          avatar: "/avatars/shadcn.jpg",
+          avatar: `${import.meta.env.VITE_API_BASE_URL}${user?.profile_image}`,
         }} />
       </SidebarFooter>
     </Sidebar>

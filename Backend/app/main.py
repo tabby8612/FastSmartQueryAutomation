@@ -1,5 +1,6 @@
 import os
 from fastapi import FastAPI
+from fastapi.staticfiles import StaticFiles
 from dotenv import load_dotenv
 
 from contextlib import asynccontextmanager
@@ -24,6 +25,7 @@ from app.routes import (
     report,
     instructor,
     audit_logs,
+    profile,
 )
 from app.scheduler.scheduler import scheduler, start_scheduler
 
@@ -39,6 +41,8 @@ load_dotenv()
 SESSION_SECRET_KEY = os.getenv("SESSION_SECRET_KEY")
 
 app = FastAPI(lifespan=lifespan)
+
+app.mount("/uploads", StaticFiles(directory="uploads"), name="uploads")
 
 app.add_middleware(SessionMiddleware, secret_key=SESSION_SECRET_KEY)
 
@@ -56,6 +60,7 @@ def health_check():
     return "Site Working Fine"
 
 
+app.include_router(profile.router)
 app.include_router(roles.router)
 app.include_router(departments.router)
 app.include_router(users.router)

@@ -57,7 +57,8 @@ export type Department = {
 export type User = {
     id: number,
     name: string,
-    full_name?: string,
+    student_id: string
+    full_name: string,
     email: string,
     is_active: boolean,
     is_student: boolean,
@@ -73,7 +74,8 @@ export type User = {
     } | null,
     roles?: unknown[],
     rolename: string,
-    is_currently_on_leave: boolean
+    is_currently_on_leave: boolean,
+    profile_image: string
 }
 
 export type LeaveStatus = Pick<User, "on_leave" | "leave_start_day" | "leave_end_day" | "auto_reply_message" | "is_currently_on_leave">
@@ -184,3 +186,5 @@ export type Option = {
     id: string,
     name: string
 }
+
+export type UserProfile = Pick<User, "id" | "full_name" | "email" | "profile_image" | "student_id">

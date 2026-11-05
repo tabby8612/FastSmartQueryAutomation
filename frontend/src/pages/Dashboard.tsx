@@ -15,7 +15,7 @@ import { useNavigate } from "react-router-dom"
 
 
 export default function Page() {
-  const { role_name, access_token, user, getAccessToken, getRoleName } = useAuth()
+  const { role_name, user, getAccessToken, getRoleName } = useAuth()
   const [tickets, setTickets] = useState<Query[]>([])
   const [loading, setLoading] = useState(true)
   

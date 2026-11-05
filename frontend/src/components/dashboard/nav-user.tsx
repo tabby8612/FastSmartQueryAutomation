@@ -29,6 +29,7 @@ import {
   useSidebar,
 } from "@/components/ui/sidebar"
 import { useAuth } from "@/contexts/auth-context"
+import { useNavigate } from "react-router-dom"
 
 export function NavUser({
   user,
@@ -40,7 +41,10 @@ export function NavUser({
   }
 }) {
   const { isMobile } = useSidebar()
-  const {logout} = useAuth();
+  const {logout, getRoleName} = useAuth();
+
+  const roleName = getRoleName()
+  const navigate = useNavigate()
 
   return (
     <SidebarMenu>
@@ -72,14 +76,8 @@ export function NavUser({
             align="end"
             sideOffset={4}
           >
-            <DropdownMenuItem>
-                <IconUserCircle />
-                Account
-              </DropdownMenuItem> 
-            
-            <DropdownMenuSeparator />
             <DropdownMenuGroup>
-              <DropdownMenuItem>
+              <DropdownMenuItem onClick={() => navigate(`/${roleName === "student" ? "student" : roleName === "officer" ? "officer" : roleName === "admin" ? "admin" : roleName === "hod" ? "hod" : 'student'}/account`)}>
                 <IconUserCircle />
                 Account
               </DropdownMenuItem>              

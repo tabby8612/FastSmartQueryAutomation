@@ -276,15 +276,13 @@ async def poll_university_email():
 
 
 def should_ignore_email(sender_email: str, subject: str):
-    sender = sender_email.lower().strip()
+    sender = sender_email.lower().strip().partition("@")[0]
     subject = subject.lower().strip()
 
     ignored_senders = [
-        "mailer-daemon@googlemail.com",
-        "mailer-daemon@gmail.com",
-        "postmaster@googlemail.com",
-        "postmaster@gmail.com",
-        "no-reply@accounts.google.com",
+        "mailer-daemon",
+        "postmaster",
+        "no-reply",
     ]
 
     ignored_subjects = [

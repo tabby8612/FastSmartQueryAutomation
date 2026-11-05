@@ -22,6 +22,7 @@ import CreateAnnouncement from './pages/admin/CreateAnnouncement'
 import { StudentAnnouncements } from './pages/student/Announcements'
 import LeaveAutoReply from './pages/officer/LeaveAutoReply'
 import { AuditLogs } from './pages/admin/AuditLogs'
+import { Account } from './pages/Account'
 
 function App() {
   return (
@@ -192,6 +193,38 @@ function App() {
             element={
               <ProtectedRoute>
                 <SubmitIssue />
+              </ProtectedRoute>
+            }
+          />
+          <Route
+            path="/student/account"
+            element={
+              <ProtectedRoute allowedRoles={["student"]}>
+                <Account />
+              </ProtectedRoute>
+            }
+          />
+          <Route
+            path="/officer/account"
+            element={
+              <ProtectedRoute allowedRoles={["officer"]}>
+                <Account />
+              </ProtectedRoute>
+            }
+          />
+          <Route
+            path="/admin/account"
+            element={
+              <ProtectedRoute allowedRoles={["admin"]}>
+                <Account />
+              </ProtectedRoute>
+            }
+          />
+          <Route
+            path="/hod/account"
+            element={
+              <ProtectedRoute allowedRoles={["hod"]}>
+                <Account />
               </ProtectedRoute>
             }
           />

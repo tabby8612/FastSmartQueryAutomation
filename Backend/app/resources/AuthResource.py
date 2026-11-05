@@ -1,6 +1,17 @@
+import os
+
+from dotenv import load_dotenv
+
+from pathlib import Path
+
 from app.models.user import User
 
 from app.services.instructor_leave_service import InstructorLeaveService
+
+load_dotenv()
+
+UPLOAD_PATH = os.getenv("UPLOAD_FOLDER_PATH", "uploads")
+UPLOAD_PATH_DIR = Path(UPLOAD_PATH)
 
 
 class AuthResource:
@@ -19,4 +30,9 @@ class AuthResource:
             ),
             "roles": data.roles,
             "rolename": data.roles[0].name if data.roles else None,
+            "profile_image": (
+                f"/{UPLOAD_PATH + data.profile_image}"
+                if data.profile_image
+                else f"/{UPLOAD_PATH + "/profile_images/default.jpg"}"
+            ),
         }
