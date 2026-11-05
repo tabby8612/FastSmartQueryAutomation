@@ -74,7 +74,8 @@ async def create(
 
 @router.get("/", response_model=list[TicketResponse])
 async def index(
-    db: AsyncSession = Depends(get_db), current_user: User = Depends(get_current_user)
+    db: AsyncSession = Depends(get_db),
+    current_user: User = Depends(get_current_user),
 ):
     if has_role(current_user, ["admin"]):
         return await TicketService.get_all(db)

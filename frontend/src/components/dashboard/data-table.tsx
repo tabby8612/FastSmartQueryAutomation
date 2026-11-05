@@ -722,7 +722,7 @@ function TableCellViewer({ item }: { item: z.infer<typeof schema> }) {
           </div>
           <div className="flex flex-col gap-2 col-span-full">
             <Label htmlFor="description" className="font-bold">Description</Label>
-            <p>{item.body}</p>
+            <p className="formatted-text" dangerouslySetInnerHTML={{__html: item.body}} />
           </div>
         </div>
         <DrawerFooter>

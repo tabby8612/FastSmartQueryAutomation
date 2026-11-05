@@ -29,6 +29,8 @@ dependencies = [
     "openai>=3.8.0",
     "python-multipart>=0.0.32",
     "pillow>=13.0.0",
+    "nh3>=0.3.7",
+    "beautifulsoup4>=4.15.0",
 ]
 
 [project.scripts]

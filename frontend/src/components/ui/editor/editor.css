@@ -1,0 +1,28 @@
+@import "../../../index.css";
+
+.editor-content {
+    
+    h1 {
+        @apply text-2xl font-bold py-1.5
+    }
+
+    h2 {
+        @apply text-xl font-bold py-1.5
+    }
+
+    h3 {
+        @apply text-lg font-bold py-1.5
+    }
+
+    ul {
+        @apply list-disc ml-10 marker:text-primary marker:font-bold
+    }
+
+    ol {
+        @apply ml-10 list-decimal  marker:text-primary marker:font-bold
+    }
+
+    blockquote {
+        @apply py-2 px-3 bg-stone-100 rounded-lg text-sm 
+    }
+};

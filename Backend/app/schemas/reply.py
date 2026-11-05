@@ -1,15 +1,42 @@
-from pydantic import BaseModel, ConfigDict
+from pydantic import BaseModel, ConfigDict, field_validator
 from datetime import datetime
 
+from app.helpers.html_sanitizer import sanitize_html
 from app.Enums.ReplyStatusEnum import ReplyStatusEnum
 
 
 class ReplyCreate(BaseModel):
     text: str
 
+    @classmethod
+    @field_validator("text")
+    def validate_body(cls, value):
+        if not value.strip():
+            raise ValueError("Query description is required")
+
+        santitized_text = sanitize_html(value)
+
+        if not santitized_text.strip():
+            raise ValueError("Query description cannot be empty")
+
+        return santitized_text
+
 
 class ReplyUpdate(BaseModel):
     text: str
+
+    @classmethod
+    @field_validator("body")
+    def validate_body(cls, value):
+        if not value.strip():
+            raise ValueError("Query description is required")
+
+        santitized_text = sanitize_html(value)
+
+        if not santitized_text.strip():
+            raise ValueError("Query description cannot be empty")
+
+        return santitized_text
 
 
 class User(BaseModel):

@@ -68,7 +68,7 @@ async def login(
         httponly=True,
         secure=False,  # make it true in production https
         samesite="lax",
-        max_age=24 * 60 * 60,
+        max_age=3600,
     )
 
     return {
@@ -132,7 +132,7 @@ async def google_authorize(request: Request, db: AsyncSession = Depends(get_db))
         httponly=True,
         secure=False,  # make it true in production https
         samesite="lax",
-        max_age=24 * 60 * 60,
+        max_age=3600,
     )
 
     return response

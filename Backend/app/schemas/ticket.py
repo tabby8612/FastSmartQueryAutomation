@@ -1,9 +1,10 @@
 from datetime import datetime
 from decimal import Decimal
 
-from pydantic import BaseModel, ConfigDict, Field, computed_field
+from pydantic import BaseModel, ConfigDict, Field, computed_field, field_validator
 from typing import Literal
 from app.schemas.user import UserResponse
+from app.helpers.html_sanitizer import sanitize_html
 
 from app.Enums.QueryStatusEnum import QueryStatusEnum
 
@@ -30,6 +31,19 @@ class TicketCreate(BaseModel):
     subject: str = Field(min_length=15, max_length=200)
     body: str = Field(min_length=20, max_length=1000)
 
+    @classmethod
+    @field_validator("body")
+    def validate_body(cls, value):
+        if not value.strip():
+            raise ValueError("Query description is required")
+
+        santitized_text = sanitize_html(value)
+
+        if not santitized_text.strip():
+            raise ValueError("Query description cannot be empty")
+
+        return santitized_text
+
 
 class TicketUpdate(BaseModel):
     assigned_id: int | None = None
@@ -43,6 +57,19 @@ class TicketUpdate(BaseModel):
     escalation_level: int | None = None
     awaiting_student_input: bool | None = None
     resolved_at: datetime | None = None
+
+    @classmethod
+    @field_validator("body")
+    def validate_body(cls, value):
+        if not value.strip():
+            raise ValueError("Query description is required")
+
+        santitized_text = sanitize_html(value)
+
+        if not santitized_text.strip():
+            raise ValueError("Query description cannot be empty")
+
+        return santitized_text
 
 
 class Student(BaseModel):

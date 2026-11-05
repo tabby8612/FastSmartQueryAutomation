@@ -33,7 +33,7 @@ Subject: {ticket.subject}
 Priority: {ticket.priority}
 Status: {ticket.status}
 
-Please log in to the portal to review the student query.
+Please log in to the portal to review the student query
 """,
         }
 
@@ -47,8 +47,6 @@ A new reply has been added to your query.
 Ticket Tracking ID: {ticket.tracking_id}
 Subject: {ticket.subject}
 
-Reply:
-{reply.text}
 
 Please log into the portal for complete details.
 """,

@@ -8,7 +8,7 @@ import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
 import api from "@/lib/axios"
-import { Textarea } from "@/components/ui/textarea"
+import RichTextEditor from "@/components/ui/editor/rich-text-editor"
 
 export default function SubmitIssue() {
   const { role_name, access_token } = useAuth()
@@ -108,11 +108,7 @@ export default function SubmitIssue() {
                 </div>
                 <div className="flex flex-col gap-2">
                   <Label htmlFor="description">Description</Label>
-                  <Textarea id="description" placeholder="Describe your issue in detail" className="border-stone-500 h-50" value={body} onChange={(e) => {
-                    setBody(e.target.value)
-                    if (errors.body) setErrors((prev) => ({ ...prev, body: undefined }))
-                      if (submissionError) setSubmissionError('')
-                  }} required/>
+                  <RichTextEditor content={body} onChangeFn={setBody} id="description"/>
                   {errors.body && <p className="text-red-500 text-sm">{errors.body}</p>}
                   </div>
                 <div className="flex gap-4 mt-4 justify-end">

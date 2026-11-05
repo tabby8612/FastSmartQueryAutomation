@@ -28,6 +28,7 @@ from app.services.notification_service import NotificationService
 from app.services.audit_service import AuditService
 
 from app.helpers.utils import generate_tracking_number
+from app.helpers.html_sanitizer import plain_text
 
 from app.events.ticket_event_manager import ticket_events
 
@@ -37,7 +38,7 @@ class TicketService:
     async def create(
         db: AsyncSession, student_id: int, subject: str, body: str, channel: str
     ) -> Ticket:
-        predication_data: dict[str, any] = await classify_issue(db, body)
+        predication_data: dict[str, any] = await classify_issue(db, plain_text(body))
 
         department_id = predication_data.get("department_id")
         assigned_id = None
@@ -207,6 +208,9 @@ class TicketService:
 
                 if status == QueryStatusEnum.OPEN:
                     ticket.resolved_at = None
+
+                if status == QueryStatusEnum.CLOSED:
+                    ticket.awaiting_student_input = False
 
                 history = TicketStatusHistory(
                     ticket_id=ticket.id,

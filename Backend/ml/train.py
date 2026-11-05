@@ -61,7 +61,7 @@ async def classify_issue(db: AsyncSession, text: str) -> dict:
         return {
             "category": final_category,
             "category_confidence_score": float(category_confidence),
-            "priority": final_priority,
+            "priority": final_priority.lower(),
             "priority_confidence_score": float(priority_confidence),
             "department_id": 3,  # later make it to general department
             "category_id": 3,  # later make it to general category
@@ -70,7 +70,7 @@ async def classify_issue(db: AsyncSession, text: str) -> dict:
     return {
         "category": final_category,
         "category_confidence_score": float(category_confidence),
-        "priority": final_priority,
+        "priority": final_priority.lower(),
         "priority_confidence_score": float(priority_confidence),
         "department_id": data.department_id,
         "category_id": data.id,

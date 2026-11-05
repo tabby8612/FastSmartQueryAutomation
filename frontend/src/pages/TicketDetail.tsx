@@ -15,6 +15,7 @@ import { Select, SelectContent, SelectGroup, SelectItem, SelectLabel, SelectTrig
 import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle } from "@/components/ui/dialog"
 import { toast } from "sonner"
 import Timeline from "@/components/ui/timeline"
+import RichTextEditor from "@/components/ui/editor/rich-text-editor"
 
 function errorMessage(error: unknown) {
   if (isAxiosError(error) && typeof error.response?.data?.detail === "string") {
@@ -91,7 +92,7 @@ function TicketDetailContent({ ticketId }: { ticketId: string }) {
     void load()
     return () => controller.abort()
   }, [ticketId, token, attempt])
-  
+
   useEffect(() => {
     const controller = new AbortController()
     async function loadOfficers() {
@@ -118,7 +119,7 @@ function TicketDetailContent({ ticketId }: { ticketId: string }) {
 
   useEffect(() => {
     if (loading || loadError || !token || !/^\d+$/.test(ticketId)) return
-    const streamURL = api.getUri({ url: `/tickets/${ticketId}/stream` })
+    const streamURL = api.getUri({ url: `/tickets/${ticketId}/stream`, withCredentials: true })
     let refreshController: AbortController | undefined
     const eventSource = new EventSource(streamURL, { withCredentials: true })
 
@@ -194,6 +195,11 @@ function TicketDetailContent({ ticketId }: { ticketId: string }) {
           const response = await api.post<Reply>(`/replies/${saved.id}/send`, null, { headers })
           remember(response.data)
           setNotice("Reply sent successfully.")
+          setText(" ")
+          toast.success("Reply sent successfully.", {
+            richColors: true,
+            position: 'top-center'
+          })
         } else {
           setNotice("Draft saved.")
         }
@@ -263,7 +269,7 @@ function TicketDetailContent({ ticketId }: { ticketId: string }) {
     setUpdatingStatus(true)
     setStatusError("")
     try {
-      const response = await api.patch<Ticket>(`/hod/tickets/${ticketId}/take-over`, {},  { headers })
+      const response = await api.patch<Ticket>(`/hod/tickets/${ticketId}/take-over`, {}, { headers })
       setTicket(response.data)
       toast.success("Ticket is assigned to you", { "className": "bg-green-100! border-green-800!", position: "top-center" })
     } catch (error) {
@@ -294,12 +300,12 @@ function TicketDetailContent({ ticketId }: { ticketId: string }) {
     { label: "High", value: "high" },
   ]
 
-  const departmentOfficers = officers ? officers.map(function (officer) {    
+  const departmentOfficers = officers ? officers.map(function (officer) {
     return {
-    label: officer.full_name, 
-    value: officer.id
-  }
-  }) : []  
+      label: officer.full_name,
+      value: officer.id
+    }
+  }) : []
 
   return (
     <SidebarProvider style={{ "--sidebar-width": "calc(var(--spacing) * 72)", "--header-height": "calc(var(--spacing) * 16)" } as CSSProperties}>
@@ -375,28 +381,28 @@ function TicketDetailContent({ ticketId }: { ticketId: string }) {
                     </Dialog>
                   </div>
                   <div><dt className="text-muted-foreground">Priority</dt>{
-                      roleName !== "hod" ? <dd className="mt-1 font-medium capitalize">{ticket.priority}</dd> : (
-                        <Select items={priorityItems} value={ticket.priority} disabled={updatingPriority} onValueChange={value => {
-                          if (!value || value === ticket.priority) return
-                          setPriorityError("")
-                          setPendingPriority(value)
-                        }}>
-                          <SelectTrigger aria-label="Ticket priority" className="w-full max-w-48 border-muted-foreground mt-1">
-                            <SelectValue />
-                          </SelectTrigger>
-                          <SelectContent alignItemWithTrigger={false}>
-                            <SelectGroup>
-                              <SelectLabel>Priority</SelectLabel>
-                              {priorityItems.map((item) => (
-                                <SelectItem key={item.value} value={item.value}>
-                                  {item.label}
-                                </SelectItem>
-                              ))}
-                            </SelectGroup>
-                          </SelectContent>
-                        </Select>
-                      )
-                    }
+                    roleName !== "hod" ? <dd className="mt-1 font-medium capitalize">{ticket.priority}</dd> : (
+                      <Select items={priorityItems} value={ticket.priority} disabled={updatingPriority} onValueChange={value => {
+                        if (!value || value === ticket.priority) return
+                        setPriorityError("")
+                        setPendingPriority(value)
+                      }}>
+                        <SelectTrigger aria-label="Ticket priority" className="w-full max-w-48 border-muted-foreground mt-1">
+                          <SelectValue />
+                        </SelectTrigger>
+                        <SelectContent alignItemWithTrigger={false}>
+                          <SelectGroup>
+                            <SelectLabel>Priority</SelectLabel>
+                            {priorityItems.map((item) => (
+                              <SelectItem key={item.value} value={item.value}>
+                                {item.label}
+                              </SelectItem>
+                            ))}
+                          </SelectGroup>
+                        </SelectContent>
+                      </Select>
+                    )
+                  }
 
                     <Dialog open={pendingPriority !== null} onOpenChange={open => {
                       if (!open && !priorityRequestPending.current) setPendingPriority(null)
@@ -418,34 +424,34 @@ function TicketDetailContent({ ticketId }: { ticketId: string }) {
                         </DialogFooter>
                       </DialogContent>
                     </Dialog>
-                    
-                    
-                    </div>
+
+
+                  </div>
                   <div><dt className="text-muted-foreground">Awaiting Student Input</dt><dd className="mt-1 font-medium capitalize">{ticket.awaiting_student_input ? 'Yes' : 'No'}</dd></div>
                   <div><dt className="text-muted-foreground">Assign To</dt>{
-                      roleName !== "hod" && !officers ? <dd className="mt-1 font-medium capitalize">{ticket.assigned?.full_name ?? '-'}</dd> : (
-                        <Select items={departmentOfficers} value={ticket.assigned_id} disabled={false} onValueChange={value => {
-                          if (!value || value === ticket.assigned_id) return
-                          setOfficerError("")
-                          setPendingOfficer(+value)
-                        }}>
-                          <SelectTrigger aria-label="Ticket Officer" className="w-full max-w-48 border-muted-foreground mt-1">
-                            <SelectValue />
-                          </SelectTrigger>
-                          <SelectContent alignItemWithTrigger={false}>
-                            <SelectGroup>
-                              <SelectLabel>Department Officer</SelectLabel>
-                              {departmentOfficers.map((item) => (
-                                <SelectItem key={item.value} value={item.value}>
-                                  {item.label}
-                                </SelectItem>
-                              ))}
-                            </SelectGroup>
-                          </SelectContent>
-                        </Select>
-                      )
-                    }
-                    
+                    roleName !== "hod" && !officers ? <dd className="mt-1 font-medium capitalize">{ticket.assigned?.full_name ?? '-'}</dd> : (
+                      <Select items={departmentOfficers} value={ticket.assigned_id} disabled={false} onValueChange={value => {
+                        if (!value || value === ticket.assigned_id) return
+                        setOfficerError("")
+                        setPendingOfficer(+value)
+                      }}>
+                        <SelectTrigger aria-label="Ticket Officer" className="w-full max-w-48 border-muted-foreground mt-1">
+                          <SelectValue />
+                        </SelectTrigger>
+                        <SelectContent alignItemWithTrigger={false}>
+                          <SelectGroup>
+                            <SelectLabel>Department Officer</SelectLabel>
+                            {departmentOfficers.map((item) => (
+                              <SelectItem key={item.value} value={item.value}>
+                                {item.label}
+                              </SelectItem>
+                            ))}
+                          </SelectGroup>
+                        </SelectContent>
+                      </Select>
+                    )
+                  }
+
                     <Dialog open={pendingOfficer !== null} onOpenChange={open => {
                       if (!open && !officerRequestPending.current) setPendingOfficer(null)
                     }}>
@@ -466,59 +472,67 @@ function TicketDetailContent({ ticketId }: { ticketId: string }) {
                         </DialogFooter>
                       </DialogContent>
                     </Dialog>
-                    </div>
+                  </div>
                 </dl>
                 <div className="text-sm">
                   <p className="text-muted-foreground">Ticket Query</p>
-                  <p className="whitespace-pre-wrap break-words text-sm leading-7">{ticket.body}</p>
+                  <p className="whitespace-pre-wrap break-words text-sm leading-7 formatted-text" dangerouslySetInnerHTML={{
+                    __html: ticket.body
+                  }} />
                 </div>
               </section>
               <section className="space-y-4 border-b p-6" aria-labelledby="ticket-status-history">
                 <h2 id="ticket-status-history" className="text-2xl font-semibold">Ticket Status History</h2>
-                    <Timeline timeline={ticket.ticket_status_history} />
+                <Timeline timeline={ticket.ticket_status_history} />
               </section>
               <section className="space-y-4 border-b p-6" aria-labelledby="conversation-heading">
                 <h2 id="conversation-heading" className="text-lg font-semibold">Conversation</h2>
                 <div className="mr-4 space-y-2 rounded-xl bg-muted p-4 sm:mr-12">
                   <p className="text-sm font-semibold">Student · {ticket.student?.full_name ?? "Unknown"}</p>
-                  <p className="whitespace-pre-wrap break-words text-sm leading-6">{ticket.body}</p>
+                  <p className="whitespace-pre-wrap break-words text-sm leading-6 formatted-text" dangerouslySetInnerHTML={{ __html: ticket.body }} />
                   <p className="text-xs text-muted-foreground">{formatDate(ticket.created_at)}</p>
                 </div>
                 {replies.filter(reply => reply.status === "sent").map(reply => (
                   <div key={reply.id} className={`${reply.creator?.is_officer ? "ml-4 sm:ml-12 bg-primary/5" : "mr-4 sm:mr-12 bg-muted"} space-y-2 rounded-xl border p-4`}>
                     <p className="text-sm font-semibold">{reply.creator?.is_officer ? "Officer" : reply.creator?.is_admin ? "Admin" : "Student"} <span className="font-normal text-muted-foreground">· Sent</span></p>
-                    <p className="whitespace-pre-wrap break-words text-sm leading-6">{reply.text}</p>
+                    <p className="whitespace-pre-wrap break-words text-sm leading-6 formatted-text" dangerouslySetInnerHTML={{ __html: reply.text }} />
                     <p className="text-xs text-muted-foreground">{formatDate(reply.send_at)}</p>
                   </div>
                 ))}
               </section>
-              <section className="space-y-4 p-6 space-x-2" aria-labelledby="reply-heading" aria-busy={busy}>
-                <h2 id="reply-heading" className="text-lg font-semibold">Reply</h2>
-                {drafts.length > 0 && <div className="space-y-2"><label htmlFor="saved-draft" className="text-sm font-medium">Saved drafts</label><select id="saved-draft" className="w-full rounded-lg border bg-background p-2 text-sm" disabled={busy || dirty} value={draft?.id ?? ""} onChange={event => { const selected = drafts.find(reply => reply.id === Number(event.target.value)); if (selected) { setDraft(selected); setText(selected.text); setError(""); setNotice("") } }}><option value="" disabled>Select a draft</option>{drafts.map(reply => <option key={reply.id} value={reply.id}>Draft #{reply.id} · {formatDate(reply.created_at)}</option>)}</select></div>}
-                {
-                  roleName !== "student" && (
-                    <Button variant="outline" disabled={busy || dirty || !!draft} onClick={() => void perform("generate")}>
-                      {action === "generate" ? <Loader2 className="animate-spin" /> : <Sparkles />}
-                      {action === "generate" ? "Generating AI draft…" : "Generate AI Draft"}
-                    </Button>
-                  )
-                }
-                {
-                  roleName === "hod" && <Button variant="outline" disabled={ticket.assigned_id === user?.id} onClick={() => void takeOver()}>
-                      Take Over Ticket
-                    </Button>
-                }
+              {
+                ticket.status !== "closed" && (
+                  <section className="space-y-4 p-6 space-x-2" aria-labelledby="reply-heading" aria-busy={busy}>
+                    <h2 id="reply-heading" className="text-lg font-semibold">Reply</h2>
+                    {drafts.length > 0 && <div className="space-y-2"><label htmlFor="saved-draft" className="text-sm font-medium">Saved drafts</label><select id="saved-draft" className="w-full rounded-lg border bg-background p-2 text-sm" disabled={busy || dirty} value={draft?.id ?? ""} onChange={event => { const selected = drafts.find(reply => reply.id === Number(event.target.value)); if (selected) { setDraft(selected); setText(selected.text); setError(""); setNotice("") } }}><option value="" disabled>Select a draft</option>{drafts.map(reply => <option key={reply.id} value={reply.id}>Draft #{reply.id} · {formatDate(reply.created_at)}</option>)}</select></div>}
+                    {
+                      roleName !== "student" && (
+                        <Button variant="outline" disabled={busy || dirty || !!draft} onClick={() => void perform("generate")}>
+                          {action === "generate" ? <Loader2 className="animate-spin" /> : <Sparkles />}
+                          {action === "generate" ? "Generating AI draft…" : "Generate AI Draft"}
+                        </Button>
+                      )
+                    }
+                    {
+                      roleName === "hod" && <Button variant="outline" disabled={ticket.assigned_id === user?.id} onClick={() => void takeOver()}>
+                        Take Over Ticket
+                      </Button>
+                    }
 
-                <p className="text-sm text-muted-foreground">{action === "generate" ? "This may take a little while. Please wait while your draft is generated." : draft ? "Review your saved draft and edit it before sending." : "Generate a draft or write your own reply below."}</p>
-                <label htmlFor="reply-text" className="sr-only">Reply text</label>
-                <Textarea id="reply-text" value={text} onChange={event => setText(event.target.value)} disabled={busy} placeholder="Assalam Walaikum,…" className="min-h-64 p-4 leading-7" />
-                {error && <p role="alert" className="text-sm text-destructive">{error}</p>}
-                <p role="status" className="text-sm text-muted-foreground">{busy ? (action === "save" ? "Saving draft…" : action === "send" ? "Saving changes and sending reply…" : "Generating draft…") : notice || (dirty ? "Unsaved changes" : "")}</p>
-                <div className="flex flex-wrap justify-end gap-3">
-                  <Button variant="outline" disabled={busy || !text.trim() || (!!draft && !dirty)} onClick={() => void perform("save")}>{action === "save" ? <Loader2 className="animate-spin" /> : <Save />}{action === "save" ? "Saving…" : "Save Draft"}</Button>
-                  <Button disabled={busy || !text.trim()} onClick={() => void perform("send")}>{action === "send" ? <Loader2 className="animate-spin" /> : <Send />}{action === "send" ? "Sending…" : "Send Reply"}</Button>
-                </div>
-              </section>
+                    <p className="text-sm text-muted-foreground">{action === "generate" ? "This may take a little while. Please wait while your draft is generated." : draft ? "Review your saved draft and edit it before sending." : "Generate a draft or write your own reply below."}</p>
+                    <label htmlFor="reply-text" className="sr-only">Reply text</label>
+                    {/* <Textarea id="reply-text" value={text} onChange={event => setText(event.target.value)} disabled={busy} placeholder="Assalam Walaikum,…" className="min-h-64 p-4 leading-7" /> */}
+                    <RichTextEditor content={text} onChangeFn={setText} className={busy ? "bg-stone-400 cursor-crosshair editor-content" : "editor-content"} />
+                    {error && <p role="alert" className="text-sm text-destructive">{error}</p>}
+                    <p role="status" className="text-sm text-muted-foreground">{busy ? (action === "save" ? "Saving draft…" : action === "send" ? "Saving changes and sending reply…" : "Generating draft…") : notice || (dirty ? "Unsaved changes" : "")}</p>
+                    <div className="flex flex-wrap justify-end gap-3">
+                      <Button variant="outline" disabled={busy || !text.trim() || (!!draft && !dirty)} onClick={() => void perform("save")}>{action === "save" ? <Loader2 className="animate-spin" /> : <Save />}{action === "save" ? "Saving…" : "Save Draft"}</Button>
+                      <Button disabled={busy || !text.trim()} onClick={() => void perform("send")}>{action === "send" ? <Loader2 className="animate-spin" /> : <Send />}{action === "send" ? "Sending…" : "Send Reply"}</Button>
+                    </div>
+                  </section>
+                )
+              }
+
             </article>
           )}
         </main>
