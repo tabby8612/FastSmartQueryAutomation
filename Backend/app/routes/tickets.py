@@ -1,9 +1,28 @@
-from fastapi import APIRouter, Depends, HTTPException, status, Cookie
-from fastapi.responses import StreamingResponse
-from sqlalchemy.ext.asyncio import AsyncSession
+import os
+from dotenv import load_dotenv
+
+from pydantic import ValidationError
+
+from fastapi import (
+    APIRouter,
+    Depends,
+    HTTPException,
+    status,
+    Cookie,
+    UploadFile as UF,
+    File,
+    Form,
+)
+
 import json
 import asyncio
 
+from fastapi.responses import StreamingResponse
+from sqlalchemy.ext.asyncio import AsyncSession
+from typing import Annotated
+from pydantic import WithJsonSchema
+
+from pathlib import Path
 
 from app.database import get_db
 from app.schemas.ticket import TicketCreate, TicketResponse, TicketUpdate
@@ -11,6 +30,7 @@ from app.schemas.ticket import TicketCreate, TicketResponse, TicketUpdate
 from app.services.TicketService import TicketService
 from app.services.escalation_service import EscalationService
 from app.services.audit_service import AuditService
+from app.services.attachment_service import AttachmentService
 
 from app.helpers.security import get_current_user, get_active_user_by_token
 from app.models.user import User
@@ -21,6 +41,8 @@ from app.Enums.AuditActionEnum import AuditActionEnum
 from app.events.ticket_event_manager import ticket_events
 
 router = APIRouter(prefix="/tickets", tags=["tickets"])
+
+load_dotenv()
 
 
 def has_role(user: User, role_names: list[str]) -> bool:
@@ -39,37 +61,84 @@ def require_roles(*role_names: str):
     return checker
 
 
+UploadFile = Annotated[UF, WithJsonSchema({"type": "string", "format": "binary"})]
+
+
 @router.post("/", response_model=None, status_code=status.HTTP_201_CREATED)
 async def create(
-    ticket: TicketCreate,
+    ticket: str = Form(...),
+    files: list[UploadFile] = File(default=[]),
     db: AsyncSession = Depends(get_db),
     current_user: User = Depends(get_current_user),
 ):
+    try:
+        ticket_data = TicketCreate.model_validate_json(ticket)
 
-    new_ticket = await TicketService.create(
-        db=db,
-        student_id=current_user.id,
-        subject=ticket.subject,
-        body=ticket.body,
-        channel=ChannelEnum.WEB_FORM,
-    )
+        saved_files = []
 
-    await AuditService.record_audit(
-        db,
-        actor_id=current_user.id,
-        action=AuditActionEnum.TICKET_CREATED,
-        entity_type="ticket",
-        entity_id=new_ticket.id,
-        description="new ticket has been created",
-    )
+        # Validing Each File
+        for file in files:
+            await AttachmentService.validate_file(file)
 
-    return {
-        "message": f"Your Ticket is Successfully Created. Use Tracking Id {new_ticket.tracking_id} to track your ticket",
-        "ticket_id": new_ticket.id,
-        "tracking_id": new_ticket.tracking_id,
-        "success": True,
-        "channel": ChannelEnum.WEB_FORM.lower(),
-    }
+        # Creating Ticket
+        new_ticket = await TicketService.create(
+            db=db,
+            student_id=current_user.id,
+            subject=ticket_data.subject,
+            body=ticket_data.body,
+            channel=ChannelEnum.WEB_FORM,
+        )
+
+        # Save uploaded files
+        for file in files:
+            stored_filename = await AttachmentService.save_file(file)
+
+            saved_files.append(stored_filename)
+
+            # Creating Attachment Record
+            await AttachmentService.create_attachment_record(
+                db, new_ticket.id, current_user.id, file, stored_filename
+            )
+
+        await AuditService.record_audit(
+            db,
+            actor_id=current_user.id,
+            action=AuditActionEnum.TICKET_CREATED,
+            entity_type="ticket",
+            entity_id=new_ticket.id,
+            description="new ticket has been created",
+        )
+
+        await db.flush()
+
+        return {
+            "message": f"Your Ticket is Successfully Created. Use Tracking Id {new_ticket.tracking_id} to track your ticket",
+            "ticket_id": new_ticket.id,
+            "tracking_id": new_ticket.tracking_id,
+            "success": True,
+            "channel": ChannelEnum.WEB_FORM.lower(),
+        }
+    except ValidationError as error:
+        raise HTTPException(status.HTTP_422_UNPROCESSABLE_CONTENT, error.json)
+
+    except Exception as err:
+        await db.rollback()
+
+        upload_path = Path(os.getenv("UPLOAD_FOLDER_PATH", "uploads"))
+
+        for filename in saved_files:
+            file_path = upload_path / filename
+
+            if file_path.exists():
+                file_path.unlink()
+
+        raise HTTPException(
+            status.HTTP_422_UNPROCESSABLE_CONTENT, f"Unable to create ticket - {err}"
+        )
+
+    finally:
+        for file in files:
+            await file.close()
 
 
 @router.get("/", response_model=list[TicketResponse])

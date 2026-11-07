@@ -17,6 +17,10 @@ def role_name(user: User) -> str | None:
     return user.roles[0].name if user.roles else None
 
 
+def has_role(user: User, role_names: list[str]) -> bool:
+    return any(role.name in role_names for role in user.roles)
+
+
 def get_actor_ip(request: Request) -> str:
     x_forwarded_for = request.headers.get("x-forwarded-for")
     if x_forwarded_for:

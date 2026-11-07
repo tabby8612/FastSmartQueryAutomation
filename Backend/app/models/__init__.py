@@ -23,6 +23,8 @@ from app.models.announcements import Announcements
 
 from app.models.audit_logs import AuditLog
 
+from app.models.attachment import Attachment
+
 __all__ = [
     "Base",
     "TimestampMixin",
@@ -38,4 +40,5 @@ __all__ = [
     "Notification",
     "Announcements",
     "AuditLog",
+    "Attachment",
 ]

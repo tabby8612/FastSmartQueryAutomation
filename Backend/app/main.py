@@ -26,15 +26,25 @@ from app.routes import (
     instructor,
     audit_logs,
     profile,
+    attachment,
 )
 from app.scheduler.scheduler import scheduler, start_scheduler
 
 
 @asynccontextmanager
 async def lifespan(app: FastAPI):
-    start_scheduler()
+    print("Application starting")
+
+    scheduler.start()
+
     yield
-    scheduler.shutdown()
+
+    print("Application shutdown started")
+
+    print("Stopping scheduler...")
+    scheduler.shutdown(wait=False)
+
+    print("Application shutdown completed")
 
 
 load_dotenv()
@@ -78,3 +88,4 @@ app.include_router(announcement.router)
 app.include_router(report.router)
 app.include_router(instructor.router)
 app.include_router(audit_logs.router)
+app.include_router(attachment.router)

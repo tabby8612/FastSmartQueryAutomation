@@ -1,13 +1,12 @@
 import { useEffect, useRef, useState, type CSSProperties } from "react"
 import { Link, useParams } from "react-router-dom"
 import { isAxiosError } from "axios"
-import { ArrowLeft, Loader2, Save, Send, Sparkles } from "lucide-react"
+import { ArrowLeft, Download, ExternalLink, FileCheck, Loader2, Save, Send, Sparkles } from "lucide-react"
 import { AppSidebar } from "@/components/dashboard/app-sidebar"
 import { SiteHeader } from "@/components/dashboard/site-header"
 import { SidebarInset, SidebarProvider } from "@/components/ui/sidebar"
 import { Button } from "@/components/ui/button"
 import { Badge } from "@/components/ui/badge"
-import { Textarea } from "@/components/ui/textarea"
 import { useAuth } from "@/contexts/auth-context"
 import api from "@/lib/axios"
 import type { Reply, Ticket, User } from "@/types"
@@ -16,6 +15,8 @@ import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, D
 import { toast } from "sonner"
 import Timeline from "@/components/ui/timeline"
 import RichTextEditor from "@/components/ui/editor/rich-text-editor"
+import { Card, CardDescription, CardTitle } from "@/components/ui/card"
+import { AttachmentCard } from "@/components/ui/upload-box/attachment-card"
 
 function errorMessage(error: unknown) {
   if (isAxiosError(error) && typeof error.response?.data?.detail === "string") {
@@ -326,7 +327,7 @@ function TicketDetailContent({ ticketId }: { ticketId: string }) {
                   <p className="font-medium text-muted-foreground">Ticket #{ticket.tracking_id}</p>
                   <div className="flex gap-2"><Badge variant="outline" className="capitalize">{ticket.status}</Badge><Badge className={ticket.priority?.toLowerCase() === "high" ? "bg-red-100 text-red-800 capitalize" : ticket.priority?.toLowerCase() === "medium" ? "bg-amber-100 text-amber-800 capitalize" : "bg-green-100 text-green-800 capitalize"}>{ticket.priority ?? "-"}</Badge></div>
                 </div>
-                <h1 className="break-words text-2xl font-semibold md:text-3xl capitalize">{ticket.subject}</h1>
+                <h1 className="wrap-break-word text-2xl font-semibold md:text-3xl capitalize">{ticket.subject}</h1>
               </header>
               <section className="space-y-6 border-b p-6" aria-label="Ticket details">
                 <dl className="grid gap-4 text-sm sm:grid-cols-3">
@@ -476,9 +477,20 @@ function TicketDetailContent({ ticketId }: { ticketId: string }) {
                 </dl>
                 <div className="text-sm">
                   <p className="text-muted-foreground">Ticket Query</p>
-                  <p className="whitespace-pre-wrap break-words text-sm leading-7 formatted-text" dangerouslySetInnerHTML={{
+                  <p className="whitespace-pre-wrap wrap-break-word text-sm leading-7 formatted-text" dangerouslySetInnerHTML={{
                     __html: ticket.body
                   }} />
+                </div>
+              </section>
+              <section className="space-y-4 border-b p-6" aria-labelledby="ticket-attachments">
+                <h2 id="ticket-status-history" className="text-2xl font-semibold">Ticket Attachments ({ticket.attachments.length})</h2>
+                <div className="grid grid-cols-3 gap-4 mt-7">
+                  {
+                    ticket.attachments.map(attachment => (
+                      <AttachmentCard attachment={attachment} key={attachment.id} />
+                    ))
+                  }
+
                 </div>
               </section>
               <section className="space-y-4 border-b p-6" aria-labelledby="ticket-status-history">
@@ -489,13 +501,13 @@ function TicketDetailContent({ ticketId }: { ticketId: string }) {
                 <h2 id="conversation-heading" className="text-lg font-semibold">Conversation</h2>
                 <div className="mr-4 space-y-2 rounded-xl bg-muted p-4 sm:mr-12">
                   <p className="text-sm font-semibold">Student · {ticket.student?.full_name ?? "Unknown"}</p>
-                  <p className="whitespace-pre-wrap break-words text-sm leading-6 formatted-text" dangerouslySetInnerHTML={{ __html: ticket.body }} />
+                  <p className="whitespace-pre-wrap wrap-break-word text-sm leading-6 formatted-text" dangerouslySetInnerHTML={{ __html: ticket.body }} />
                   <p className="text-xs text-muted-foreground">{formatDate(ticket.created_at)}</p>
                 </div>
                 {replies.filter(reply => reply.status === "sent").map(reply => (
                   <div key={reply.id} className={`${reply.creator?.is_officer ? "ml-4 sm:ml-12 bg-primary/5" : "mr-4 sm:mr-12 bg-muted"} space-y-2 rounded-xl border p-4`}>
                     <p className="text-sm font-semibold">{reply.creator?.is_officer ? "Officer" : reply.creator?.is_admin ? "Admin" : "Student"} <span className="font-normal text-muted-foreground">· Sent</span></p>
-                    <p className="whitespace-pre-wrap break-words text-sm leading-6 formatted-text" dangerouslySetInnerHTML={{ __html: reply.text }} />
+                    <p className="whitespace-pre-wrap wrap-break-word text-sm leading-6 formatted-text" dangerouslySetInnerHTML={{ __html: reply.text }} />
                     <p className="text-xs text-muted-foreground">{formatDate(reply.send_at)}</p>
                   </div>
                 ))}

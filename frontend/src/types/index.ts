@@ -21,7 +21,17 @@ export type Ticket = {
     "department": Department,
     "category": Category,
     "ticket_status_history": TicketStatusHistory[],
-    "replies": Reply[]
+    "replies": Reply[],
+    "attachments": Attachment[]
+}
+
+export type Attachment = {
+    "id": number,
+    "stored_filename": string,
+    "file_type": string,
+    "original_filename": string,
+    "file_size": number,
+    "file_size_in_MB": string
 }
 
 export type Reply = {

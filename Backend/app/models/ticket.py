@@ -10,6 +10,7 @@ from app.models.base import TimestampMixin
 
 from app.models.reply import Reply
 from app.models.ticket_status_history import TicketStatusHistory
+from app.models.attachment import Attachment
 
 
 class Ticket(Base, TimestampMixin):
@@ -50,3 +51,4 @@ class Ticket(Base, TimestampMixin):
     category: Mapped[Category] = relationship(foreign_keys=[category_id])
     replies = relationship(Reply, back_populates="ticket")
     ticket_status_history = relationship(TicketStatusHistory, back_populates="ticket")
+    attachments = relationship(Attachment, back_populates="ticket")

@@ -31,6 +31,8 @@ dependencies = [
     "pillow>=13.0.0",
     "nh3>=0.3.7",
     "beautifulsoup4>=4.15.0",
+    "python-magic-bin>=0.4.14",
+    "aiofiles>=25.1.0",
 ]
 
 [project.scripts]

@@ -1,3 +1,5 @@
+from fastapi import Form, UploadFile, File
+
 from datetime import datetime
 from decimal import Decimal
 
@@ -28,8 +30,8 @@ class TicketBase(BaseModel):
 
 
 class TicketCreate(BaseModel):
-    subject: str = Field(min_length=15, max_length=200)
-    body: str = Field(min_length=20, max_length=1000)
+    subject: str = Form(min_length=15, max_length=200)
+    body: str = Form(min_length=20, max_length=1000)
 
     @classmethod
     @field_validator("body")
@@ -129,6 +131,19 @@ class TicketStatusHistory(BaseModel):
         return QueryStatusEnum.to_label(self.new_status)
 
 
+class Attachment(BaseModel):
+    id: int
+    stored_filename: str
+    file_type: str
+    original_filename: str | None
+    file_size: int
+
+    @computed_field(return_type=str)
+    def file_size_in_MB(self):
+        size = self.file_size / (1024 * 1024)
+        return f"{size:.2f} MB"
+
+
 class TicketResponse(TicketBase):
     id: int
     created_at: datetime | None
@@ -138,5 +153,6 @@ class TicketResponse(TicketBase):
     category: Category | None
     replies: list[Reply] | None
     ticket_status_history: list[TicketStatusHistory] | None
+    attachments: list[Attachment]
 
     model_config = ConfigDict(from_attributes=True)

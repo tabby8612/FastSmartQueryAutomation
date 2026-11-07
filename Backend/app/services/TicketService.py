@@ -142,6 +142,7 @@ class TicketService:
             selectinload(Ticket.category),
             selectinload(Ticket.replies).options(joinedload(Reply.creator)),
             selectinload(Ticket.ticket_status_history),
+            selectinload(Ticket.attachments),
         )
         if student_id is not None:
             stmt = stmt.where(Ticket.student_id == student_id)
@@ -164,6 +165,7 @@ class TicketService:
                 selectinload(Ticket.category),
                 selectinload(Ticket.replies).options(joinedload(Reply.creator)),
                 selectinload(Ticket.ticket_status_history),
+                selectinload(Ticket.attachments),
             )
             .where(Ticket.id == query_id)
         )

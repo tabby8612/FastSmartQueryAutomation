@@ -46,13 +46,15 @@ def process_image(
 def delete_image(
     filename: str | None,
 ) -> None:
+    print("filename is: ", filename)
     if filename is None:
         return
 
     UPLOAD_PATH = os.getenv("UPLOAD_FOLDER_PATH", "uploads")
     UPLOAD_PATH_DIR = Path(UPLOAD_PATH)
 
-    filepath = UPLOAD_PATH_DIR / filename
+    relative_path = filename.lstrip("/")
+    filepath = UPLOAD_PATH_DIR / relative_path
 
     if filepath.exists():
         filepath.unlink()

@@ -9,6 +9,8 @@ import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
 import api from "@/lib/axios"
 import RichTextEditor from "@/components/ui/editor/rich-text-editor"
+import { FileUpload } from "@/components/ui/file-upload"
+import { AttachmentBox } from "@/components/ui/upload-box/attachment-box"
 
 export default function SubmitIssue() {
   const { role_name, access_token } = useAuth()
@@ -18,6 +20,7 @@ export default function SubmitIssue() {
   const [successMessage, setSuccessMessage] = useState<string | null>(null)
   const [errors, setErrors] = useState<{ subject?: string; body?: string }>({})
   const [submissionError, setSubmissionError] = useState<string>("")
+  const [files, setFiles] = useState<File[]>([]);
 
   useEffect(() => {
     if (successMessage) {
@@ -32,8 +35,17 @@ export default function SubmitIssue() {
     e.preventDefault()
     setErrors({})
     setSubmissionError("")
+
     try {
-      const response = await api.post("/tickets/", { subject, body }, {
+      const formData = new FormData()
+
+      formData.append("ticket", JSON.stringify({ subject, body }))
+
+      files.forEach(file => {
+        formData.append("files", file);
+      });
+
+      const response = await api.post("/tickets/", formData, {
         headers: { Authorization: `Bearer ${access_token}` },
       })
       setSuccessMessage(response.data.message)
@@ -79,48 +91,49 @@ export default function SubmitIssue() {
                   </div>
                 ) : (
                   <>
-                <h1 className="text-2xl md:text-4xl font-bold">Submit New Issue</h1>
-                <p className="text-muted-foreground text-sm md:text-2xl">Tell us what problem you are facing</p>
-                <form onSubmit={handleSubmit} className="flex flex-col gap-4 max-w-xl  w-full mt-5">
-                  {
-                    submissionError && (
-                      <div className="bg-red-200 px-3 py-2 rounded-sm text-sm flex justify-center items-center">
-                    <p className=" mx-auto capitalize font-bold">{submissionError}</p>
-                  </div>
-                    )
-                  }
-                  
-                <div className="flex flex-col gap-2 my-3">
-                  <Label htmlFor="title">Title</Label>
-                  <Input
-                    id="title"
-                    placeholder="Enter the title of your issue"
-                    value={subject}
-                    onChange={(e) => {
-                      setSubject(e.target.value)
-                      if (errors.subject) setErrors((prev) => ({ ...prev, subject: undefined }))
-                        if (submissionError) setSubmissionError('') 
-                    }}
-                    className="border-stone-500"
-                    required
-                  />
-                  {errors.subject && <p className="text-red-500 text-sm">{errors.subject}</p>}
-                </div>
-                <div className="flex flex-col gap-2">
-                  <Label htmlFor="description">Description</Label>
-                  <RichTextEditor content={body} onChangeFn={setBody} id="description"/>
-                  {errors.body && <p className="text-red-500 text-sm">{errors.body}</p>}
-                  </div>
-                <div className="flex gap-4 mt-4 justify-end">
-                  <Button type="button" className="w-1/2 bg-stone-300" variant="outline" onClick={() => navigate("/dashboard")}>Cancel</Button>
-                  <Button type="submit" className="w-1/2">Submit New Issue</Button>
-                </div>
-              </form>
+                    <h1 className="text-2xl md:text-4xl font-bold">Submit New Issue</h1>
+                    <p className="text-muted-foreground text-sm md:text-2xl">Tell us what problem you are facing</p>
+                    <form onSubmit={handleSubmit} className="flex flex-col gap-4 max-w-xl  w-full mt-5">
+                      {
+                        submissionError && (
+                          <div className="bg-red-200 px-3 py-2 rounded-sm text-sm flex justify-center items-center">
+                            <p className=" mx-auto capitalize font-bold">{submissionError}</p>
+                          </div>
+                        )
+                      }
+
+                      <div className="flex flex-col gap-2 my-3">
+                        <Label htmlFor="title">Title</Label>
+                        <Input
+                          id="title"
+                          placeholder="Enter the title of your issue"
+                          value={subject}
+                          onChange={(e) => {
+                            setSubject(e.target.value)
+                            if (errors.subject) setErrors((prev) => ({ ...prev, subject: undefined }))
+                            if (submissionError) setSubmissionError('')
+                          }}
+                          className="border-stone-500"
+                          required
+                        />
+                        {errors.subject && <p className="text-red-500 text-sm">{errors.subject}</p>}
+                      </div>
+                      <div className="flex flex-col gap-2">
+                        <Label htmlFor="description">Description</Label>
+                        <RichTextEditor content={body} onChangeFn={setBody} id="description" />
+                        {errors.body && <p className="text-red-500 text-sm">{errors.body}</p>}
+                      </div>
+                      <AttachmentBox selectedfiles={files} setSelectedFiles={setFiles} />
+                      <div className="flex gap-4 mt-4 px-5  items-center justify-center">
+                        <Button type="button" className="w-1/2 bg-stone-300" variant="outline" onClick={() => navigate("/student/dashboard")}>Cancel</Button>
+                        <Button type="submit" className="w-1/2">Submit New Issue</Button>
+                      </div>
+                    </form>
                   </>
                 )}
               </div>
 
-              
+
             </div>
           </div>
         </div>
