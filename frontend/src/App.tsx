@@ -23,6 +23,7 @@ import { StudentAnnouncements } from './pages/student/Announcements'
 import LeaveAutoReply from './pages/officer/LeaveAutoReply'
 import { AuditLogs } from './pages/admin/AuditLogs'
 import { Account } from './pages/Account'
+import { SearchPage } from './pages/Search'
 
 function App() {
   return (
@@ -225,6 +226,51 @@ function App() {
             element={
               <ProtectedRoute allowedRoles={["hod"]}>
                 <Account />
+              </ProtectedRoute>
+            }
+          />
+          <Route
+            path="/student/search"
+            element={
+              <ProtectedRoute>
+                <SearchPage />
+                
+              </ProtectedRoute>
+            }
+          />
+          <Route
+            path="/student/search"
+            element={
+              <ProtectedRoute>
+                <SearchPage />
+                
+              </ProtectedRoute>
+            }
+          />
+          <Route
+            path="/officer/search"
+            element={
+              <ProtectedRoute>
+                <SearchPage />
+                
+              </ProtectedRoute>
+            }
+          />
+          <Route
+            path="/hod/search"
+            element={
+              <ProtectedRoute>
+                <SearchPage />
+                
+              </ProtectedRoute>
+            }
+          />
+          <Route
+            path="/admin/search"
+            element={
+              <ProtectedRoute>
+                <SearchPage />
+                
               </ProtectedRoute>
             }
           />

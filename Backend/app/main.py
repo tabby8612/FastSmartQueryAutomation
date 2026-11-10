@@ -1,5 +1,5 @@
 import os
-from fastapi import FastAPI
+from fastapi import FastAPI, Depends
 from fastapi.staticfiles import StaticFiles
 from dotenv import load_dotenv
 
@@ -28,7 +28,13 @@ from app.routes import (
     profile,
     attachment,
 )
+
+from sqlalchemy.ext.asyncio import AsyncSession
+
+from app.helpers.security import get_current_user, get_db
 from app.scheduler.scheduler import scheduler, start_scheduler
+from app.models.user import User
+from app.services.search_service import SearchService
 
 
 @asynccontextmanager
@@ -68,6 +74,16 @@ app.add_middleware(
 @app.get("/")
 def health_check():
     return "Site Working Fine"
+
+
+@app.get("/search")
+async def search(
+    q: str | None = None,
+    current_user: User = Depends(get_current_user),
+    db: AsyncSession = Depends(get_db),
+):
+    search_result = await SearchService.search(db, current_user, q)
+    return search_result
 
 
 app.include_router(profile.router)

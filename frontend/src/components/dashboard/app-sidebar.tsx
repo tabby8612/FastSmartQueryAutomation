@@ -6,11 +6,11 @@ import {
   IconHelp,
   IconAddressBook,
   IconUser,
-  IconUserPlus,
   IconTabs,
   IconBrandOffice,
   IconSpeakerphone,
-  IconHelicopterLanding
+  IconHelicopterLanding,
+  IconChartBar
 } from "@tabler/icons-react"
 
 import { NavMain } from "@/components/dashboard/nav-main"
@@ -24,7 +24,6 @@ import {
   SidebarMenuItem,
 } from "@/components/ui/sidebar"
 import { useAuth } from "@/contexts/auth-context"
-import { ChartBar } from "lucide-react"
 
 const data = {
   student: [
@@ -112,7 +111,7 @@ const data = {
     {
       title: "Audit Logs",
       url: "/admin/audit-logs",
-      icon: ChartBar,
+      icon: IconChartBar,
     }
   ],
 }

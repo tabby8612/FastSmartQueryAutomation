@@ -26,11 +26,10 @@ const RichTextEditor = ({content, onChangeFn, ...props}: Props & React.Component
                 }
             }
         }),
-        Link.configure({
-            openOnClick: false
-        }),
         TextAlign.configure({
             types: ["heading", "paragraph"],
+            alignments: ['left', 'center', 'right'],
+            defaultAlignment: "left"
         }),
 
         ],

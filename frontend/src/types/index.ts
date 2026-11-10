@@ -198,3 +198,20 @@ export type Option = {
 }
 
 export type UserProfile = Pick<User, "id" | "full_name" | "email" | "profile_image" | "student_id">
+
+export type Notification = {
+    id: number,
+    created_at: string,
+    subject: string,
+    message_body: string,
+    type: string
+}
+
+export type SearchData = {
+    tabs: ["tickets", "announcements", "notifications"],
+    data: {
+        tickets: Ticket[],
+        announcements: Announcement[],
+        notifications: Notification[]
+    }
+}

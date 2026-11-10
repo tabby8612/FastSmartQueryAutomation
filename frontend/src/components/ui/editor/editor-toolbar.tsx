@@ -14,6 +14,10 @@ import {
   Undo,
   Redo,
   Code2,
+  Link,
+  AlignLeft,
+  AlignCenter,
+  AlignRight,
 } from 'lucide-react';
 
 interface EditorToolbarProps {
@@ -115,6 +119,32 @@ const EditorToolbar: React.FC<EditorToolbarProps> = ({ editor }) => {
         title="Inline Code"
       >
         <Code size={18} />
+      </button>
+
+      <span className="w-[1px] h-6 bg-gray-300 dark:bg-gray-700 mx-1" />
+      <button
+        type="button"
+        onClick={() => editor.chain().focus().toggleTextAlign('left').run()}
+        className={buttonClass(editor.isActive({ textAlign: 'left' }))}
+        title="Left Alignment"
+      >
+        <AlignLeft size={18} />
+      </button>
+      <button
+        type="button"
+        onClick={() => editor.chain().focus().toggleTextAlign('center').run()}
+        className={buttonClass(editor.isActive({ textAlign: 'center' }))}
+        title="Center Alignment"
+      >
+        <AlignCenter size={18} />
+      </button>
+      <button
+        type="button"
+        onClick={() => editor.chain().focus().toggleTextAlign('right').run()}
+        className={buttonClass(editor.isActive({ textAlign: 'right' }))}
+        title="Right Alignment"
+      >
+        <AlignRight size={18} />
       </button>
 
       <span className="w-[1px] h-6 bg-gray-300 dark:bg-gray-700 mx-1" />
