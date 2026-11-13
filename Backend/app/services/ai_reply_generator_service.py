@@ -7,9 +7,9 @@ from app.Enums.TicketPriorityEnum import TicketPriorityEnum
 
 load_dotenv()
 
-HF_TOKEN = os.getenv("HF_TOKEN")
+OPEN_AI_MODEL_TOKEN = os.getenv("OPEN_AI_MODEL_TOKEN")
 OPEN_AI_MODEL = os.getenv("OPEN_AI_MODEL")
-HF_BASE_URL = os.getenv("HF_BASE_URL")
+OPEN_AI_BASE_URL = os.getenv("OPEN_AI_BASE_URL")
 
 
 def build_ticket_context(ticket: Ticket) -> str:
@@ -70,6 +70,9 @@ def ai_reply_generator(context: str):
     Your task is to create a draft response for a staff member responding to a student ticket.
 
     Rules:
+    - provide html formatted reply that can have only these tags p, headings, b, i, li, ol, blockcode.
+    - Go through conversation history in the ticket (if available) before creating reply
+    - keep response to the point
     - Write Professionally and politely.
     - Keep replies concise
     - Address the student's actual issue
@@ -81,15 +84,14 @@ def ai_reply_generator(context: str):
     - Produce only draft only.
     - Use all the information about student ticket provided below.
     - Don't generate subject or title, just provide description
-    - Go through conversation history in the ticket (if available) before creating reply
 
     Here is the context of the ticket
     {context}
     """
 
     client = OpenAI(
-        base_url=HF_BASE_URL,
-        api_key=HF_TOKEN,
+        base_url=OPEN_AI_BASE_URL,
+        api_key=OPEN_AI_MODEL_TOKEN,
     )
 
     generated_text = client.chat.completions.create(

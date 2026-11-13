@@ -17,6 +17,7 @@ import Timeline from "@/components/ui/timeline"
 import RichTextEditor from "@/components/ui/editor/rich-text-editor"
 import { AttachmentCard } from "@/components/ui/upload-box/attachment-card"
 import { formatLongDate } from "@/lib/utils"
+import { Textarea } from "@/components/ui/textarea"
 
 
 function errorMessage(error: unknown) {
@@ -197,7 +198,7 @@ function TicketDetailContent({ ticketId }: { ticketId: string }) {
           const response = await api.post<Reply>(`/replies/${saved.id}/send`, null, { headers })
           remember(response.data)
           setNotice("Reply sent successfully.")
-          setText(" ")
+          setText("")
           toast.success("Reply sent successfully.", {
             richColors: true,
             position: 'top-center'

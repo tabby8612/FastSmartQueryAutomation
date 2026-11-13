@@ -262,7 +262,10 @@ const columns = columnHelper.columns([
     enableColumnFilter: true
   }),
   columnHelper.accessor("status", {
+    id: "status",
     header: "Status",
+    filterFn: "includesString",
+    enableColumnFilter: true,
     cell: ({ row }) => (
       <Badge variant="outline" className="px-1.5 text-muted-foreground">
         {row.original.status === "open" ? (
@@ -276,7 +279,10 @@ const columns = columnHelper.columns([
     enableSorting: false,
   }),
   columnHelper.accessor("priority", {
+    id: "priority",
     header: "Priority",
+    filterFn: "includesString",
+    enableColumnFilter: true,
     cell: ({ row }) => (
       row.original.priority ? <Badge className={row.original.priority.toLowerCase() == "low" ? "bg-green-200 text-green-700" : row.original.priority?.toLowerCase() == "medium" ? "bg-orange-200 text-orange-600" : "bg-red-200 text-red-800"}>{row.original.priority}</Badge> : "-"
     ),
@@ -368,6 +374,16 @@ export function DataTable({
         department ? [[department.id, department] as const] : []
       )).values()
     ).sort((a, b) => a.name.localeCompare(b.name)),
+    [data]
+  )
+
+  const priorityNames = React.useMemo(
+    () => [...new Set(data?.map(itm => itm.priority) || [])],
+    [data]
+  )
+
+  const statusNames = React.useMemo(
+    () => [...new Set(data?.map(itm => itm.status) || [])],
     [data]
   )
 
@@ -477,7 +493,7 @@ export function DataTable({
         value="issues"
         className="relative flex flex-col gap-4 overflow-auto px-4 lg:px-6"
       >
-        <div className="flex flex-wrap items-center gap-2 py-4">
+        <div className="flex flex-wrap items-center gap-5 py-4">
         <Input
           placeholder="Filter by tracking ID..."
           aria-label="Filter by tracking ID"
@@ -511,6 +527,62 @@ export function DataTable({
             {departments.map((department) => (
               <SelectItem key={department.id} value={String(department.id)} className="capitalize">
                 {department.name}
+              </SelectItem>
+            ))}
+          </SelectContent>
+        </Select>
+        <Select
+          items={[
+            { value: "all", label: "All Priorities" },
+            ...priorityNames.map((priorityName) => ({
+              value: priorityName,
+              label: priorityName,
+            })),
+          ]}
+          value={String(table.getColumn("priority")?.getFilterValue() ?? "all")}
+          onValueChange={(value) => {
+            table.getColumn("priority")?.setFilterValue(
+              value === "all" || value === null ? undefined : value
+            )
+            table.setPageIndex(0)
+          }}
+        >
+          <SelectTrigger className="w-1/3 capitalize" aria-label="Filter by priority">
+            <SelectValue placeholder="All Priorities" />
+          </SelectTrigger>
+          <SelectContent>
+            <SelectItem value="all">All Priorities</SelectItem>
+            {priorityNames.map((priorityName, ind) => (
+              <SelectItem key={ind} value={priorityName} className="capitalize">
+                {priorityName}
+              </SelectItem>
+            ))}
+          </SelectContent>
+        </Select>
+        <Select
+          items={[
+            { value: "all", label: "All Statuses" },
+            ...statusNames.map((status) => ({
+              value: status,
+              label: status,
+            })),
+          ]}
+          value={String(table.getColumn("status")?.getFilterValue() ?? "all")}
+          onValueChange={(value) => {
+            table.getColumn("status")?.setFilterValue(
+              value === "all" || value === null ? undefined : value
+            )
+            table.setPageIndex(0)
+          }}
+        >
+          <SelectTrigger className="w-1/3 capitalize" aria-label="Filter by Status">
+            <SelectValue placeholder="All Statuses" />
+          </SelectTrigger>
+          <SelectContent>
+            <SelectItem value="all">All Statuses</SelectItem>
+            {statusNames.map((statusName, ind) => (
+              <SelectItem key={ind} value={statusName} className="capitalize">
+                {statusName}
               </SelectItem>
             ))}
           </SelectContent>

@@ -86,6 +86,10 @@ class TicketUpdate(BaseModel):
         return santitized_text
 
 
+class TicketStatusUpdate(BaseModel):
+    status: QueryStatusEnum
+
+
 class Student(BaseModel):
     id: int
     student_id: str | None

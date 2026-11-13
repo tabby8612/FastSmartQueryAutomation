@@ -27,7 +27,12 @@ from pydantic import WithJsonSchema
 from pathlib import Path
 
 from app.database import get_db
-from app.schemas.ticket import TicketCreate, TicketResponse, TicketUpdate
+from app.schemas.ticket import (
+    TicketCreate,
+    TicketResponse,
+    TicketUpdate,
+    TicketStatusUpdate,
+)
 
 from app.services.TicketService import TicketService
 from app.services.escalation_service import EscalationService
@@ -39,6 +44,8 @@ from app.models.user import User
 
 from app.Enums.ChannelEnum import ChannelEnum
 from app.Enums.AuditActionEnum import AuditActionEnum
+from app.Enums.QueryStatusEnum import QueryStatusEnum
+
 
 from app.events.ticket_event_manager import ticket_events
 
@@ -283,7 +290,7 @@ async def assign(
 @router.put("/{ticket_id}/status", response_model=TicketResponse)
 async def ticket_status(
     ticket_id: int,
-    ticket_update: TicketUpdate,
+    ticket_update: TicketStatusUpdate,
     db: AsyncSession = Depends(get_db),
     current_user: User = Depends(get_current_user),
 ):
@@ -297,17 +304,7 @@ async def ticket_status(
             db=db,
             ticket=ticket,
             user_id=current_user.id,
-            assigned_id=None,
-            channel=None,
-            subject=None,
-            body=None,
-            priority=None,
-            intent=None,
-            confidence_level=None,
             status=ticket_update.status,
-            escalation_level=ticket_update.escalation_level,
-            awaiting_student_input=ticket_update.awaiting_student_input,
-            resolved_at=ticket_update.resolved_at,
         )
     if (
         has_role(current_user, ["staff", "officer", "hod"])
@@ -317,17 +314,7 @@ async def ticket_status(
             db=db,
             ticket=ticket,
             user_id=current_user.id,
-            assigned_id=None,
-            channel=None,
-            subject=None,
-            body=None,
-            priority=None,
-            intent=None,
-            confidence_level=None,
             status=ticket_update.status,
-            escalation_level=ticket_update.escalation_level,
-            awaiting_student_input=ticket_update.awaiting_student_input,
-            resolved_at=ticket_update.resolved_at,
         )
     raise HTTPException(
         status_code=status.HTTP_403_FORBIDDEN,

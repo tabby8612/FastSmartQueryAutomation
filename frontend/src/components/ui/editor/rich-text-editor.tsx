@@ -5,6 +5,7 @@ import { TextAlign } from '@tiptap/extension-text-align'
 import { useEditor, EditorContent } from '@tiptap/react'
 import StarterKit from '@tiptap/starter-kit'
 import EditorToolbar from './editor-toolbar'
+import { useEffect } from "react"
 
 interface Props {
     content: string,
@@ -45,6 +46,16 @@ const RichTextEditor = ({content, onChangeFn, ...props}: Props & React.Component
             },
         },
     })
+
+    useEffect(() => {
+        if (!editor) return
+
+        if (editor.getHTML() !== content) {
+            editor.commands.setContent(content, {
+                emitUpdate: false
+            })
+        }
+    }, [content, editor])
 
     if (!editor) return null
 
