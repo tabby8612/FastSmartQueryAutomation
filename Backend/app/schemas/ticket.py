@@ -1,4 +1,4 @@
-from fastapi import Form, UploadFile, File
+from fastapi import Form, UploadFile, File, HTTPException, status
 
 from datetime import datetime
 from decimal import Decimal
@@ -6,7 +6,8 @@ from decimal import Decimal
 from pydantic import BaseModel, ConfigDict, Field, computed_field, field_validator
 from typing import Literal
 from app.schemas.user import UserResponse
-from app.helpers.html_sanitizer import sanitize_html
+
+from app.helpers.html_sanitizer import sanitize_html, plain_text
 
 from app.Enums.QueryStatusEnum import QueryStatusEnum
 
@@ -31,10 +32,10 @@ class TicketBase(BaseModel):
 
 class TicketCreate(BaseModel):
     subject: str = Form(min_length=15, max_length=200)
-    body: str = Form(min_length=20, max_length=1000)
+    body: str = Form(max_length=1000)
 
-    @classmethod
     @field_validator("body")
+    @classmethod
     def validate_body(cls, value):
         if not value.strip():
             raise ValueError("Query description is required")
@@ -42,7 +43,18 @@ class TicketCreate(BaseModel):
         santitized_text = sanitize_html(value)
 
         if not santitized_text.strip():
-            raise ValueError("Query description cannot be empty")
+            raise ValueError(
+                "Query description cannot be empty",
+            )
+
+        if len(plain_text(santitized_text)) < 100:
+            raise ValueError(
+                "Query description cannot less than 100 characters",
+            )
+
+        print("raw_value", value)
+        print("santitzed_text", santitized_text)
+        print("plain_text", plain_text(santitized_text))
 
         return santitized_text
 

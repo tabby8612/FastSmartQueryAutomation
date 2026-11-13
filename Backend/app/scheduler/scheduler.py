@@ -31,7 +31,7 @@ def start_scheduler():
     scheduler.add_job(
         process_pending_notification,
         "interval",
-        minutes=10,
+        minutes=5,
         id="notification_worker",
         max_instances=1,  # prevent multiple instance if previous is running
         replace_existing=True,
@@ -39,3 +39,7 @@ def start_scheduler():
     )
 
     scheduler.start()
+
+
+def stop_scheduler():
+    scheduler.shutdown(wait=False)

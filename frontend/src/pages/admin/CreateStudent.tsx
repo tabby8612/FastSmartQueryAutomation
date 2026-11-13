@@ -104,7 +104,7 @@ export function CreateStudent() {
         <div className="flex flex-1 flex-col">
           <div className="@container/main flex flex-1 flex-col gap-2">
             <div className="flex flex-col gap-4 py-4 md:gap-6 md:py-6">
-              <div className="md:py-6 bg-white mx-5 px-6 rounded-2xl flex flex-col gap-5">
+              <div className="md:py-6 py-3 bg-white mx-5 px-6 rounded-2xl flex flex-col gap-5">
                 <h1 className="text-3xl font-bold">Create Student</h1>
                 <p className="text-muted-foreground text-xl">
                   Add a new student account

@@ -135,14 +135,18 @@ class TicketService:
         assigned_id: int | None = None,
         department_id: int | None = None,
     ) -> list[Ticket]:
-        stmt = select(Ticket).options(
-            selectinload(Ticket.student),
-            selectinload(Ticket.assigned),
-            selectinload(Ticket.department),
-            selectinload(Ticket.category),
-            selectinload(Ticket.replies).options(joinedload(Reply.creator)),
-            selectinload(Ticket.ticket_status_history),
-            selectinload(Ticket.attachments),
+        stmt = (
+            select(Ticket)
+            .options(
+                selectinload(Ticket.student),
+                selectinload(Ticket.assigned),
+                selectinload(Ticket.department),
+                selectinload(Ticket.category),
+                selectinload(Ticket.replies).options(joinedload(Reply.creator)),
+                selectinload(Ticket.ticket_status_history),
+                selectinload(Ticket.attachments),
+            )
+            .order_by(Ticket.created_at.desc(), Ticket.id.desc())
         )
         if student_id is not None:
             stmt = stmt.where(Ticket.student_id == student_id)

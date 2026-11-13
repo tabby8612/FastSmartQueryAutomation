@@ -1,22 +1,35 @@
+import os
+from dotenv import load_dotenv
+
 from fastapi import APIRouter, Depends, HTTPException, status, Request, Cookie, Response
+
 from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy.future import select
-from dotenv import load_dotenv
-import os
+
 from fastapi.security import OAuth2PasswordRequestForm
 from fastapi.responses import RedirectResponse
 
-from app.helpers.security import get_current_user, create_access_token, verify_token
-from app.database import get_db
 from app.models.user import User
+from app.models.role import Role
+
 from app.schemas.auth import UserRegister
 from app.schemas.user import UserResponse
+
 from app.services.auth import AuthService
-from app.resources.AuthResource import AuthResource
-from app.auth.oauth import oauth
 from app.services.user import UserService
-from app.models.role import Role
+from app.services.audit_service import AuditService
+
+from app.resources.AuthResource import AuthResource
+
+from app.helpers.security import get_current_user, create_access_token, verify_token
+from app.database import get_db
+
+from app.auth.oauth import oauth
+
+from app.Enums.AuditActionEnum import AuditActionEnum
+
 from app.helpers.security import get_active_user_by_token
+from app.helpers.utils import role_name
 
 load_dotenv()
 
@@ -120,6 +133,17 @@ async def google_authorize(request: Request, db: AsyncSession = Depends(get_db))
 
     if not user.is_active:
         raise HTTPException(status.HTTP_403_FORBIDDEN, detail="Account is inactive")
+
+    await AuditService.record_audit(
+        db,
+        actor_id=user.id,
+        actor_name=user.full_name,
+        actor_role=role_name(user),
+        action=AuditActionEnum.GOOGLE_LOGIN,
+        entity_type="user",
+        entity_id=user.id,
+        description="user logged in using google login",
+    )
 
     access_token = create_access_token({"sub": str(user.id)})
 

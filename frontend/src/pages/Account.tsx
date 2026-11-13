@@ -305,7 +305,7 @@ export function Account() {
         <div className="flex flex-1 flex-col">
           <div className="@container/main flex flex-1 flex-col gap-2">
             <div className="flex flex-col gap-4 py-4 md:gap-6 md:py-6">
-              <div className="md:py-6 bg-white mx-5 px-6 rounded-2xl flex flex-col gap-5">
+              <div className="md:py-6 py-3 bg-white mx-5 px-6 rounded-2xl flex flex-col gap-5">
                 <h1 className="text-3xl font-bold">Account</h1>
                 <p className="text-muted-foreground text-xl">
                   Change Your Account Details
@@ -315,10 +315,10 @@ export function Account() {
               <div className="py-6 px-3 mx-6 rounded-2xl bg-white">
                 {
                   user && (
-                    <div className="grid grid-cols-12 gap-3">
-                      <div className="px-3 col-span-5">
+                    <div className="md:grid md:grid-cols-12 gap-3">
+                      <div className="px-3 col-span-5 my-5 md:my-0">
                         <h1 className="font-bold text-2xl">Update Profile Photo</h1>
-                        <div className="flex gap-3 mt-7  relative">
+                        <div className="flex gap-3 mt-7 relative">
                           <Input className="absolute  h-24 w-24 z-1 opacity-0" onChange={(e) => handleImageChange(e)} type="file" />
 
                           <Avatar className="h-24 w-24">

@@ -218,13 +218,15 @@ async def poll_university_email():
             sender_email = parsed_email["sender_email"]
             subject = parsed_email["subject"]
 
-            if should_ignore_email(sender_email, subject):
+            if not allowed_email_domains(sender_email):
                 print(f"Ignoring system email: {subject} from {sender_email}")
                 mark_email_as_read(service, message["id"])
                 continue
 
             try:
-                print(f"Processing Message with ID: {message["id"]}")
+                print(
+                    f"Processing Message with ID: {message["id"]} from {sender_email}"
+                )
                 existing_message = await get_email_by_message_id(db, message["id"])
 
                 if existing_message:
@@ -235,7 +237,7 @@ async def poll_university_email():
                     mark_email_as_read(service, message["id"])
                     continue
 
-                print(f"Storing New Email with ID: {message["id"]}")
+                print(f"Storing New Email with ID: {message["id"]} from {sender_email}")
                 email_data = NewTicketEmail(
                     message_id=parsed_email["gmail_message_id"],
                     email_from=parsed_email["sender_email"],
@@ -275,6 +277,7 @@ async def poll_university_email():
                 # traceback.print_exc()
 
 
+# Not using it now
 def should_ignore_email(sender_email: str, subject: str):
     sender = sender_email.lower().strip().partition("@")[0]
     subject = subject.lower().strip()
@@ -301,6 +304,22 @@ def should_ignore_email(sender_email: str, subject: str):
         return True
 
     if subject in ignored_subjects:
+        return True
+
+    return False
+
+
+def allowed_email_domains(sender_email: str):
+    sender = sender_email.lower().strip().partition("@")[-1]
+
+    allowed_sender_domains = [
+        "vu.edu.pk",
+    ]
+
+    if sender == SYSTEM_EMAIL.lower().strip():
+        return False
+
+    if sender in allowed_sender_domains:
         return True
 
     return False

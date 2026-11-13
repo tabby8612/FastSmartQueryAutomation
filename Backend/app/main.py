@@ -32,7 +32,7 @@ from app.routes import (
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from app.helpers.security import get_current_user, get_db
-from app.scheduler.scheduler import scheduler, start_scheduler
+from app.scheduler.scheduler import start_scheduler, stop_scheduler
 from app.models.user import User
 from app.services.search_service import SearchService
 
@@ -41,20 +41,21 @@ from app.services.search_service import SearchService
 async def lifespan(app: FastAPI):
     print("Application starting")
 
-    scheduler.start()
+    start_scheduler()
 
     yield
 
     print("Application shutdown started")
 
     print("Stopping scheduler...")
-    scheduler.shutdown(wait=False)
+    stop_scheduler()
 
     print("Application shutdown completed")
 
 
 load_dotenv()
 SESSION_SECRET_KEY = os.getenv("SESSION_SECRET_KEY")
+FRONTEND_URL = os.getenv("FRONTEND_URL")
 
 app = FastAPI(lifespan=lifespan)
 
@@ -64,7 +65,7 @@ app.add_middleware(SessionMiddleware, secret_key=SESSION_SECRET_KEY)
 
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=["http://localhost:5173", "http://127.0.0.1:5173"],
+    allow_origins=["http://localhost:5173", "http://127.0.0.1:5173", FRONTEND_URL],
     allow_credentials=True,
     allow_methods=["*"],
     allow_headers=["*"],

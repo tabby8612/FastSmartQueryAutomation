@@ -44,7 +44,7 @@ const data = {
     },
     {
       title: "Announcements",
-      url: "/students/announcements",
+      url: "/student/announcements",
       icon: IconSpeakerphone,
     }
   ],

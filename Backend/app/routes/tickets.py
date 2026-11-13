@@ -14,6 +14,8 @@ from fastapi import (
     Form,
 )
 
+from fastapi.encoders import jsonable_encoder
+
 import json
 import asyncio
 
@@ -71,10 +73,10 @@ async def create(
     db: AsyncSession = Depends(get_db),
     current_user: User = Depends(get_current_user),
 ):
+    saved_files = []
+
     try:
         ticket_data = TicketCreate.model_validate_json(ticket)
-
-        saved_files = []
 
         # Validing Each File
         for file in files:
@@ -118,8 +120,11 @@ async def create(
             "success": True,
             "channel": ChannelEnum.WEB_FORM.lower(),
         }
+
     except ValidationError as error:
-        raise HTTPException(status.HTTP_422_UNPROCESSABLE_CONTENT, error.json)
+        raise HTTPException(
+            status.HTTP_422_UNPROCESSABLE_CONTENT, jsonable_encoder(error.errors())
+        )
 
     except Exception as err:
         await db.rollback()

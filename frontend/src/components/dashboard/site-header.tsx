@@ -80,7 +80,7 @@ export function SiteHeader() {
           orientation="vertical"
           className="mx-2 data-[orientation=vertical]:h-10"
         />
-        <h1 className="text-xl font-medium"><a href={`/${rolePage}/dashboard`}>FastAutoEmailClassification</a></h1>
+        <h1 className="text-xl font-medium w-0 opacity-0 md:w-fit md:opacity-100"><a href={`/${rolePage}/dashboard`}>FastAutoEmailClassification</a></h1>
         <DropdownMenu>
           <DropdownMenuTrigger className="">
             <ChevronsUpDown size={40} className="rounded-full py-2 px-2 text-stone-600 hover:bg-stone-300 hover:text-black transition-all delay-50 duration-200" />

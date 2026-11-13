@@ -83,17 +83,6 @@ class AuthService:
         if user is None:
             user = await AuthService.find_user_by_email(db, email, google_sub)
 
-        await AuditService.record_audit(
-            db,
-            actor_id=user.id,
-            actor_name=user.full_name,
-            actor_role=role_name(user),
-            action=AuditActionEnum.GOOGLE_LOGIN,
-            entity_type="user",
-            entity_id=user.id,
-            description="user logged in using google login",
-        )
-
         return user
 
     @staticmethod

@@ -21,9 +21,7 @@ ALLOWED_TAGS = {
     "hr",
 }
 
-ALLOWED_ATTRIBUTES = {
-    "a": {"href", "title"},
-}
+ALLOWED_ATTRIBUTES = {"a": {"href", "title"}, "p": {"style"}}
 
 
 def sanitize_html(content: str) -> str:

@@ -1,39 +1,52 @@
-import { BrowserRouter, Routes, Route } from 'react-router-dom'
-import LoginPage from './pages/Login'
-import Dashboard from "./pages/Dashboard"
-import { AuthProvider, useAuth } from "./contexts/auth-context"
-import { ProtectedRoute } from "./components/protected-route"
-import SubmitIssue from './pages/student/SubmitIssue'
-import { MyIssues } from './pages/student/MyIssues'
-import { OfficerIssues } from './pages/officer/OfficerIssues'
-import { AdminIssues } from './pages/admin/AdminIssues'
-import { Users } from './pages/admin/Users'
-import { CreateStudent } from './pages/admin/CreateStudent'
-import { CreateOfficer } from './pages/admin/CreateOfficer'
-import { CreateAdmin } from './pages/admin/CreateAdmin'
-import { Categories } from './pages/admin/Categories'
-import { Departments } from './pages/admin/Departments'
-import GoogleCallback from './pages/GoogleCallback'
-import { TicketDetail } from './pages/TicketDetail'
-import { HodIssues } from './pages/hod/HodIssues'
-import { AdminDashboard } from './pages/admin/AdminDashboard'
-import { Announcement } from './pages/admin/Announcement'
-import CreateAnnouncement from './pages/admin/CreateAnnouncement'
-import { StudentAnnouncements } from './pages/student/Announcements'
-import LeaveAutoReply from './pages/officer/LeaveAutoReply'
-import { AuditLogs } from './pages/admin/AuditLogs'
-import { Account } from './pages/Account'
-import { SearchPage } from './pages/Search'
+import { BrowserRouter, Routes, Route } from "react-router-dom";
+import LoginPage from "./pages/Login";
+import Dashboard from "./pages/Dashboard";
+import { AuthProvider } from "./contexts/auth-context";
+import { ProtectedRoute } from "./components/protected-route";
+import { AdminIssues } from "./pages/admin/AdminIssues";
+import { Users } from "./pages/admin/Users";
+import { CreateStudent } from "./pages/admin/CreateStudent";
+import { CreateOfficer } from "./pages/admin/CreateOfficer";
+import { CreateAdmin } from "./pages/admin/CreateAdmin";
+import { Categories } from "./pages/admin/Categories";
+import { Departments } from "./pages/admin/Departments";
+import GoogleCallback from "./pages/GoogleCallback";
+import { TicketDetail } from "./pages/TicketDetail";
+import { HodIssues } from "./pages/hod/HodIssues";
+import { AdminDashboard } from "./pages/admin/AdminDashboard";
+import { Announcement } from "./pages/admin/Announcement";
+import CreateAnnouncement from "./pages/admin/CreateAnnouncement";
+import { AuditLogs } from "./pages/admin/AuditLogs";
+import { Account } from "./pages/Account";
+import { SearchPage } from "./pages/Search";
+
+import studentRoutes from "@/routes/studentRoutes";
+import officerRoutes from "@/routes/officerRoutes";
+import hodRoutes from "@/routes/hodRoutes";
+import adminRoutes from "@/routes/adminRoutes";
 
 function App() {
   return (
     <AuthProvider>
       <BrowserRouter>
         <Routes>
-          <Route path="/students/announcements" element={<ProtectedRoute allowedRoles={["student"]}><StudentAnnouncements /></ProtectedRoute>} />
-          <Route path="/ticket/:ticketId" element={<ProtectedRoute><TicketDetail /></ProtectedRoute>} />
+          {studentRoutes}
+          {officerRoutes}
+          {hodRoutes}
+          {adminRoutes}
+
+          <Route
+            path="/ticket/:ticketId"
+            element={
+              <ProtectedRoute>
+                <TicketDetail />
+              </ProtectedRoute>
+            }
+          />
           <Route path="/" element={<LoginPage />} />
+
           <Route path="/auth/callback" element={<GoogleCallback />} />
+          
           <Route
             path="/dashboard"
             element={
@@ -42,242 +55,10 @@ function App() {
               </ProtectedRoute>
             }
           />
-          <Route
-            path="/student/dashboard"
-            element={
-              <ProtectedRoute>
-                <Dashboard />
-              </ProtectedRoute>
-            }
-          />
-          <Route
-            path="/officer/dashboard"
-            element={
-              <ProtectedRoute>
-                <Dashboard />
-              </ProtectedRoute>
-            }
-          />
-          <Route
-            path="/admin/dashboard"
-            element={
-              <ProtectedRoute allowedRoles={["admin"]}>
-                <AdminDashboard />
-              </ProtectedRoute>
-
-            }
-          />
-          <Route
-            path="/hod/dashboard"
-            element={
-              <ProtectedRoute allowedRoles={["hod"]}>
-                <Dashboard />
-              </ProtectedRoute>
-
-            }
-          />
-          <Route
-            path="/hod/escalated-issues"
-            element={
-              <ProtectedRoute allowedRoles={["hod"]}>
-                <HodIssues />
-              </ProtectedRoute>
-
-            }
-          />
-          <Route
-            path="/student/my-issues"
-            element={
-              <ProtectedRoute>
-                <MyIssues />
-              </ProtectedRoute>
-            }
-          />
-          <Route
-            path="/officer/issues"
-            element={
-              <ProtectedRoute>
-                <OfficerIssues />
-              </ProtectedRoute>
-            }
-          />
-          <Route
-            path="/officer/leave"
-            element={
-              <ProtectedRoute allowedRoles={["officer"]}>
-                <LeaveAutoReply />
-              </ProtectedRoute>
-            }
-          />
-          <Route
-            path="/admin/issues"
-            element={
-              <ProtectedRoute>
-                <AdminIssues />
-              </ProtectedRoute>
-            }
-          />
-          <Route
-            path="/admin/users"
-            element={
-              <ProtectedRoute>
-                <Users />
-              </ProtectedRoute>
-            }
-          />
-          <Route
-            path="/admin/users/create-student"
-            element={
-              <ProtectedRoute>
-                <CreateStudent />
-              </ProtectedRoute>
-            }
-          />
-          <Route
-            path="/admin/users/create-officer"
-            element={
-              <ProtectedRoute>
-                <CreateOfficer />
-              </ProtectedRoute>
-            }
-          />
-          <Route
-            path="/admin/users/create-admin"
-            element={
-              <ProtectedRoute>
-                <CreateAdmin />
-              </ProtectedRoute>
-            }
-          />
-          <Route
-            path="/admin/categories"
-            element={
-              <ProtectedRoute>
-                <Categories />
-              </ProtectedRoute>
-            }
-          />
-          <Route
-            path="/admin/department"
-            element={
-              <ProtectedRoute>
-                <Departments />
-              </ProtectedRoute>
-            }
-          />
-          <Route
-            path="/admin/announcements"
-            element={
-              <ProtectedRoute allowedRoles={["admin"]}>
-                <Announcement />
-              </ProtectedRoute>
-            }
-          />
-          <Route
-            path="/admin/announcements/create"
-            element={
-              <ProtectedRoute allowedRoles={["admin"]}>
-                <CreateAnnouncement />
-              </ProtectedRoute>
-            }
-          />
-          <Route
-            path="/admin/audit-logs"
-            element={
-              <ProtectedRoute allowedRoles={["admin"]}>
-                <AuditLogs />
-              </ProtectedRoute>
-            }
-          />
-          <Route
-            path="/student/submit-issue"
-            element={
-              <ProtectedRoute>
-                <SubmitIssue />
-              </ProtectedRoute>
-            }
-          />
-          <Route
-            path="/student/account"
-            element={
-              <ProtectedRoute allowedRoles={["student"]}>
-                <Account />
-              </ProtectedRoute>
-            }
-          />
-          <Route
-            path="/officer/account"
-            element={
-              <ProtectedRoute allowedRoles={["officer"]}>
-                <Account />
-              </ProtectedRoute>
-            }
-          />
-          <Route
-            path="/admin/account"
-            element={
-              <ProtectedRoute allowedRoles={["admin"]}>
-                <Account />
-              </ProtectedRoute>
-            }
-          />
-          <Route
-            path="/hod/account"
-            element={
-              <ProtectedRoute allowedRoles={["hod"]}>
-                <Account />
-              </ProtectedRoute>
-            }
-          />
-          <Route
-            path="/student/search"
-            element={
-              <ProtectedRoute>
-                <SearchPage />
-                
-              </ProtectedRoute>
-            }
-          />
-          <Route
-            path="/student/search"
-            element={
-              <ProtectedRoute>
-                <SearchPage />
-                
-              </ProtectedRoute>
-            }
-          />
-          <Route
-            path="/officer/search"
-            element={
-              <ProtectedRoute>
-                <SearchPage />
-                
-              </ProtectedRoute>
-            }
-          />
-          <Route
-            path="/hod/search"
-            element={
-              <ProtectedRoute>
-                <SearchPage />
-                
-              </ProtectedRoute>
-            }
-          />
-          <Route
-            path="/admin/search"
-            element={
-              <ProtectedRoute>
-                <SearchPage />
-                
-              </ProtectedRoute>
-            }
-          />
         </Routes>
       </BrowserRouter>
     </AuthProvider>
-  )
+  );
 }
 
-export default App
+export default App;

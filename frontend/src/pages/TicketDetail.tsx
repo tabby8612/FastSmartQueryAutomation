@@ -1,7 +1,7 @@
 import { useEffect, useRef, useState, type CSSProperties } from "react"
 import { Link, useParams } from "react-router-dom"
 import { isAxiosError } from "axios"
-import { ArrowLeft, Download, ExternalLink, FileCheck, Loader2, Save, Send, Sparkles } from "lucide-react"
+import { ArrowLeft, Loader2, Save, Send, Sparkles } from "lucide-react"
 import { AppSidebar } from "@/components/dashboard/app-sidebar"
 import { SiteHeader } from "@/components/dashboard/site-header"
 import { SidebarInset, SidebarProvider } from "@/components/ui/sidebar"
@@ -15,8 +15,9 @@ import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, D
 import { toast } from "sonner"
 import Timeline from "@/components/ui/timeline"
 import RichTextEditor from "@/components/ui/editor/rich-text-editor"
-import { Card, CardDescription, CardTitle } from "@/components/ui/card"
 import { AttachmentCard } from "@/components/ui/upload-box/attachment-card"
+import { formatLongDate } from "@/lib/utils"
+
 
 function errorMessage(error: unknown) {
   if (isAxiosError(error) && typeof error.response?.data?.detail === "string") {
@@ -452,6 +453,7 @@ function TicketDetailContent({ ticketId }: { ticketId: string }) {
                       </Select>
                     )
                   }
+                  
 
                     <Dialog open={pendingOfficer !== null} onOpenChange={open => {
                       if (!open && !officerRequestPending.current) setPendingOfficer(null)
@@ -473,6 +475,11 @@ function TicketDetailContent({ ticketId }: { ticketId: string }) {
                         </DialogFooter>
                       </DialogContent>
                     </Dialog>
+                  </div>
+                  <div><dt className="text-muted-foreground">Created On</dt><dd className="mt-1 font-medium capitalize">{formatLongDate(ticket.created_at, true)}</dd>
+                  
+
+                    
                   </div>
                 </dl>
                 <div className="text-sm">
