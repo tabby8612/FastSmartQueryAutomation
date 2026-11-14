@@ -491,9 +491,9 @@ function TicketDetailContent({ ticketId }: { ticketId: string }) {
                 </div>
               </section>
               <section className="space-y-4 border-b p-6" aria-labelledby="ticket-attachments">
-                <h2 id="ticket-status-history" className="text-2xl font-semibold">Ticket Attachments ({ticket.attachments.length})</h2>
+                <h2 id="ticket-status-history" className="text-2xl font-semibold">Ticket Attachments ({ticket.attachments?.length})</h2>
                 <div className="grid grid-cols-3 gap-4 mt-7">
-                  {
+                  { ticket.attachments &&
                     ticket.attachments.map(attachment => (
                       <AttachmentCard attachment={attachment} key={attachment.id} />
                     ))

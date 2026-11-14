@@ -16,7 +16,6 @@ from app.models.notification import Notification
 
 from app.Enums.QueryStatusEnum import QueryStatusEnum
 from app.Enums.RolesEnum import RolesEnum
-from app.Enums.TicketPriorityEnum import TicketPriorityEnum
 from app.Enums.NotificationTypeEnum import NotificationTypeEnum
 from app.Enums.NotificationChannelEnum import NotificationChannelEnum
 from app.Enums.NotificationStatusEnum import NotificationStatusEnum
@@ -294,6 +293,7 @@ class TicketService:
                 selectinload(Ticket.department),
                 selectinload(Ticket.replies),
                 selectinload(Ticket.ticket_status_history),
+                selectinload(Ticket.attachments),
             )
             .order_by(Ticket.created_at.desc())
         )

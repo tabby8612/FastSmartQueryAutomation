@@ -31,6 +31,26 @@ from app.dependencies.hod import get_hod_ticket, get_hod_department
 
 class HODTicketService:
     @staticmethod
+    async def get_hod_department_tickets(hod_dept: Department, db: AsyncSession):
+        stmt = (
+            select(Ticket)
+            .where(Ticket.department_id == hod_dept.id)
+            .options(
+                selectinload(Ticket.student),
+                selectinload(Ticket.assigned),
+                selectinload(Ticket.department),
+                selectinload(Ticket.category),
+                selectinload(Ticket.replies).options(joinedload(Reply.creator)),
+                selectinload(Ticket.ticket_status_history),
+                selectinload(Ticket.attachments),
+            )
+        )
+
+        result = await db.execute(stmt)
+
+        return result.scalars().all()
+
+    @staticmethod
     async def get_escalation_tickets(hod_dept: Department, db: AsyncSession):
         stmt = select(Ticket).options(
             selectinload(Ticket.student),
@@ -39,6 +59,7 @@ class HODTicketService:
             selectinload(Ticket.category),
             selectinload(Ticket.replies).options(joinedload(Reply.creator)),
             selectinload(Ticket.ticket_status_history),
+            selectinload(Ticket.attachments),
         )
 
         stmt = stmt.where(

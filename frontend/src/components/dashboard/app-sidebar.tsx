@@ -10,7 +10,9 @@ import {
   IconBrandOffice,
   IconSpeakerphone,
   IconHelicopterLanding,
-  IconChartBar
+  IconChartBar,
+  IconTicketFilled,
+  IconTicket
 } from "@tabler/icons-react"
 
 import { NavMain } from "@/components/dashboard/nav-main"
@@ -70,6 +72,11 @@ const data = {
       title: "Dashboard",
       url: "/hod/dashboard",
       icon: IconDashboard,
+    },
+    {
+      title: "All Department Tickets",
+      url: "/hod/deprtment-tickets",
+      icon: IconTicket,
     },
     {
       title: "Escalated Issues",

@@ -31,6 +31,17 @@ router = APIRouter(
 )
 
 
+@router.get("/", response_model=list[TicketResponse])
+async def hod_department_tickets(
+    current_user: User = Depends(get_current_user), db: AsyncSession = Depends(get_db)
+):
+    department = await get_hod_department(current_user, db)
+
+    tickets = await HODTicketService.get_hod_department_tickets(department, db)
+
+    return tickets
+
+
 @router.get("/escalated", response_model=list[TicketResponse])
 async def escalated_tickets(
     current_user: User = Depends(get_current_user), db: AsyncSession = Depends(get_db)

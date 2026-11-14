@@ -1,6 +1,7 @@
 import { ProtectedRoute } from "@/components/protected-route";
 import { Account } from "@/pages/Account";
 import Dashboard from "@/pages/Dashboard";
+import { AllDepartmentIssues } from "@/pages/hod/AllDepartmentIssues";
 import { HodIssues } from "@/pages/hod/HodIssues";
 import { SearchPage } from "@/pages/Search";
 import { Route } from "react-router-dom";
@@ -13,6 +14,14 @@ export default [
     element={
       <ProtectedRoute allowedRoles={["hod"]}>
         <Dashboard />
+      </ProtectedRoute>
+    }
+  />,
+  <Route
+    path={`${PREFIX}/deprtment-tickets`}
+    element={
+      <ProtectedRoute allowedRoles={["hod"]}>
+        <AllDepartmentIssues />
       </ProtectedRoute>
     }
   />,
