@@ -116,7 +116,7 @@ export default function CreateAnnouncement() {
             style={
                 {
                     "--sidebar-width": "calc(var(--spacing) * 60)",
-                    "--header-height": "calc(var(--spacing) * 16)",
+                    "--header-height": "calc(var(--spacing) * 20)",
                 } as React.CSSProperties
             }
         >

@@ -9,18 +9,13 @@ import api from "@/lib/axios"
 import { type SearchData } from "@/types"
 import { Card, CardContent } from "@/components/ui/card"
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
+import { formatLongDate } from "@/lib/utils"
 
 function errorMessage(error: unknown) {
   if (isAxiosError(error) && typeof error.response?.data?.detail === "string") {
     return error.response.data.detail as string
   }
   return "The request failed. Please try again."
-}
-
-function formatDate(value: string | null) {
-  if (!value) return ""
-  const date = new Date(value)
-  return Number.isNaN(date.getTime()) ? "" : date.toLocaleString()
 }
 
 export function SearchPage() {
@@ -77,7 +72,7 @@ export function SearchPage() {
 
 
   return (
-    <SidebarProvider style={{ "--sidebar-width": "calc(var(--spacing) * 72)", "--header-height": "calc(var(--spacing) * 16)" } as CSSProperties}>
+    <SidebarProvider style={{ "--sidebar-width": "calc(var(--spacing) * 60)", "--header-height": "calc(var(--spacing) * 20)" } as CSSProperties}>
       <AppSidebar variant="inset" roleName={role_name} />
       <SidebarInset>
         <SiteHeader />
@@ -141,20 +136,13 @@ export function SearchPage() {
                       <Card>
                         <CardContent className="">
                           {
-                            searchResults.data.tickets.map(ticket => {
-                              const timestamp = ticket.created_at;
-                              const dateObj = new Date(timestamp);
-
-                              const formattedDate = new Intl.DateTimeFormat('en-US', {
-                                dateStyle: 'long',
-                                timeStyle: 'short'
-                              }).format(dateObj);
+                            searchResults.data.tickets.map(ticket => {                              
 
                               return (
-                                <div className="not-last:border-b border-stone-200 my-7 " key={ticket.id}>
-                                  <p>{ticket.tracking_id} - {formattedDate}</p>
-                                  <h1 className="text-lg font-bold mt-3 capitalize" dangerouslySetInnerHTML={{ __html: ticket.subject.replace(searchQuery ?? "", `<span class="bg-amber-200 px-1.5 py-0.5 rounded-sm">${searchQuery}</span>`) }} />
-                                  <p className="my-2" dangerouslySetInnerHTML={{ __html: ticket.body.replace(searchQuery ?? "", `<span class="bg-amber-200 px-1.5 py-0.5 rounded-sm">${searchQuery}</span>`) }} />
+                                <div className="not-last:border-b border-stone-200 my-7 hover:bg-blue-50 px-2 py-3 rounded-lg cursor-pointer" key={ticket.id} onClick={() => navigate(`/ticket/${ticket.id}`)}>
+                                  <p>{ticket.tracking_id} - {formatLongDate(ticket.created_at)}</p>
+                                  <h1 className="text-lg font-bold mt-3 capitalize" dangerouslySetInnerHTML={{ __html: ticket.subject.toLocaleLowerCase().replace(searchQuery?.toLocaleLowerCase() ?? "", `<span class="bg-amber-200 px-1.5 py-0.5 rounded-sm">${searchQuery}</span>`) }} />
+                                  <p className="my-2 capitalize" dangerouslySetInnerHTML={{ __html: ticket.body.toLocaleLowerCase().replace(searchQuery?.toLocaleLowerCase() ?? "", `<span class="bg-amber-200 px-1.5 py-0.5 rounded-sm">${searchQuery}</span>`) }} />
                                 </div>
                               )
                             })
@@ -169,17 +157,9 @@ export function SearchPage() {
                         <CardContent className="">
                           {
                             searchResults.data.notifications.map(notification => {
-                              const timestamp = notification.created_at;
-                              const dateObj = new Date(timestamp);
-
-                              const formattedDate = new Intl.DateTimeFormat('en-US', {
-                                dateStyle: 'long',
-                                timeStyle: 'short'
-                              }).format(dateObj);
-
                               return (
                                 <div className="not-last:border-b border-stone-200 my-7" key={notification.id}>
-                                  <p>{formattedDate}</p>
+                                  <p>{formatLongDate(notification.created_at)}</p>
                                   <h1 className="text-lg font-bold mt-3 capitalize" dangerouslySetInnerHTML={{ __html: notification.subject.toLocaleLowerCase().replace(searchQuery ?? "", `<span class="bg-amber-200 px-1.5 py-0.5 rounded-sm">${searchQuery}</span>`) }} />
                                   <p className="my-2" dangerouslySetInnerHTML={{ __html: notification.message_body.toLocaleLowerCase().replace(searchQuery ?? "", `<span class="bg-amber-200 px-1.5 py-0.5 rounded-sm">${searchQuery}</span>`) }} />
                                 </div>

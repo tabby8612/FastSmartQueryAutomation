@@ -35,8 +35,8 @@ export function MyIssues() {
   return (
     <SidebarProvider
       style={{
-        "--sidebar-width": "calc(var(--spacing) * 72)",
-        "--header-height": "calc(var(--spacing) * 16)",
+        "--sidebar-width": "calc(var(--spacing) * 60)",
+        "--header-height": "calc(var(--spacing) * 20)",
       } as React.CSSProperties}
     >
       <AppSidebar variant="inset" roleName={role_name} />

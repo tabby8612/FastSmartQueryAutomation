@@ -50,7 +50,7 @@ export function Announcement() {
     }, [access_token])
 
 
-    return <SidebarProvider style={{ "--sidebar-width": "calc(var(--spacing) * 72)", "--header-height": "calc(var(--spacing) * 16)" } as CSSProperties}>
+    return <SidebarProvider style={{ "--sidebar-width": "calc(var(--spacing) * 60)", "--header-height": "calc(var(--spacing) * 20)" } as CSSProperties}>
         <AppSidebar variant="inset" roleName="admin" />
         <SidebarInset>
             <SiteHeader />

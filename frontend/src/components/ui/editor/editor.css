@@ -26,3 +26,12 @@
         @apply py-2 px-3 bg-stone-100 rounded-lg text-sm 
     }
 };
+
+.ProseMirror {
+  max-height: 200px;
+  overflow-y: auto;
+  padding: 12px;
+  
+  border-radius: 6px;
+}
+

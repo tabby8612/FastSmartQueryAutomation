@@ -36,7 +36,7 @@ export function StudentAnnouncements() {
     }, [access_token, retry])
 
     return (
-        <SidebarProvider style={{ "--sidebar-width": "calc(var(--spacing) * 72)", "--header-height": "calc(var(--spacing) * 16)" } as CSSProperties}>
+        <SidebarProvider style={{ "--sidebar-width": "calc(var(--spacing) * 60)", "--header-height": "calc(var(--spacing) * 20)" } as CSSProperties}>
             <AppSidebar variant="inset" roleName="student" />
             <SidebarInset>
                 <SiteHeader />

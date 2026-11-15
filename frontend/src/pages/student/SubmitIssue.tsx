@@ -53,9 +53,7 @@ export default function SubmitIssue() {
     } catch (error: any) {
       const fieldErrors: { subject?: string; body?: string } = {};
       const detail = error.response?.data?.detail;
-      console.log("error", error);
-      console.log("detail", detail, Array.isArray(detail));
-
+      
       if (Array.isArray(detail)) {
         detail.forEach((err: any) => {
           const field = err.loc?.[0] as string;
@@ -83,7 +81,7 @@ export default function SubmitIssue() {
       style={
         {
           "--sidebar-width": "calc(var(--spacing) * 60)",
-          "--header-height": "calc(var(--spacing) * 16)",
+          "--header-height": "calc(var(--spacing) * 20)",
         } as React.CSSProperties
       }
     >

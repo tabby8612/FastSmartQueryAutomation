@@ -81,7 +81,7 @@ export default function LeaveAutoReply() {
 
   return (
     <SidebarProvider
-      style={{ "--sidebar-width": "calc(var(--spacing) * 60)", "--header-height": "calc(var(--spacing) * 16)" } as React.CSSProperties}
+      style={{ "--sidebar-width": "calc(var(--spacing) * 60)", "--header-height": "calc(var(--spacing) * 20)" } as React.CSSProperties}
     >
       <AppSidebar variant="inset" roleName={role_name} />
       <SidebarInset>

@@ -18,73 +18,10 @@ import { toast } from "sonner";
 
 type Props = {
   selectedfiles: File[]
-  setSelectedFiles: (files: File[]) => void
+  setSelectedFiles: React.Dispatch<React.SetStateAction<File[]>>
 }
 
 export function AttachmentBox({selectedfiles, setSelectedFiles}: Props) {
-  const [isUploading, setIsUploading] = React.useState(false);
-  // const [files, setFiles] = React.useState<File[]>([]);
-  const [uploadedFiles, setUploadedFiles] = React.useState([]);
-
-  // const onUpload = React.useCallback(
-  //   async (
-  //     files: File[],
-  //     {
-  //       onProgress,
-  //     }: {
-  //       onProgress: (file: File, progress: number) => void;
-  //     },
-  //   ) => {
-  //     try {
-  //       setIsUploading(true);
-  //       const res = await uploadFiles("imageUploader", {
-  //         files,
-  //         onUploadProgress: ({ file, progress }) => {
-  //           onProgress(file, progress);
-  //         },
-  //       });
-
-  //       setUploadedFiles((prev) => [...prev, ...res]);
-
-  //       toast.success("Uploaded files:", {
-  //         description: (
-  //           <pre className="mt-2 w-80 rounded-md bg-accent/30 p-4 text-accent-foreground">
-  //             <code>
-  //               {JSON.stringify(
-  //                 res.map((file) =>
-  //                   file.name.length > 25
-  //                     ? `${file.name.slice(0, 25)}...`
-  //                     : file.name,
-  //                 ),
-  //                 null,
-  //                 2,
-  //               )}
-  //             </code>
-  //           </pre>
-  //         ),
-  //       });
-  //     } catch (error) {
-  //       setIsUploading(false);
-
-  //       if (error instanceof UploadThingError) {
-  //         const errorMessage =
-  //           error.data && "error" in error.data
-  //             ? error.data.error
-  //             : "Upload failed";
-  //         toast.error(errorMessage);
-  //         return;
-  //       }
-
-  //       toast.error(
-  //         error instanceof Error ? error.message : "An unknown error occurred",
-  //       );
-  //     } finally {
-  //       setIsUploading(false);
-  //     }
-  //   },
-  //   [],
-  // );
-
   const onFileReject = React.useCallback((file: File, message: string) => {
     toast(message, {
       description: `"${file.name.length > 20 ? `${file.name.slice(0, 20)}...` : file.name
@@ -96,12 +33,12 @@ export function AttachmentBox({selectedfiles, setSelectedFiles}: Props) {
     <div className="flex flex-col gap-6">
       <FileUpload
         accept="image/*, .pdf, application/pdf"
-        maxFiles={3}
+        maxFiles={2}
         maxSize={4 * 1024 * 1024}
-        onAccept={(files) => setSelectedFiles(files)}
+        onAccept={(files) => setSelectedFiles((prevFiles) => [...prevFiles, ...files])}
         onFileReject={onFileReject}
         multiple
-        disabled={isUploading}
+        
       >
         <FileUploadDropzone>
           <div className="flex flex-col items-center gap-1">

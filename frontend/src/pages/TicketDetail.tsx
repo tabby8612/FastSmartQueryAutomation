@@ -311,7 +311,7 @@ function TicketDetailContent({ ticketId }: { ticketId: string }) {
   }) : []
 
   return (
-    <SidebarProvider style={{ "--sidebar-width": "calc(var(--spacing) * 72)", "--header-height": "calc(var(--spacing) * 16)" } as CSSProperties}>
+    <SidebarProvider style={{ "--sidebar-width": "calc(var(--spacing) * 60)", "--header-height": "calc(var(--spacing) * 20)" } as CSSProperties}>
       <AppSidebar variant="inset" roleName={roleName} />
       <SidebarInset>
         <SiteHeader />
@@ -336,7 +336,7 @@ function TicketDetailContent({ ticketId }: { ticketId: string }) {
                   <div><dt className="text-muted-foreground">Student</dt><dd className="mt-1 font-medium">{ticket.student?.full_name ?? "Unknown student"}</dd></div>
                   <div><dt className="text-muted-foreground">Category</dt><dd className="mt-1 font-medium capitalize">{ticket.category?.name ?? "Uncategorized"}</dd></div>
                   <div><dt className="text-muted-foreground">Department</dt><dd className="mt-1 font-medium capitalize">{ticket.department?.name ?? "Unassigned"}</dd></div>
-                  <div><dt className="text-muted-foreground">Channel</dt><dd className="mt-1 font-medium capitalize">{ticket.channel}</dd></div>
+                  <div><dt className="text-muted-foreground">Channel</dt><dd className="mt-1 font-medium capitalize">{ticket.channel.replace("_", " ")}</dd></div>
                   <div><dt className="text-muted-foreground">Status</dt>
                     {
                       roleName === "student" ? <dd className="mt-1 font-medium capitalize">{ticket.status}</dd> : (

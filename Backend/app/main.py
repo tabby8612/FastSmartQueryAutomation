@@ -8,26 +8,7 @@ from contextlib import asynccontextmanager
 from starlette.middleware.cors import CORSMiddleware
 from starlette.middleware.sessions import SessionMiddleware
 
-from app.routes import (
-    roles,
-    departments,
-    tickets,
-    users,
-    auth,
-    categories,
-    email,
-    replies,
-    ticket_status_history,
-    notification,
-    hod,
-    analytics,
-    announcement,
-    report,
-    instructor,
-    audit_logs,
-    profile,
-    attachment,
-)
+from app.routes.api_route import api_router
 
 from sqlalchemy.ext.asyncio import AsyncSession
 
@@ -72,37 +53,4 @@ app.add_middleware(
 )
 
 
-@app.get("/")
-def health_check():
-    return "Site Working Fine"
-
-
-@app.get("/search")
-async def search(
-    q: str | None = None,
-    current_user: User = Depends(get_current_user),
-    db: AsyncSession = Depends(get_db),
-):
-    search_result = await SearchService.search(db, current_user, q)
-    return search_result
-
-
-app.include_router(profile.router)
-app.include_router(roles.router)
-app.include_router(departments.router)
-app.include_router(users.router)
-app.include_router(auth.router)
-app.include_router(categories.router)
-app.include_router(tickets.router)
-app.include_router(replies.router)
-app.include_router(replies.send_router)
-app.include_router(email.router)
-app.include_router(ticket_status_history.router)
-app.include_router(notification.router)
-app.include_router(hod.router)
-app.include_router(analytics.router)
-app.include_router(announcement.router)
-app.include_router(report.router)
-app.include_router(instructor.router)
-app.include_router(audit_logs.router)
-app.include_router(attachment.router)
+app.include_router(api_router)
