@@ -44,12 +44,22 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     localStorage.setItem("user", JSON.stringify(userData))
   }, [])
 
-  const logout = useCallback(() => {
-    setAccessToken(null)
-    setRoleName(null)
-    setUser(null)
-    localStorage.removeItem("access_token")
-    localStorage.removeItem("user")
+  const logout = useCallback(async () => {
+
+    try {
+      await api.post("/auth/logout")
+      
+    } catch (error) {
+      console.error("Logout request failed.", error)      
+    } finally {
+      setAccessToken(null)
+      setRoleName(null)
+      setUser(null)
+    
+      localStorage.removeItem("access_token")
+      localStorage.removeItem("user")
+    }
+    
   }, [])
 
   const getAccessToken = useCallback(() => {

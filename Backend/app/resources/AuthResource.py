@@ -20,8 +20,10 @@ class AuthResource:
         return {
             "id": data.id,
             "name": data.full_name,
+            "full_name": data.full_name,
             "email": data.email,
             "on_leave": data.on_leave,
+            "is_active": data.is_active,
             "is_currently_on_leave": InstructorLeaveService.is_currently_on_leave(data),
             "department": (
                 {"id": data.department.id, "name": data.department.name}
@@ -35,4 +37,9 @@ class AuthResource:
                 if data.profile_image
                 else f"/{UPLOAD_PATH + "/profile_images/default.jpg"}"
             ),
+            "created_at": data.created_at,
         }
+
+    @staticmethod
+    def usersResource(data: list[User]):
+        return [AuthResource.userResource(user) for user in data]

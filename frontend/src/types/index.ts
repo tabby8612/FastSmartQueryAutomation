@@ -85,7 +85,8 @@ export type User = {
     roles?: unknown[],
     rolename: string,
     is_currently_on_leave: boolean,
-    profile_image: string
+    profile_image: string,
+    created_at: string
 }
 
 export type LeaveStatus = Pick<User, "on_leave" | "leave_start_day" | "leave_end_day" | "auto_reply_message" | "is_currently_on_leave">
@@ -146,6 +147,7 @@ export type Announcement = {
     title: string,
     body: string,
     audience_type: string,
+    channel: string,
     department_id?: number,
     creator_id: number,
     created_at: string,

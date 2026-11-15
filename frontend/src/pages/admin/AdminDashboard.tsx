@@ -34,7 +34,7 @@ function Panel({ title, empty, children }: { title: string; empty: boolean; chil
 function Distribution({ data }: { data: AnalyticsCount[] }) {
   const slices = data.map((item, index) => ({ ...item, name: label(item.name), fill: colors[index % colors.length] }));
   return <>
-    <div className="h-56"><ResponsiveContainer width="100%" height="100%">
+    <div className="h-56"><ResponsiveContainer width="100%" height="100%" initialDimension={{ width: 320, height: 200 }}>
       <PieChart><Pie data={slices} dataKey="count" nameKey="name" innerRadius="55%" outerRadius="85%" paddingAngle={2} /><Tooltip /></PieChart>
     </ResponsiveContainer></div>
     <ul className="flex flex-wrap justify-center gap-x-5 gap-y-2 text-sm">
@@ -45,7 +45,7 @@ function Distribution({ data }: { data: AnalyticsCount[] }) {
 
 function HorizontalBars({ data }: { data: AnalyticsCount[] }) {
   return <div className="max-h-96 overflow-y-auto"><div style={{ height: Math.max(260, data.length * 44) }}>
-    <ResponsiveContainer width="100%" height="100%">
+    <ResponsiveContainer width="100%" height="100%" initialDimension={{ width: 320, height: 200 }}>
       <BarChart accessibilityLayer data={data} layout="vertical" margin={{ left: 0, right: 20 }}>
         <CartesianGrid horizontal={false} strokeDasharray="3 3" />
         <XAxis type="number" allowDecimals={false} />
@@ -212,7 +212,8 @@ export function AdminDashboard() {
             <div className="grid gap-6 xl:grid-cols-2">
               <div className="col-span-full">
                 <Panel title="Queries Over Time" empty={!data.trend.length}>
-                  <div className="h-72"><ResponsiveContainer width="100%" height="100%">
+                  <div className="h-72">
+                    <ResponsiveContainer width="100%" height={300} initialDimension={{ width: 320, height: 200 }}>
                     <LineChart accessibilityLayer data={data.trend} margin={{ top: 12, right: 20, left: 0, bottom: 8 }}>
                       <CartesianGrid vertical={false} strokeDasharray="3 3" />
                       <XAxis dataKey="date" tickFormatter={dateLabel} minTickGap={32} /><YAxis allowDecimals={false} width={45} />

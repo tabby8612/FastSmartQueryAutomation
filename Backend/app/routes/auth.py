@@ -179,3 +179,12 @@ async def auth_profile(
         "access_token": access_token,
         "token_type": "bearer",
     }
+
+
+@router.post("/logout", status_code=status.HTTP_200_OK)
+async def logout(response: Response):
+    response.delete_cookie(
+        key="access_token", httponly=True, secure=False, samesite="lax", path="/"
+    )
+
+    return {"message": "Successfully logged out"}

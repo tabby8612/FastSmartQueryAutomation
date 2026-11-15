@@ -1,3 +1,5 @@
+from datetime import date
+
 from fastapi import APIRouter, Depends, HTTPException, status
 from sqlalchemy.ext.asyncio import AsyncSession
 
@@ -13,6 +15,8 @@ from app.Enums.RolesEnum import RolesEnum
 from app.Enums.AuditActionEnum import AuditActionEnum
 
 from app.models.user import User
+
+from app.resources.AuthResource import AuthResource
 
 router = APIRouter(
     prefix="/users",
@@ -127,9 +131,20 @@ async def create_admin(
     return new_admin
 
 
-@router.get("/", response_model=list[UserResponse])
-async def get_users(db: AsyncSession = Depends(get_db)):
-    return await UserService.get_all(db)
+@router.get("/")
+async def get_users(
+    db: AsyncSession = Depends(get_db),
+    start_date: date | None = None,
+    end_date: date | None = None,
+    name_email: str | None = None,
+    role: str | None = None,
+    dept_id: int | None = None,
+):
+    users = await UserService.get_all(
+        db, start_date, end_date, name_email, role, dept_id
+    )
+
+    return AuthResource.usersResource(users)
 
 
 @router.get(

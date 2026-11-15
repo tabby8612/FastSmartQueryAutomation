@@ -144,13 +144,9 @@ const columns = columnHelper.columns([
         header: "Body",
         cell: ({ row }) => {
 
-            const truncatedText = row.original.body.length > 20 ? row.original.body.slice(0, 20) + "..." : row.original.body;
-
-
             return (
-                <div className="tra">
-                    {truncatedText}
-                </div>
+                <div className="w-40 truncate " dangerouslySetInnerHTML={{__html: row.original.body}} />
+                    
             )
         },
         enableSorting: false,
@@ -313,12 +309,12 @@ export function AnnouncementDataTable({
                 <div className="flex items-center gap-2">
                     <DropdownMenu>
                         <DropdownMenuTrigger>
-                            <Button variant="outline" size="sm">
+                            <div className="flex gap-2 text-sm justify-center items-center">
                                 <IconLayoutColumns />
                                 <span className="hidden lg:inline">Customize Columns</span>
                                 <span className="lg:hidden">Columns</span>
                                 <IconChevronDown />
-                            </Button>
+                            </div>
                         </DropdownMenuTrigger>
                         <DropdownMenuContent align="end" className="w-56">
                             {table
@@ -488,11 +484,11 @@ function TableCellViewer({ item }: { item: Announcement }) {
 
 
     return (
-        <Drawer swipeDirection={isMobile ? "down" : "down"} showSwipeHandle={isMobile}>
+        <Drawer swipeDirection={isMobile ? "left" : "down"} showSwipeHandle={isMobile}>
             <DrawerTrigger>
-                <Button variant="link" className="w-fit px-0 text-left text-foreground capitalize">
+                <p className="w-fit px-0 text-left text-foreground capitalize font-semibold hover:underline underline-offset-3 cursor-pointer">
                     {truncatedText}
-                </Button>
+                </p>
             </DrawerTrigger>
             <DrawerContent>
                 <DrawerHeader className="gap-10 mb-7">
@@ -503,9 +499,38 @@ function TableCellViewer({ item }: { item: Announcement }) {
                 </DrawerHeader>
                 <div className="grid grid-cols-3 gap-6 justify-center items-center overflow-y-auto px-4 size-8/12 mx-auto ">
                     <div className="flex flex-col gap-2">
-                        <Label htmlFor="tracking_id" className="font-bold">Announcement Body</Label>
-                        <p>{item.body}</p>
+                        <Label htmlFor="announcement_id" className="font-bold">Announcement ID</Label>
+                        <p>{item.id}</p>
                     </div>
+                    <div className="flex flex-col gap-2">
+                        <Label htmlFor="created_by" className="font-bold">Created By</Label>
+                        <p>{item.creator.full_name}</p>
+                    </div>
+                    <div className="flex flex-col gap-2">
+                        <Label htmlFor="channel" className="font-bold">Channel</Label>
+                        <Badge>{item.channel}</Badge>
+                    </div>
+                    <div className="flex flex-col gap-2">
+                        <Label htmlFor="channel" className="font-bold">Audience Type</Label>
+                        <p className="capitalize">{item.audience_type}</p>
+                    </div>
+                    <div className="flex flex-col gap-2">
+                        <Label htmlFor="department" className="font-bold">Department</Label>
+                        <p>{item.department?.name}</p>
+                    </div>
+                    <div className="flex flex-col gap-2">
+                        <Label htmlFor="created_on" className="font-bold">Created On</Label>
+                        <p>{item.created_at}</p>
+                    </div>
+                    <div className="flex flex-col gap-2 col-span-full">
+                        <Label htmlFor="title" className="font-bold">Title</Label>
+                        <p>{item.title}</p>
+                    </div>
+                    <div className="flex flex-col gap-2 col-span-full">
+                        <Label htmlFor="body" className="font-bold">Body</Label>
+                        <p dangerouslySetInnerHTML={{__html: item.body}}/>
+                    </div>
+                    
 
                 </div>
                 <DrawerFooter>

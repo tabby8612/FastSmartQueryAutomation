@@ -92,7 +92,7 @@ import { type ChartConfig } from "../ui/chart"
 import { useIsMobile } from "@/hooks/use-mobile"
 import { useAuth } from "@/contexts/auth-context"
 import { Link, useNavigate } from "react-router-dom"
-import { ArrowUpDown, Search } from "lucide-react"
+import { ArrowUpDown, ArrowUpIcon, CheckCheckIcon, HandHeartIcon, Loader2, Search } from "lucide-react"
 import { Input } from "../ui/input"
 
 // New in v9: declare the features this table uses — anything you don't
@@ -252,7 +252,7 @@ const columns = columnHelper.columns([
     },
     cell: ({ row }) => (
       <div className="">
-        <Badge>{row.original.channel}
+        <Badge className={row.original.channel === "email" ? "bg-primary" : "bg-green-700"}>{row.original.channel.replace("_", " ")}
         </Badge>
       </div>
     ),
@@ -267,12 +267,10 @@ const columns = columnHelper.columns([
     filterFn: "includesString",
     enableColumnFilter: true,
     cell: ({ row }) => (
-      <Badge variant="outline" className="px-1.5 text-muted-foreground">
+      <Badge variant="outline" className="px-1.5 text-muted-foreground ">
         {row.original.status === "open" ? (
           <IconCircleCheckFilled className="fill-green-500 dark:fill-green-400" />
-        ) : (
-          <IconLoader />
-        )}
+        ) : row.original.status === "pending" ? <IconLoader /> : row.original.status === "escalated" ? <ArrowUpIcon /> : row.original.status === "resolved" ? <CheckCheckIcon /> : row.original.status === "assigned" ? <HandHeartIcon /> : row.original.status === "in_progress" ? <Loader2 /> : ''}
         {row.original.status}
       </Badge>
     ),
@@ -287,14 +285,7 @@ const columns = columnHelper.columns([
       row.original.priority ? <Badge className={row.original.priority.toLowerCase() == "low" ? "bg-green-200 text-green-700" : row.original.priority?.toLowerCase() == "medium" ? "bg-orange-200 text-orange-600" : "bg-red-200 text-red-800"}>{row.original.priority}</Badge> : "-"
     ),
   }),
-  columnHelper.accessor("awaiting_student_input", {
-    header: "Awaiting Student Response",
-    cell: ({ row }) => (
-      <div className="flex justify-center items-center">
-        {row.original.awaiting_student_input ? <Badge className="bg-green-200 text-black">Yes</Badge> : <Badge className="bg-red-200 text-black">No</Badge>}
-      </div>
-    ),
-  }),
+  
   columnHelper.accessor("created_at", {
     header: "Created At",
     cell: ({ row }) => {

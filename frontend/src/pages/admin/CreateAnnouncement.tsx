@@ -15,6 +15,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import type { Department } from "@/types"
 import { isAxiosError } from "axios"
 import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle } from "@/components/ui/dialog"
+import RichTextEditor from "@/components/ui/editor/rich-text-editor"
 
 export default function CreateAnnouncement() {
     const { role_name, access_token } = useAuth()
@@ -168,6 +169,7 @@ export default function CreateAnnouncement() {
                                             </div>
                                             <div className="flex flex-col gap-2">
                                                 <Label htmlFor="description">Description</Label>
+                                                <RichTextEditor content={submissionData.body} onChangeFn={(value) => setSubmissionData(data => ({...data, body: value}))} />
                                                 <Textarea id="description" placeholder="Describe your announcement body" className="border-stone-500 h-50" value={submissionData.body} onChange={(e) => {
                                                     setSubmissionData(data => {
                                                         return {
@@ -262,7 +264,7 @@ export default function CreateAnnouncement() {
                         <div className="max-h-80 space-y-4 overflow-y-auto break-words">
                             <div><p className="font-semibold">Title</p><p>{submissionData.title}</p></div>
                             <div><p className="font-semibold">Audience</p><p>{submissionData.audience_type === "all" ? "All students" : allDepartments?.find(dept => dept.id === submissionData.department_id)?.name}</p></div>
-                            <div><p className="font-semibold">Description</p><p className="whitespace-pre-wrap">{submissionData.body}</p></div>
+                            <div><p className="font-semibold">Description</p><p className="wrap-break-word" dangerouslySetInnerHTML={{__html: submissionData.body}} /></div>
                         </div>
                         <DialogFooter>
                             <Button type="button" variant="outline" disabled={isSubmitting} onClick={() => setConfirmationOpen(false)}>Cancel</Button>

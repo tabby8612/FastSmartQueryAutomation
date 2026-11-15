@@ -84,11 +84,11 @@ import {
   TabsTrigger,
 } from "@/components/ui/tabs"
 import { Drawer, DrawerClose, DrawerContent, DrawerDescription, DrawerFooter, DrawerHeader, DrawerTitle, DrawerTrigger } from "../ui/drawer"
-import { type ChartConfig } from "../ui/chart"
 import { useIsMobile } from "@/hooks/use-mobile"
 import { useAuth } from "@/contexts/auth-context"
 import { useNavigate } from "react-router-dom"
 import type { User } from "@/types"
+import { formatLongDate } from "@/lib/utils"
 
 // New in v9: declare the features this table uses — anything you don't
 // register is tree-shaken out of the bundle.
@@ -168,48 +168,43 @@ const columns = columnHelper.columns([
     header: () => null,
     cell: ({ row }) => <DragHandle id={row.original.id} />,
   }),
-  columnHelper.display({
-    id: "select",
-    header: ({ table }) => (
-      <div className="flex items-center justify-center">
-        <Checkbox
-          checked={
-            table.getIsAllPageRowsSelected() ||
-            (table.getIsSomePageRowsSelected() && "indeterminate")
-          }
-          onCheckedChange={(value) => table.toggleAllPageRowsSelected(!!value)}
-          aria-label="Select all"
-        />
-      </div>
-    ),
-    cell: ({ row }) => (
-      <div className="flex items-center justify-center">
-        <Checkbox
-          checked={row.getIsSelected()}
-          onCheckedChange={(value) => row.toggleSelected(!!value)}
-          aria-label="Select row"
-        />
-      </div>
-    ),
-    enableSorting: false,
-    enableHiding: false,
-  }),
+  
   columnHelper.accessor("full_name", {
     header: "Full Name",
-    cell: ({ row }) => {
-      return <TableCellViewer item={row.original} />
-    },
+    cell: ({ row }) => (
+      <div className="font-bold">
+        {row.original.full_name.length > 20 ? row.original.full_name.slice(0,20) + '...' : row.original.full_name}
+      </div>
+    ),
     enableHiding: false,
   }),
   columnHelper.accessor("email", {
     header: "Email",
     cell: ({ row }) => (
       <div className="">
-        {row.original.email}
+        {row.original.email.slice(0,20)}...
       </div>
     ),
     enableSorting: false,
-  }),  
+  }),
+  columnHelper.accessor("rolename", {
+    header: "Role",
+    cell: ({ row }) => (
+      <div className="capitalize">
+        {row.original.rolename}
+      </div>
+    ),
+    enableSorting: false,
+  }),
+  columnHelper.accessor("department.name", {
+    header: "Department",
+    cell: ({ row }) => (
+      <div className="capitalize">
+        {`${row.original.department ? row.original.department.name.slice(0,20) + '...' : '-' }`}
+      </div>
+    ),
+    enableSorting: false,
+  }),
   columnHelper.accessor("is_active", {
     header: "Active",
     cell: ({ row }) => (
@@ -220,24 +215,20 @@ const columns = columnHelper.columns([
   columnHelper.accessor("on_leave", {
     header: "On Leave",
     cell: ({ row }) => (
-      <Badge className={row.original.on_leave ? "bg-green-600" : "bg-red-600"}>{row.original.on_leave ? "Yes" : "No"}</Badge>
+      <Badge className={row.original.is_currently_on_leave ? "bg-green-600" : "bg-red-600"}>{row.original.on_leave ? "Yes" : "No"}</Badge>
     ),
     enableSorting: false,
   }),
-  columnHelper.accessor("leave_start_day", {
-    header: "Leave Start Date",
+  columnHelper.accessor("created_at", {
+    header: "Join Date",
     cell: ({ row }) => (
-      <p>{row.original.leave_start_day}</p>
+      <div className="capitalize">
+        {formatLongDate(row.original.created_at) ?? '-'}
+      </div>
     ),
     enableSorting: false,
   }),
-  columnHelper.accessor("leave_end_day", {
-    header: "Leave End Date",
-    cell: ({ row }) => (
-      <p>{row.original.leave_end_day}</p>
-    ),
-    enableSorting: false,
-  }),
+  
 ])
 
 function DraggableRow({

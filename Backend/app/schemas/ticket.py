@@ -52,10 +52,6 @@ class TicketCreate(BaseModel):
                 "Query description cannot less than 100 characters",
             )
 
-        print("raw_value", value)
-        print("santitzed_text", santitized_text)
-        print("plain_text", plain_text(santitized_text))
-
         return santitized_text
 
 

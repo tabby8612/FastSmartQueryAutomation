@@ -1,12 +1,14 @@
-from datetime import date
+from datetime import date, datetime, timedelta, timezone
 
 from sqlalchemy.ext.asyncio import AsyncSession
-from sqlalchemy.future import select
+from sqlalchemy import select, or_
 from sqlalchemy.orm import joinedload
+
 from fastapi import HTTPException, status
 
 from app.models.user import User
 from app.models.role import Role
+from app.models.user_roles import User_Roles
 from app.helpers.security import hash_password
 
 
@@ -89,9 +91,28 @@ class UserService:
         return user
 
     @staticmethod
-    async def get_all(db: AsyncSession) -> list[User]:
-        result = await db.execute(select(User))
-        return list(result.scalars().all())
+    async def get_all(
+        db: AsyncSession,
+        start_date: date | None = None,
+        end_date: date | None = None,
+        name_email: str | None = None,
+        role: str | None = None,
+        dept_id: int | None = None,
+    ) -> list[User]:
+        filters = UserService.apply_filters(
+            start_date, end_date, name_email, role, dept_id
+        )
+
+        stmt = (
+            select(User)
+            .where(*filters)
+            .join(User_Roles, User_Roles.user_id == User.id)
+            .join(Role, Role.id == User_Roles.role_id)
+            .options(joinedload(User.roles), joinedload(User.department))
+        )
+
+        result = await db.execute(stmt)
+        return list(result.scalars().unique().all())
 
     @staticmethod
     async def get_by_id(db: AsyncSession, user_id: int) -> User | None:
@@ -159,3 +180,40 @@ class UserService:
     async def delete(db: AsyncSession, user: User) -> None:
         await db.delete(user)
         await db.flush()
+
+    @staticmethod
+    def apply_filters(
+        start_date: date | None = None,
+        end_date: date | None = None,
+        name_email: str | None = None,
+        role: str | None = None,
+        dept_id: int | None = None,
+    ):
+        filters = []
+
+        if start_date is not None:
+            filters.append(User.created_at >= start_date)
+
+        if end_date is not None:
+            filters.append(
+                User.created_at
+                < datetime.combine(
+                    end_date + timedelta(days=1), datetime.min.time(), timezone.utc
+                )
+            )
+
+        if name_email is not None:
+            filters.append(
+                or_(
+                    User.full_name.ilike(f"%{name_email}%"),
+                    User.email.ilike(f"%{name_email}%"),
+                )
+            )
+
+        if role is not None:
+            filters.append(Role.name == role.lower())
+
+        if dept_id is not None:
+            filters.append(User.department_id == dept_id)
+
+        return filters
