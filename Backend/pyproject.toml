@@ -1,7 +1,7 @@
 [project]
-name = "backend"
+name = "FastSmartQuery"
 version = "0.1.0"
-description = "Add your description here"
+description = "An intelligent email automation system that monitors incoming messages, categorizes intent, retrieves business context from a custom knowledge base, and generates accurate draft replies or automated responses using Large Language Models (LLMs)."
 readme = "README.md"
 authors = [
     { name = "Tabish Sajwani", email = "tabishsajwani@hotmail.com" }
