@@ -327,7 +327,7 @@ function TicketDetailContent({ ticketId }: { ticketId: string }) {
               <header className="space-y-4 border-b p-6">
                 <div className="flex flex-wrap items-center justify-between gap-3">
                   <p className="font-medium text-muted-foreground">Ticket #{ticket.tracking_id}</p>
-                  <div className="flex gap-2"><Badge variant="outline" className="capitalize">{ticket.status}</Badge><Badge className={ticket.priority?.toLowerCase() === "high" ? "bg-red-100 text-red-800 capitalize" : ticket.priority?.toLowerCase() === "medium" ? "bg-amber-100 text-amber-800 capitalize" : "bg-green-100 text-green-800 capitalize"}>{ticket.priority ?? "-"}</Badge></div>
+                  <div className="flex gap-2"><Badge variant="outline" className="capitalize">{ticket.status.replace("_", " ")}</Badge><Badge className={ticket.priority?.toLowerCase() === "high" ? "bg-red-100 text-red-800 capitalize" : ticket.priority?.toLowerCase() === "medium" ? "bg-amber-100 text-amber-800 capitalize" : "bg-green-100 text-green-800 capitalize"}>{ticket.priority ?? "-"}</Badge></div>
                 </div>
                 <h1 className="wrap-break-word text-2xl font-semibold md:text-3xl capitalize">{ticket.subject}</h1>
               </header>
@@ -339,7 +339,7 @@ function TicketDetailContent({ ticketId }: { ticketId: string }) {
                   <div><dt className="text-muted-foreground">Channel</dt><dd className="mt-1 font-medium capitalize">{ticket.channel.replace("_", " ")}</dd></div>
                   <div><dt className="text-muted-foreground">Status</dt>
                     {
-                      roleName === "student" ? <dd className="mt-1 font-medium capitalize">{ticket.status}</dd> : (
+                      roleName === "student" ? <dd className="mt-1 font-medium capitalize">{ticket.status.replace("_", " ")}</dd> : (
                         <Select items={statusItems} value={ticket.status} disabled={updatingStatus} onValueChange={value => {
                           if (!value || value === ticket.status) return
                           setStatusError("")
@@ -384,7 +384,7 @@ function TicketDetailContent({ ticketId }: { ticketId: string }) {
                     </Dialog>
                   </div>
                   <div><dt className="text-muted-foreground">Priority</dt>{
-                    roleName !== "hod" ? <dd className="mt-1 font-medium capitalize">{ticket.priority}</dd> : (
+                    (roleName !== "hod" && roleName !== "admin") ? <dd className="mt-1 font-medium capitalize">{ticket.priority}</dd> : (
                       <Select items={priorityItems} value={ticket.priority} disabled={updatingPriority} onValueChange={value => {
                         if (!value || value === ticket.priority) return
                         setPriorityError("")

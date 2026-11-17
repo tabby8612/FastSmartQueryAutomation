@@ -78,7 +78,7 @@ A student query has been escalated to you.
 
 Ticket Tracking ID: {ticket.tracking_id}
 Subject: {ticket.subject}
-Priority: {ticket.priority.capitalize()}
+Priority: {ticket.priority.capitalize() if ticket.priority else " - "}
 
 The ticket was not solved within the required time period.
 

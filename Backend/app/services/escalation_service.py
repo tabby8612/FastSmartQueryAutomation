@@ -37,7 +37,6 @@ class EscalationService:
             .where(
                 Ticket.created_at <= cutoff_time,
                 Ticket.resolved_at.is_(None),
-                Ticket.awaiting_student_input.is_(False),
                 Ticket.escalation_level == 0,
                 Ticket.status.in_(
                     [

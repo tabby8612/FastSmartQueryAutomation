@@ -471,11 +471,18 @@ export function AdminDataTable({
     try {
       setIsDeleting(true)
 
-      await api.delete(`/tickets/${selectedTicket.id}`, {
+      const response = await api.delete(`/tickets/${selectedTicket.id}`, {
         headers: {
           "Authorization": `Bearer ${ACCESS_TOKEN}`
         }
       })
+
+      toast.success(response.data?.message ?? "Deleted Successfully", {
+        "position": "top-center",
+        richColors: true
+      })
+
+      setData(prevData => prevData.filter(ticket => ticket.id !== selectedTicket.id))
       
     } catch (error) {
       if (isAxiosError(error)) {
