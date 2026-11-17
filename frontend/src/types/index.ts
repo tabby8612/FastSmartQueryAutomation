@@ -60,8 +60,10 @@ export type Officer = {
 export type Department = {
     "id": number,
     "name": string,
-    "description": string,
+    "description": string | null,
     "ticket_count": number
+    "hod_id"?: number | null,
+    "is_active"?: boolean,
 }
 
 export type User = {
@@ -203,6 +205,13 @@ export type UserProfile = Pick<User, "id" | "full_name" | "email" | "profile_ima
 
 export type Notification = {
     id: number,
+    channel: string,
+    error_message: string,
+    recipient_id: number,
+    retry_count: number,
+    sent_at: string,
+    status: string,
+    ticket_id: number,
     created_at: string,
     subject: string,
     message_body: string,

@@ -11,6 +11,7 @@ import { CreateHod } from "@/pages/admin/CreateHod";
 import { CreateOfficer } from "@/pages/admin/CreateOfficer";
 import { CreateStudent } from "@/pages/admin/CreateStudent";
 import { Departments } from "@/pages/admin/Departments";
+import { EditDepartment } from "@/pages/admin/EditDepartment";
 import { Users } from "@/pages/admin/Users";
 import { SearchPage } from "@/pages/Search";
 import { Route } from "react-router-dom";
@@ -87,6 +88,14 @@ export default [
     element={
       <ProtectedRoute allowedRoles={["admin"]}>
         <Departments />
+      </ProtectedRoute>
+    }
+  />,
+  <Route
+    path={`${PREFIX}/department/:departmentId/edit`}
+    element={
+      <ProtectedRoute allowedRoles={["admin"]}>
+        <EditDepartment />
       </ProtectedRoute>
     }
   />,

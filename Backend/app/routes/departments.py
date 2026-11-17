@@ -38,7 +38,7 @@ async def get_departments(db: AsyncSession = Depends(get_db)):
     return await DepartmentService.get_all(db)
 
 
-@router.get("/{department_id}", response_model=DepartmentResponse)
+@router.get("/{department_id}", response_model=None)
 async def get_department(department_id: int, db: AsyncSession = Depends(get_db)):
     department = await DepartmentService.get_by_id(db, department_id)
     if not department:

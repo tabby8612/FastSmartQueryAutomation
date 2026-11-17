@@ -5,6 +5,7 @@ from sqlalchemy.orm import joinedload
 
 from app.models.department import Department
 from app.models.ticket import Ticket
+from app.models.user import User
 
 
 class DepartmentService:
@@ -53,8 +54,15 @@ class DepartmentService:
 
     @staticmethod
     async def get_by_id(db: AsyncSession, department_id: int) -> Department | None:
+
         result = await db.execute(
-            select(Department).where(Department.id == department_id)
+            select(Department)
+            .where(Department.id == department_id)
+            .options(
+                joinedload(Department.hod).load_only(
+                    User.id, User.full_name, User.email
+                )
+            )
         )
         return result.scalar_one_or_none()
 

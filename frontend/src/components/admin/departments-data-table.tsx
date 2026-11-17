@@ -79,8 +79,6 @@ import {
   TabsList,
   TabsTrigger,
 } from "@/components/ui/tabs"
-import { Drawer, DrawerClose, DrawerContent, DrawerDescription, DrawerFooter, DrawerHeader, DrawerTitle, DrawerTrigger } from "../ui/drawer"
-import { useIsMobile } from "@/hooks/use-mobile"
 import { useAuth } from "@/contexts/auth-context"
 import { useNavigate } from "react-router-dom"
 import type { Department } from "@/types"
@@ -481,40 +479,16 @@ export function DepartmentDataTable({
 }
 
 function TableCellViewer({ item }: { item: Department }) {
-  const isMobile = useIsMobile()
+  const navigate = useNavigate()
 
   return (
-    <Drawer swipeDirection={isMobile ? "left" : "down"} showSwipeHandle={isMobile}>
-      <DrawerTrigger>
-        <Button variant="link" className="w-fit px-0 text-left text-foreground capitalize">
-          {item.name}
-        </Button>
-      </DrawerTrigger>
-      <DrawerContent>
-        <DrawerHeader className="gap-10 mb-7">
-          <DrawerTitle className="text-2xl font-bold text-primary capitalize">{item.name}</DrawerTitle>
-          <DrawerDescription className="text-lg text-slate-600 capitalize">
-            Showing Department details for the {item.name}
-          </DrawerDescription>
-        </DrawerHeader>
-        <div className="grid grid-cols-3 gap-6 justify-center items-center overflow-y-auto px-4 size-8/12 mx-auto ">
-          <div className="flex flex-col gap-2">
-            <Label htmlFor="department_name" className="font-bold">Department Name</Label>
-            <p className="capitalize">{item.name}</p>
-          </div>
-          <div className="flex flex-col gap-2">
-            <Label htmlFor="department_description" className="font-bold">Department Description</Label>
-            <p>{item.description}</p>
-          </div>
-          
-        </div>
-        <DrawerFooter>
-          <DrawerClose className="pt-10">
-            <Button variant="outline">Close</Button>
-          </DrawerClose>
-        </DrawerFooter>
-      </DrawerContent>
-    </Drawer>
+    <Button
+      variant="link"
+      className="w-fit px-0 text-left text-foreground capitalize"
+      onClick={() => navigate(`/admin/department/${item.id}/edit`)}
+    >
+      {item.name}
+    </Button>
   )
 }
 
