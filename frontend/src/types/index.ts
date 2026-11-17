@@ -11,7 +11,7 @@ export type Ticket = {
     "priority": string,
     "intent": string,
     "confidence_level": string,
-    "status": "open" | "closed" | "in_progress",
+    "status": string,
     "escalation_level": number,
     "awaiting_student_input": boolean,
     "resolved_at": string,

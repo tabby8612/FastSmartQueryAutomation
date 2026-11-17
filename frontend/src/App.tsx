@@ -10,6 +10,7 @@ import studentRoutes from "@/routes/studentRoutes";
 import officerRoutes from "@/routes/officerRoutes";
 import hodRoutes from "@/routes/hodRoutes";
 import adminRoutes from "@/routes/adminRoutes";
+import { NotFound } from "./pages/NotFound";
 
 function App() {
   return (
@@ -32,15 +33,8 @@ function App() {
           <Route path="/" element={<LoginPage />} />
 
           <Route path="/auth/callback" element={<GoogleCallback />} />
-          
-          <Route
-            path="/dashboard"
-            element={
-              <ProtectedRoute>
-                <Dashboard />
-              </ProtectedRoute>
-            }
-          />
+
+          <Route path="*" element={<NotFound />} />
         </Routes>
       </BrowserRouter>
     </AuthProvider>

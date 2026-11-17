@@ -484,7 +484,7 @@ function TableCellViewer({ item }: { item: Department }) {
   const isMobile = useIsMobile()
 
   return (
-    <Drawer swipeDirection={isMobile ? "down" : "down"} showSwipeHandle={isMobile}>
+    <Drawer swipeDirection={isMobile ? "left" : "down"} showSwipeHandle={isMobile}>
       <DrawerTrigger>
         <Button variant="link" className="w-fit px-0 text-left text-foreground capitalize">
           {item.name}
@@ -499,8 +499,12 @@ function TableCellViewer({ item }: { item: Department }) {
         </DrawerHeader>
         <div className="grid grid-cols-3 gap-6 justify-center items-center overflow-y-auto px-4 size-8/12 mx-auto ">
           <div className="flex flex-col gap-2">
-            <Label htmlFor="tracking_id" className="font-bold">Department Name</Label>
-            <p>{item.name}</p>
+            <Label htmlFor="department_name" className="font-bold">Department Name</Label>
+            <p className="capitalize">{item.name}</p>
+          </div>
+          <div className="flex flex-col gap-2">
+            <Label htmlFor="department_description" className="font-bold">Department Description</Label>
+            <p>{item.description}</p>
           </div>
           
         </div>

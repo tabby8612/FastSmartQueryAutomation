@@ -7,6 +7,7 @@ import { AuditLogs } from "@/pages/admin/AuditLogs";
 import { Categories } from "@/pages/admin/Categories";
 import { CreateAdmin } from "@/pages/admin/CreateAdmin";
 import CreateAnnouncement from "@/pages/admin/CreateAnnouncement";
+import { CreateHod } from "@/pages/admin/CreateHod";
 import { CreateOfficer } from "@/pages/admin/CreateOfficer";
 import { CreateStudent } from "@/pages/admin/CreateStudent";
 import { Departments } from "@/pages/admin/Departments";
@@ -54,6 +55,14 @@ export default [
     element={
       <ProtectedRoute allowedRoles={["admin"]}>
         <CreateOfficer />
+      </ProtectedRoute>
+    }
+  />,
+  <Route
+    path={`${PREFIX}/users/create-hod`}
+    element={
+      <ProtectedRoute allowedRoles={["admin"]}>
+        <CreateHod />
       </ProtectedRoute>
     }
   />,

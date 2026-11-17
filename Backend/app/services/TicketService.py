@@ -82,6 +82,16 @@ class TicketService:
             changed_by=student_id,
         )
 
+        if new_ticket.assigned_id is not None:
+            assigned_history = TicketStatusHistory(
+                ticket_id=new_ticket.id,
+                old_status=history.old_status,
+                new_status=QueryStatusEnum.ASSIGNED,
+                changed_by=student_id,
+            )
+
+            db.add(assigned_history)
+
         db.add(history)
         await db.flush()
         await db.refresh(history)

@@ -48,7 +48,7 @@ export default function Page() {
 
   const pendingCount = tickets.filter((q) => q.status.toLowerCase() === "pending").length
   const inProgressCount = tickets.filter((q) => q.status.toLowerCase() === "in_progress").length
-  const escalatedCount = tickets.filter((q) => q.status.toLowerCase() === "escalated").length
+  const solvedCount = tickets.filter((q) => q.status.toLowerCase() === "resolved").length
   const closedCount = tickets.filter((q) => q.status.toLowerCase() === "closed").length
   const totalCount = tickets.length
 
@@ -96,7 +96,7 @@ export default function Page() {
                     <>
                       <SectionCard title="Pending" value={String(pendingCount)} description="These are pending tickets" icon={BookOpenIcon} />
                       <SectionCard title="Progress" value={String(inProgressCount)} description="These are in progress tickets" icon={Loader} />
-                      <SectionCard title="Escalated" value={String(escalatedCount)} description="These are escalated tickets" icon={BookOpenCheck} />
+                      <SectionCard title="Solved" value={String(solvedCount)} description="These are solved tickets" icon={BookOpenCheck} />
                       <SectionCard title="Closed" value={String(closedCount)} description="These are closed tickets" icon={Hash} />
                       <SectionCard title="Total" value={String(totalCount)} description="These are total tickets" icon={Hash} />
                     </>

@@ -712,7 +712,7 @@ function TableCellViewer({ item }: { item: z.infer<typeof schema> }) {
   const isMobile = useIsMobile()
 
   return (
-    <Drawer swipeDirection={isMobile ? "down" : "down"} showSwipeHandle={isMobile}>
+    <Drawer swipeDirection={isMobile ? "left" : "down"} showSwipeHandle={isMobile}>
       <DrawerTrigger>
         <Search className="size-3 hover:text-blue-600 cursor-pointer" />
       </DrawerTrigger>

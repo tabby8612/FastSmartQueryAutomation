@@ -1,6 +1,6 @@
-"use client"
+"use client";
 
-import * as React from "react"
+import * as React from "react";
 import {
   closestCenter,
   DndContext,
@@ -11,15 +11,15 @@ import {
   useSensors,
   type DragEndEvent,
   type UniqueIdentifier,
-} from "@dnd-kit/core"
-import { restrictToVerticalAxis } from "@dnd-kit/modifiers"
+} from "@dnd-kit/core";
+import { restrictToVerticalAxis } from "@dnd-kit/modifiers";
 import {
   arrayMove,
   SortableContext,
   useSortable,
   verticalListSortingStrategy,
-} from "@dnd-kit/sortable"
-import { CSS } from "@dnd-kit/utilities"
+} from "@dnd-kit/sortable";
+import { CSS } from "@dnd-kit/utilities";
 import {
   IconChevronDown,
   IconChevronLeft,
@@ -31,7 +31,7 @@ import {
   IconLayoutColumns,
   IconLoader,
   IconPlus,
-} from "@tabler/icons-react"
+} from "@tabler/icons-react";
 import {
   columnFilteringFeature,
   columnVisibilityFeature,
@@ -49,26 +49,26 @@ import {
   type ColumnVisibilityState,
   type Row,
   type SortingState,
-} from "@tanstack/react-table"
-import { z } from "zod"
+} from "@tanstack/react-table";
+import { z } from "zod";
 
-import { Badge } from "@/components/ui/badge"
-import { Button } from "@/components/ui/button"
-import { Checkbox } from "@/components/ui/checkbox"
+import { Badge } from "@/components/ui/badge";
+import { Button } from "@/components/ui/button";
+import { Checkbox } from "@/components/ui/checkbox";
 import {
   DropdownMenu,
   DropdownMenuCheckboxItem,
   DropdownMenuContent,
   DropdownMenuTrigger,
-} from "@/components/ui/dropdown-menu"
-import { Label } from "@/components/ui/label"
+} from "@/components/ui/dropdown-menu";
+import { Label } from "@/components/ui/label";
 import {
   Select,
   SelectContent,
   SelectItem,
   SelectTrigger,
   SelectValue,
-} from "@/components/ui/select"
+} from "@/components/ui/select";
 import {
   Table,
   TableBody,
@@ -76,19 +76,39 @@ import {
   TableHead,
   TableHeader,
   TableRow,
-} from "@/components/ui/table"
+} from "@/components/ui/table";
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import {
-  Tabs,
-  TabsContent,
-  TabsList,
-  TabsTrigger,
-} from "@/components/ui/tabs"
-import { Drawer, DrawerClose, DrawerContent, DrawerDescription, DrawerFooter, DrawerHeader, DrawerTitle, DrawerTrigger } from "../ui/drawer"
-import { useIsMobile } from "@/hooks/use-mobile"
-import { useAuth } from "@/contexts/auth-context"
-import { useNavigate } from "react-router-dom"
-import type { User } from "@/types"
-import { formatLongDate } from "@/lib/utils"
+  Drawer,
+  DrawerClose,
+  DrawerContent,
+  DrawerDescription,
+  DrawerFooter,
+  DrawerHeader,
+  DrawerTitle,
+  DrawerTrigger,
+} from "../ui/drawer";
+import { useIsMobile } from "@/hooks/use-mobile";
+import { useAuth } from "@/contexts/auth-context";
+import { useNavigate } from "react-router-dom";
+import type { User } from "@/types";
+import { formatLongDate } from "@/lib/utils";
+import { Trash2Icon } from "lucide-react";
+import {
+  Dialog,
+  DialogClose,
+  DialogContent,
+  DialogDescription,
+  DialogFooter,
+  DialogHeader,
+  DialogTitle,
+  DialogTrigger,
+} from "../ui/dialog";
+import { Field, FieldGroup } from "../ui/field";
+import { Input } from "../ui/input";
+import api from "@/lib/axios";
+import { toast } from "sonner";
+import { isAxiosError } from "axios";
 
 // New in v9: declare the features this table uses — anything you don't
 // register is tree-shaken out of the bundle.
@@ -101,52 +121,15 @@ const features = tableFeatures({
   filteredRowModel: createFilteredRowModel(),
   paginatedRowModel: createPaginatedRowModel(),
   sortedRowModel: createSortedRowModel(),
-})
+});
 
-
-
-const columnHelper = createColumnHelper<
-  typeof features,
-  User
->()
-
-// export const schema = z.object({
-//   id: z.number(),
-//   tracking_id: z.string(),
-//   channel: z.string(),
-//   subject: z.string(),
-//   body: z.string(),
-//   intent: z.string(),
-//   status: z.string(),
-//   awaiting_student_input: z.boolean(),
-//   resolved_at: z.string(),
-//   created_at: z.string(),
-//   student: z.object({
-//     id: z.number(),
-//     student_id: z.string(),
-//     email: z.string(),
-//     full_name: z.string(),
-//   }),
-//   assigned: z.object({
-//     id: z.number(),
-//     email: z.string(),
-//     full_name: z.string(),
-//   }),
-//   department: z.object({
-//     id: z.number(),
-//     name: z.string(),
-//   }),
-//   category: z.object({
-//     id: z.number(),
-//     name: z.string(),
-//   }),
-// })
+const columnHelper = createColumnHelper<typeof features, User>();
 
 // Create a separate component for the drag handle
 function DragHandle({ id }: { id: number }) {
   const { attributes, listeners } = useSortable({
     id,
-  })
+  });
 
   return (
     <Button
@@ -159,86 +142,15 @@ function DragHandle({ id }: { id: number }) {
       <IconGripVertical className="size-3 text-muted-foreground" />
       <span className="sr-only">Drag to reorder</span>
     </Button>
-  )
+  );
 }
 
-const columns = columnHelper.columns([
-  columnHelper.display({
-    id: "drag",
-    header: () => null,
-    cell: ({ row }) => <DragHandle id={row.original.id} />,
-  }),
-  
-  columnHelper.accessor("full_name", {
-    header: "Full Name",
-    cell: ({ row }) => (
-      <div className="font-bold">
-        {row.original.full_name.length > 20 ? row.original.full_name.slice(0,20) + '...' : row.original.full_name}
-      </div>
-    ),
-    enableHiding: false,
-  }),
-  columnHelper.accessor("email", {
-    header: "Email",
-    cell: ({ row }) => (
-      <div className="">
-        {row.original.email.slice(0,20)}...
-      </div>
-    ),
-    enableSorting: false,
-  }),
-  columnHelper.accessor("rolename", {
-    header: "Role",
-    cell: ({ row }) => (
-      <div className="capitalize">
-        {row.original.rolename}
-      </div>
-    ),
-    enableSorting: false,
-  }),
-  columnHelper.accessor("department.name", {
-    header: "Department",
-    cell: ({ row }) => (
-      <div className="capitalize">
-        {`${row.original.department ? row.original.department.name.slice(0,20) + '...' : '-' }`}
-      </div>
-    ),
-    enableSorting: false,
-  }),
-  columnHelper.accessor("is_active", {
-    header: "Active",
-    cell: ({ row }) => (
-      <Badge className={row.original.is_active ? "bg-green-600" : "bg-red-600"}>{row.original.is_active ? "Yes" : "No"}</Badge>
-    ),
-    enableSorting: false,
-  }),
-  columnHelper.accessor("on_leave", {
-    header: "On Leave",
-    cell: ({ row }) => (
-      <Badge className={row.original.is_currently_on_leave ? "bg-green-600" : "bg-red-600"}>{row.original.on_leave ? "Yes" : "No"}</Badge>
-    ),
-    enableSorting: false,
-  }),
-  columnHelper.accessor("created_at", {
-    header: "Join Date",
-    cell: ({ row }) => (
-      <div className="capitalize">
-        {formatLongDate(row.original.created_at) ?? '-'}
-      </div>
-    ),
-    enableSorting: false,
-  }),
-  
-])
 
-function DraggableRow({
-  row,
-}: {
-  row: Row<typeof features, User>
-}) {
+
+function DraggableRow({ row }: { row: Row<typeof features, User> }) {
   const { transform, transition, setNodeRef, isDragging } = useSortable({
     id: row.original.id,
-  })
+  });
 
   return (
     <TableRow
@@ -257,42 +169,137 @@ function DraggableRow({
         </TableCell>
       ))}
     </TableRow>
-  )
+  );
 }
 
-export function UsersDataTable({
-  data: initialData,
-}: {
-  data: User[]
-}) {
-  const [data, setData] = React.useState(() => initialData)
-  const { role_name } = useAuth();
-
-  React.useEffect(() => {
-    setData(initialData)
-  }, [initialData])
-  const [rowSelection, setRowSelection] = React.useState({})
+export function UsersDataTable({ data: initialData }: { data: User[] }) {
+  const [data, setData] = React.useState(() => initialData);
+  const { role_name, getAccessToken } = useAuth();
+  const [selectedUser, setSelectedUser] = React.useState<User | null>(null);
+  const [deleteDialogOpen, setDeleteDialogOpen] = React.useState(false);
+  const [isDeleting, setIsDeleting] = React.useState(false);
+  const [rowSelection, setRowSelection] = React.useState({});
   const [columnVisibility, setColumnVisibility] =
-    React.useState<ColumnVisibilityState>({})
+    React.useState<ColumnVisibilityState>({});
   const [columnFilters, setColumnFilters] = React.useState<ColumnFiltersState>(
-    []
-  )
-  const [sorting, setSorting] = React.useState<SortingState>([])
+    [],
+  );
+  const [sorting, setSorting] = React.useState<SortingState>([]);
   const [pagination, setPagination] = React.useState({
     pageIndex: 0,
     pageSize: 10,
-  })
-  const sortableId = React.useId()
+  });
+
+  React.useEffect(() => {
+    setData(initialData);
+  }, [initialData]);
+
+  
+  const sortableId = React.useId();
   const sensors = useSensors(
     useSensor(MouseSensor, {}),
     useSensor(TouchSensor, {}),
-    useSensor(KeyboardSensor, {})
-  )
+    useSensor(KeyboardSensor, {}),
+  );
 
   const dataIds = React.useMemo<UniqueIdentifier[]>(
     () => data?.map(({ id }) => id) || [],
-    [data]
-  )
+    [data],
+  );
+
+  const ACCESS_TOKEN = getAccessToken()
+
+  const columns = columnHelper.columns([
+    columnHelper.display({
+      id: "drag",
+      header: () => null,
+      cell: ({ row }) => <DragHandle id={row.original.id} />,
+    }),
+
+    columnHelper.accessor("full_name", {
+      header: "Full Name",
+      cell: ({ row }) => (
+        <div className="font-bold">
+          {row.original.full_name.length > 20
+            ? row.original.full_name.slice(0, 20) + "..."
+            : row.original.full_name}
+        </div>
+      ),
+      enableHiding: false,
+    }),
+    columnHelper.accessor("email", {
+      header: "Email",
+      cell: ({ row }) => (
+        <div className="">{row.original.email.slice(0, 20)}...</div>
+      ),
+      enableSorting: false,
+    }),
+    columnHelper.accessor("rolename", {
+      header: "Role",
+      cell: ({ row }) => (
+        <div className="capitalize">{row.original.rolename}</div>
+      ),
+      enableSorting: false,
+    }),
+    columnHelper.accessor("department.name", {
+      header: "Department",
+      cell: ({ row }) => (
+        <div className="capitalize">
+          {`${row.original.department ? row.original.department.name.slice(0, 20) + "..." : "-"}`}
+        </div>
+      ),
+      enableSorting: false,
+    }),
+    columnHelper.accessor("is_active", {
+      header: "Active",
+      cell: ({ row }) => (
+        <Badge
+          className={row.original.is_active ? "bg-green-600" : "bg-red-600"}
+        >
+          {row.original.is_active ? "Yes" : "No"}
+        </Badge>
+      ),
+      enableSorting: false,
+    }),
+    columnHelper.accessor("on_leave", {
+      header: "On Leave",
+      cell: ({ row }) => (
+        <Badge
+          className={
+            row.original.is_currently_on_leave ? "bg-green-600" : "bg-red-600"
+          }
+        >
+          {row.original.on_leave ? "Yes" : "No"}
+        </Badge>
+      ),
+      enableSorting: false,
+    }),
+    columnHelper.accessor("created_at", {
+      header: "Join Date",
+      cell: ({ row }) => (
+        <div className="capitalize">
+          {formatLongDate(row.original.created_at) ?? "-"}
+        </div>
+      ),
+      enableSorting: false,
+    }),
+    columnHelper.display({
+      id: "action",
+      header: () => null,
+      cell: ({ row }) => (
+        <Button
+          variant="destructive"
+          size="icon"
+          onClick={() => {
+            setSelectedUser(row.original);
+            setDeleteDialogOpen(true);
+          }}
+        >
+          <Trash2Icon color="red" />
+        </Button>
+      ),
+    }),
+  ]);
 
   const table = useTable({
     features,
@@ -312,21 +319,52 @@ export function UsersDataTable({
     onColumnFiltersChange: setColumnFilters,
     onColumnVisibilityChange: setColumnVisibility,
     onPaginationChange: setPagination,
-  })
+  });
 
   function handleDragEnd(event: DragEndEvent) {
-    const { active, over } = event
+    const { active, over } = event;
     if (active && over && active.id !== over.id) {
       setData((data) => {
-        const oldIndex = dataIds.indexOf(active.id)
-        const newIndex = dataIds.indexOf(over.id)
-        return arrayMove(data, oldIndex, newIndex)
-      })
+        const oldIndex = dataIds.indexOf(active.id);
+        const newIndex = dataIds.indexOf(over.id);
+        return arrayMove(data, oldIndex, newIndex);
+      });
     }
   }
 
-  const navigate = useNavigate()
-  
+  async function handleDeleteUser(event: React.MouseEvent) {
+    event.preventDefault()
+    
+    if (!selectedUser) return;
+    if (isDeleting) return;
+
+    try {
+      setIsDeleting(true)
+
+      await api.delete(`/users/${selectedUser.id}`, {
+        headers: {
+          "Authorization": `Bearer ${ACCESS_TOKEN}`
+        }
+      })
+
+      setData(prevUsers => prevUsers.filter(user => user.id !== selectedUser.id))
+      
+    } catch (error) {
+      if (isAxiosError(error)) {
+        toast.error(`Unable to delete user - ${error.message}`, {
+          'position': "top-center",
+          "richColors": true
+        })
+      }
+    } finally {
+      setDeleteDialogOpen(false)
+      setIsDeleting(false)
+    }
+    
+  }
+
+  const navigate = useNavigate();
+
   return (
     <Tabs
       defaultValue="outline"
@@ -353,21 +391,21 @@ export function UsersDataTable({
         </TabsList>
         <div className="flex items-center gap-2">
           <DropdownMenu>
-            <DropdownMenuTrigger>
-              <Button variant="outline" size="sm">
+            <DropdownMenuTrigger render={<Button variant="outline" size="sm">
                 <IconLayoutColumns />
                 <span className="hidden lg:inline">Customize Columns</span>
                 <span className="lg:hidden">Columns</span>
                 <IconChevronDown />
-              </Button>
-            </DropdownMenuTrigger>
+              </Button>} />
+              
+            
             <DropdownMenuContent align="end" className="w-56">
               {table
                 .getAllColumns()
                 .filter(
                   (column) =>
                     typeof column.accessorFn !== "undefined" &&
-                    column.getCanHide()
+                    column.getCanHide(),
                 )
                 .map((column) => {
                   return (
@@ -381,19 +419,20 @@ export function UsersDataTable({
                     >
                       {column.id}
                     </DropdownMenuCheckboxItem>
-                  )
+                  );
                 })}
             </DropdownMenuContent>
           </DropdownMenu>
-          {
-            role_name == "student" && (
-              <Button variant="outline" size="sm" onClick={() => navigate("/student/submit-issue")}>
-                <IconPlus />
-                <span className="hidden lg:inline">Add New Issue</span>
-              </Button>
-            )
-          }
-
+          {role_name == "student" && (
+            <Button
+              variant="outline"
+              size="sm"
+              onClick={() => navigate("/student/submit-issue")}
+            >
+              <IconPlus />
+              <span className="hidden lg:inline">Add New Issue</span>
+            </Button>
+          )}
         </div>
       </div>
       <TabsContent
@@ -408,6 +447,26 @@ export function UsersDataTable({
             sensors={sensors}
             id={sortableId}
           >
+            {selectedUser && (
+              <Dialog open={deleteDialogOpen}>
+                <form>
+                  <DialogContent className="sm:max-w-sm" showCloseButton={false}>
+                    <DialogHeader>
+                      <DialogTitle>Do you want to delete this user?</DialogTitle>
+                      <DialogDescription />
+                    </DialogHeader>
+                    <Trash2Icon color="red" className="bg-stone-100 rounded-full mx-auto p-3" size={50} />
+                    <p>This action can't be reversed, once user is deleted, you can't access his tickets</p>
+                    <DialogFooter>
+                      <DialogClose
+                        render={<Button variant="outline" onClick={() => setDeleteDialogOpen(false)}>Cancel</Button>}
+                      />
+                      <Button type="submit" variant="destructive" onClick={(e) => handleDeleteUser(e)}>Delete User</Button>
+                    </DialogFooter>
+                  </DialogContent>
+                </form>
+              </Dialog>
+            )}
             <Table>
               <TableHeader className="sticky top-0 z-10 bg-muted">
                 {table.getHeaderGroups().map((headerGroup) => (
@@ -419,7 +478,7 @@ export function UsersDataTable({
                             <FlexRender header={header} />
                           )}
                         </TableHead>
-                      )
+                      );
                     })}
                   </TableRow>
                 ))}
@@ -461,7 +520,7 @@ export function UsersDataTable({
               <Select
                 value={`${table.state.pagination.pageSize}`}
                 onValueChange={(value) => {
-                  table.setPageSize(Number(value))
+                  table.setPageSize(Number(value));
                 }}
               >
                 <SelectTrigger size="sm" className="w-20" id="rows-per-page">
@@ -524,16 +583,18 @@ export function UsersDataTable({
           </div>
         </div>
       </TabsContent>
-
     </Tabs>
-  )
+  );
 }
 
 function TableCellViewer({ item }: { item: User }) {
-  const isMobile = useIsMobile()
+  const isMobile = useIsMobile();
 
   return (
-    <Drawer swipeDirection={isMobile ? "down" : "down"} showSwipeHandle={isMobile}>
+    <Drawer
+      swipeDirection={isMobile ? "left" : "down"}
+      showSwipeHandle={isMobile}
+    >
       <DrawerTrigger>
         <Button variant="link" className="w-fit px-0 text-left text-foreground">
           {item.full_name}
@@ -541,17 +602,20 @@ function TableCellViewer({ item }: { item: User }) {
       </DrawerTrigger>
       <DrawerContent>
         <DrawerHeader className="gap-10 mb-7">
-          <DrawerTitle className="text-2xl font-bold text-primary">{item.full_name}</DrawerTitle>
+          <DrawerTitle className="text-2xl font-bold text-primary">
+            {item.full_name}
+          </DrawerTitle>
           <DrawerDescription className="text-lg text-slate-600">
             Showing issue details for the Item Tracking # {item.full_name}
           </DrawerDescription>
         </DrawerHeader>
         <div className="grid grid-cols-3 gap-6 justify-center items-center overflow-y-auto px-4 size-8/12 mx-auto ">
           <div className="flex flex-col gap-2">
-            <Label htmlFor="tracking_id" className="font-bold">Tracking ID</Label>
+            <Label htmlFor="tracking_id" className="font-bold">
+              Tracking ID
+            </Label>
             <p>{item.email}</p>
           </div>
-          
         </div>
         <DrawerFooter>
           <DrawerClose className="pt-10">
@@ -560,7 +624,5 @@ function TableCellViewer({ item }: { item: User }) {
         </DrawerFooter>
       </DrawerContent>
     </Drawer>
-  )
+  );
 }
-
-

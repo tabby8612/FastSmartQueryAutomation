@@ -1,6 +1,6 @@
-"use client"
+"use client";
 
-import * as React from "react"
+import * as React from "react";
 import {
   closestCenter,
   DndContext,
@@ -11,15 +11,15 @@ import {
   useSensors,
   type DragEndEvent,
   type UniqueIdentifier,
-} from "@dnd-kit/core"
-import { restrictToVerticalAxis } from "@dnd-kit/modifiers"
+} from "@dnd-kit/core";
+import { restrictToVerticalAxis } from "@dnd-kit/modifiers";
 import {
   arrayMove,
   SortableContext,
   useSortable,
   verticalListSortingStrategy,
-} from "@dnd-kit/sortable"
-import { CSS } from "@dnd-kit/utilities"
+} from "@dnd-kit/sortable";
+import { CSS } from "@dnd-kit/utilities";
 import {
   IconChevronDown,
   IconChevronLeft,
@@ -31,7 +31,7 @@ import {
   IconLayoutColumns,
   IconLoader,
   IconPlus,
-} from "@tabler/icons-react"
+} from "@tabler/icons-react";
 import {
   columnFilteringFeature,
   columnVisibilityFeature,
@@ -39,36 +39,39 @@ import {
   createFilteredRowModel,
   createPaginatedRowModel,
   createSortedRowModel,
+  filterFn_equals,
+  filterFn_includesString,
   FlexRender,
   rowPaginationFeature,
   rowSelectionFeature,
   rowSortingFeature,
+  sortFn_alphanumeric,
+  sortFn_text,
   tableFeatures,
   useTable,
   type ColumnFiltersState,
   type ColumnVisibilityState,
   type Row,
   type SortingState,
-} from "@tanstack/react-table"
-import { z } from "zod"
+} from "@tanstack/react-table";
+import { z } from "zod";
 
-import { Badge } from "@/components/ui/badge"
-import { Button } from "@/components/ui/button"
-import { Checkbox } from "@/components/ui/checkbox"
+import { Badge } from "@/components/ui/badge";
+import { Button } from "@/components/ui/button";
 import {
   DropdownMenu,
   DropdownMenuCheckboxItem,
   DropdownMenuContent,
   DropdownMenuTrigger,
-} from "@/components/ui/dropdown-menu"
-import { Label } from "@/components/ui/label"
+} from "@/components/ui/dropdown-menu";
+import { Label } from "@/components/ui/label";
 import {
   Select,
   SelectContent,
   SelectItem,
   SelectTrigger,
   SelectValue,
-} from "@/components/ui/select"
+} from "@/components/ui/select";
 import {
   Table,
   TableBody,
@@ -76,17 +79,36 @@ import {
   TableHead,
   TableHeader,
   TableRow,
-} from "@/components/ui/table"
+} from "@/components/ui/table";
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import {
-  Tabs,
-  TabsContent,
-  TabsList,
-  TabsTrigger,
-} from "@/components/ui/tabs"
-import { Drawer, DrawerClose, DrawerContent, DrawerDescription, DrawerFooter, DrawerHeader, DrawerTitle, DrawerTrigger } from "../ui/drawer"
-import { useIsMobile } from "@/hooks/use-mobile"
-import { useAuth } from "@/contexts/auth-context"
-import { useNavigate } from "react-router-dom"
+  Drawer,
+  DrawerClose,
+  DrawerContent,
+  DrawerDescription,
+  DrawerFooter,
+  DrawerHeader,
+  DrawerTitle,
+  DrawerTrigger,
+} from "../ui/drawer";
+import { useIsMobile } from "@/hooks/use-mobile";
+import { useAuth } from "@/contexts/auth-context";
+import { Link, useNavigate } from "react-router-dom";
+import {
+  ArrowUpDown,
+  ArrowUpIcon,
+  CheckCheckIcon,
+  HandHeartIcon,
+  Loader2,
+  Search,
+  Trash2Icon,
+} from "lucide-react";
+import { Input } from "../ui/input";
+import { Dialog, DialogClose, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle } from "../ui/dialog";
+import type { Ticket } from "@/types";
+import api from "@/lib/axios";
+import { isAxiosError } from "axios";
+import { toast } from "sonner";
 
 // New in v9: declare the features this table uses — anything you don't
 // register is tree-shaken out of the bundle.
@@ -99,14 +121,14 @@ const features = tableFeatures({
   filteredRowModel: createFilteredRowModel(),
   paginatedRowModel: createPaginatedRowModel(),
   sortedRowModel: createSortedRowModel(),
-})
-
-
+  filterFns: { includesString: filterFn_includesString },
+  sortFns: { alphanumeric: sortFn_alphanumeric, text: sortFn_text },
+});
 
 const columnHelper = createColumnHelper<
   typeof features,
-  z.infer<typeof schema>
->()
+  Ticket
+>();
 
 export const schema = z.object({
   id: z.number(),
@@ -114,6 +136,7 @@ export const schema = z.object({
   channel: z.string(),
   subject: z.string(),
   body: z.string(),
+  priority: z.string(),
   intent: z.string(),
   status: z.string(),
   awaiting_student_input: z.boolean(),
@@ -138,15 +161,15 @@ export const schema = z.object({
     id: z.number(),
     name: z.string(),
   }),
-})
+});
 
-export type Query = z.infer<typeof schema>
+export type Query = Ticket;
 
 // Create a separate component for the drag handle
 function DragHandle({ id }: { id: number }) {
   const { attributes, listeners } = useSortable({
     id,
-  })
+  });
 
   return (
     <Button
@@ -159,111 +182,17 @@ function DragHandle({ id }: { id: number }) {
       <IconGripVertical className="size-3 text-muted-foreground" />
       <span className="sr-only">Drag to reorder</span>
     </Button>
-  )
+  );
 }
-
-const columns = columnHelper.columns([
-  columnHelper.display({
-    id: "drag",
-    header: () => null,
-    cell: ({ row }) => <DragHandle id={row.original.id} />,
-  }),
-  columnHelper.display({
-    id: "select",
-    header: ({ table }) => (
-      <div className="flex items-center justify-center">
-        <Checkbox
-          checked={
-            table.getIsAllPageRowsSelected() ||
-            (table.getIsSomePageRowsSelected() && "indeterminate")
-          }
-          onCheckedChange={(value) => table.toggleAllPageRowsSelected(!!value)}
-          aria-label="Select all"
-        />
-      </div>
-    ),
-    cell: ({ row }) => (
-      <div className="flex items-center justify-center">
-        <Checkbox
-          checked={row.getIsSelected()}
-          onCheckedChange={(value) => row.toggleSelected(!!value)}
-          aria-label="Select row"
-        />
-      </div>
-    ),
-    enableSorting: false,
-    enableHiding: false,
-  }),
-  columnHelper.accessor("tracking_id", {
-    header: "Tracking ID",
-    cell: ({ row }) => {
-      return <TableCellViewer item={row.original} />
-    },
-    enableHiding: false,
-  }),
-  columnHelper.accessor("department", {
-    header: "Department",
-    cell: ({ row }) => (
-      <div className="capitalize">
-        {row.original.department?.name}
-      </div>
-    ),
-    enableSorting: false,
-  }),
-  columnHelper.accessor("channel", {
-    header: "Channel",
-    cell: ({ row }) => (
-      <div className="">
-        <Badge>{row.original.channel}
-        </Badge>
-      </div>
-    ),
-  }),
-  columnHelper.accessor("status", {
-    header: "Status",
-    cell: ({ row }) => (
-      <Badge variant="outline" className="px-1.5 text-muted-foreground">
-        {row.original.status === "open" ? (
-          <IconCircleCheckFilled className="fill-green-500 dark:fill-green-400" />
-        ) : (
-          <IconLoader />
-        )}
-        {row.original.status}
-      </Badge>
-    ),
-    enableSorting: false,
-  }),
-  columnHelper.accessor("category", {
-    header: "Category",
-    cell: ({ row }) => (
-      <Badge>{row.original.category?.name[0].toUpperCase() + row.original.category?.name.slice(1, row.original.category?.name.length)}</Badge>
-    ),
-  }),
-  columnHelper.accessor("awaiting_student_input", {
-    header: "Awaiting Response",
-    cell: ({ row }) => (
-      <div className="flex justify-center items-center">
-        {row.original.awaiting_student_input ? <Badge className="bg-green-200 text-black">Yes</Badge> : <Badge className="bg-red-200 text-black">No</Badge>}
-      </div>
-    ),
-  }),
-  columnHelper.accessor("created_at", {
-    header: "Created At",
-    cell: ({ row }) => {
-      return new Intl.DateTimeFormat("en-US", {dateStyle: "medium"}).format(new Date(row.original.created_at))
-    },
-  }),
-  
-])
 
 function DraggableRow({
   row,
 }: {
-  row: Row<typeof features, z.infer<typeof schema>>
+  row: Row<typeof features, Ticket>;
 }) {
   const { transform, transition, setNodeRef, isDragging } = useSortable({
     id: row.original.id,
-  })
+  });
 
   return (
     <TableRow
@@ -282,42 +211,223 @@ function DraggableRow({
         </TableCell>
       ))}
     </TableRow>
-  )
+  );
 }
 
 export function AdminDataTable({
   data: initialData,
 }: {
-  data: z.infer<typeof schema>[]
+  data: Ticket[];
 }) {
-  const [data, setData] = React.useState(() => initialData)
-  const { role_name } = useAuth();
-
-  React.useEffect(() => {
-    setData(initialData)
-  }, [initialData])
-  const [rowSelection, setRowSelection] = React.useState({})
+  const [data, setData] = React.useState(() => initialData);
+  const { role_name, getAccessToken, logout } = useAuth();
+  const [selectedTicket, setSelectedTicket] = React.useState<Ticket | null>(null);
+  const [deleteDialogOpen, setDeleteDialogOpen] = React.useState(false);
+  const [isDeleting, setIsDeleting] = React.useState(false);
+  const [rowSelection, setRowSelection] = React.useState({});
   const [columnVisibility, setColumnVisibility] =
-    React.useState<ColumnVisibilityState>({})
+    React.useState<ColumnVisibilityState>({});
   const [columnFilters, setColumnFilters] = React.useState<ColumnFiltersState>(
-    []
-  )
-  const [sorting, setSorting] = React.useState<SortingState>([])
+    [],
+  );
+  const [sorting, setSorting] = React.useState<SortingState>([]);
+
   const [pagination, setPagination] = React.useState({
     pageIndex: 0,
     pageSize: 10,
-  })
-  const sortableId = React.useId()
+  });
+
+  const ACCESS_TOKEN = getAccessToken()
+
+  const columns = columnHelper.columns([
+    columnHelper.display({
+      id: "drag",
+      header: () => null,
+      cell: ({ row }) => <DragHandle id={row.original.id} />,
+    }),
+    columnHelper.accessor("tracking_id", {
+      header: "Tracking ID",
+      filterFn: filterFn_includesString,
+      enableColumnFilter: true,
+      cell: ({ row }) => {
+        return (
+          <div className="flex justify-center items-center gap-2 ">
+            <Link to={`/ticket/${row.original.id}`}>
+              <p className="font-semibold hover:border-b-2 hover:cursor-pointer hover:text-primary border-primary h-6 cursor-default text-sm leading-6 tracking-wide">
+                {row.original.tracking_id}
+              </p>
+            </Link>
+            <TableCellViewer item={row.original} />
+          </div>
+        );
+      },
+      enableHiding: false,
+    }),
+    columnHelper.accessor("subject", {
+      header: "Title",
+      cell: ({ row }) => (
+        <div className="capitalize">
+          {`${row.original.subject?.slice(0, 20)}...`}
+        </div>
+      ),
+      enableSorting: false,
+    }),
+    columnHelper.accessor((row) => row.department?.id, {
+      id: "department",
+      header: "Department",
+      filterFn: filterFn_equals,
+      enableColumnFilter: true,
+      cell: ({ row }) => (
+        <div className="capitalize">
+          {row.original.department?.name
+            ? `${row.original.department?.name.slice(0, 20)}...`
+            : "-"}
+        </div>
+      ),
+      enableSorting: false,
+    }),
+    columnHelper.accessor("channel", {
+      header: ({ column }) => {
+        return (
+          <div
+            className="flex gap-1 justify-center items-center"
+            onClick={() => column.toggleSorting(column.getIsSorted() === "asc")}
+          >
+            Channel
+            <ArrowUpDown className="ml-2 h-4 w-4 cursor-pointer hover:text-primary" />
+          </div>
+        );
+      },
+      cell: ({ row }) => (
+        <div className="">
+          <Badge
+            className={
+              row.original.channel === "email" ? "bg-primary" : "bg-green-700"
+            }
+          >
+            {row.original.channel.replace("_", " ")}
+          </Badge>
+        </div>
+      ),
+      enableSorting: true,
+      sortFn: sortFn_text,
+      filterFn: filterFn_includesString,
+      enableColumnFilter: true,
+    }),
+    columnHelper.accessor("status", {
+      id: "status",
+      header: "Status",
+      filterFn: "includesString",
+      enableColumnFilter: true,
+      cell: ({ row }) => (
+        <Badge variant="outline" className="px-1.5 text-muted-foreground ">
+          {row.original.status === "open" ? (
+            <IconCircleCheckFilled className="fill-green-500 dark:fill-green-400" />
+          ) : row.original.status === "pending" ? (
+            <IconLoader />
+          ) : row.original.status === "escalated" ? (
+            <ArrowUpIcon />
+          ) : row.original.status === "resolved" ? (
+            <CheckCheckIcon />
+          ) : row.original.status === "assigned" ? (
+            <HandHeartIcon />
+          ) : row.original.status === "in_progress" ? (
+            <Loader2 />
+          ) : (
+            ""
+          )}
+          {row.original.status}
+        </Badge>
+      ),
+      enableSorting: false,
+    }),
+    columnHelper.accessor("priority", {
+      id: "priority",
+      header: "Priority",
+      filterFn: "includesString",
+      enableColumnFilter: true,
+      cell: ({ row }) =>
+        row.original.priority ? (
+          <Badge
+            className={
+              row.original.priority.toLowerCase() == "low"
+                ? "bg-green-200 text-green-700"
+                : row.original.priority?.toLowerCase() == "medium"
+                  ? "bg-orange-200 text-orange-600"
+                  : "bg-red-200 text-red-800"
+            }
+          >
+            {row.original.priority}
+          </Badge>
+        ) : (
+          "-"
+        ),
+    }),
+
+    columnHelper.accessor("created_at", {
+      header: "Created At",
+      cell: ({ row }) => {
+        return new Intl.DateTimeFormat("en-US", { dateStyle: "medium" }).format(
+          new Date(row.original.created_at),
+        );
+      },
+    }),
+
+    columnHelper.display({
+      id: "action",
+      header: () => null,
+      cell: ({ row }) => (
+        <Button
+          variant="destructive"
+          size="icon"
+          onClick={() => {
+            setSelectedTicket(row.original);
+            setDeleteDialogOpen(true);
+          }}
+        >
+          <Trash2Icon color="red" />
+        </Button>
+      ),
+    }),
+  ]);
+
+  React.useEffect(() => {
+    setData(initialData);
+  }, [initialData]);
+  
+  const sortableId = React.useId();
   const sensors = useSensors(
     useSensor(MouseSensor, {}),
     useSensor(TouchSensor, {}),
-    useSensor(KeyboardSensor, {})
-  )
+    useSensor(KeyboardSensor, {}),
+  );
 
   const dataIds = React.useMemo<UniqueIdentifier[]>(
     () => data?.map(({ id }) => id) || [],
-    [data]
-  )
+    [data],
+  );
+
+  const departments = React.useMemo(
+    () =>
+      Array.from(
+        new Map(
+          data.flatMap(({ department }) =>
+            department ? [[department.id, department] as const] : [],
+          ),
+        ).values(),
+      ).sort((a, b) => a.name.localeCompare(b.name)),
+    [data],
+  );
+
+  const priorityNames = React.useMemo(
+    () => [...new Set(data?.map((itm) => itm.priority) || [])],
+    [data],
+  );
+
+  const statusNames = React.useMemo(
+    () => [...new Set(data?.map((itm) => itm.status) || [])],
+    [data],
+  );
 
   const table = useTable({
     features,
@@ -337,31 +447,62 @@ export function AdminDataTable({
     onColumnFiltersChange: setColumnFilters,
     onColumnVisibilityChange: setColumnVisibility,
     onPaginationChange: setPagination,
-  })
+  });
 
   function handleDragEnd(event: DragEndEvent) {
-    const { active, over } = event
+    const { active, over } = event;
     if (active && over && active.id !== over.id) {
       setData((data) => {
-        const oldIndex = dataIds.indexOf(active.id)
-        const newIndex = dataIds.indexOf(over.id)
-        return arrayMove(data, oldIndex, newIndex)
-      })
+        const oldIndex = dataIds.indexOf(active.id);
+        const newIndex = dataIds.indexOf(over.id);
+        return arrayMove(data, oldIndex, newIndex);
+      });
     }
   }
 
-  const navigate = useNavigate()
-  
+  const navigate = useNavigate();
+
+  async function handleTicketDelete(event: React.MouseEvent) {
+    event.preventDefault()
+
+    if (!selectedTicket) return;
+    if (isDeleting) return;
+
+    try {
+      setIsDeleting(true)
+
+      await api.delete(`/tickets/${selectedTicket.id}`, {
+        headers: {
+          "Authorization": `Bearer ${ACCESS_TOKEN}`
+        }
+      })
+      
+    } catch (error) {
+      if (isAxiosError(error)) {
+        toast.error(`Unable to delete user - ${error.message}`, {
+          'position': "top-center",
+          "richColors": true
+        })
+      }
+
+      if (isAxiosError(error) && error.status == 408) {
+        logout()
+        navigate("/")
+      }
+      
+    } finally {
+      setDeleteDialogOpen(false)
+      setIsDeleting(false)
+    }
+  }
+
   return (
-    <Tabs
-      defaultValue="outline"
-      className="w-full flex-col justify-start gap-6"
-    >
+    <Tabs defaultValue="issues" className="w-full flex-col justify-start gap-6">
       <div className="flex items-center justify-between px-4 lg:px-6">
         <Label htmlFor="view-selector" className="sr-only">
           View
         </Label>
-        <Select defaultValue="outline">
+        <Select defaultValue="issues">
           <SelectTrigger
             className="flex w-fit @4xl/main:hidden"
             size="sm"
@@ -379,12 +520,12 @@ export function AdminDataTable({
         <div className="flex items-center gap-2">
           <DropdownMenu>
             <DropdownMenuTrigger>
-              <p className="flex gap-1 rounded-lg font-semibold px-2 py-1 text-xs border-border bg-muted justify-center items-center hover:bg-muted hover:text-foreground aria-expanded:bg-muted aria-expanded:text-foreground dark:border-input dark:bg-input/30 dark:hover:bg-input/50">
-                <IconLayoutColumns size={20}/>
+              <div className="flex text-xs gap-1.5 shadow border-slate-800 font-semibold justify-center items-center bg-muted/70 px-3 py-1 rounded-lg hover:bg-muted-foreground/10">
+                <IconLayoutColumns className="size-4" />
                 <span className="hidden lg:inline">Customize Columns</span>
                 <span className="lg:hidden">Columns</span>
                 <IconChevronDown />
-              </p>
+              </div>
             </DropdownMenuTrigger>
             <DropdownMenuContent align="end" className="w-56">
               {table
@@ -392,7 +533,7 @@ export function AdminDataTable({
                 .filter(
                   (column) =>
                     typeof column.accessorFn !== "undefined" &&
-                    column.getCanHide()
+                    column.getCanHide(),
                 )
                 .map((column) => {
                   return (
@@ -406,25 +547,148 @@ export function AdminDataTable({
                     >
                       {column.id}
                     </DropdownMenuCheckboxItem>
-                  )
+                  );
                 })}
             </DropdownMenuContent>
           </DropdownMenu>
-          {
-            role_name == "student" && (
-              <Button variant="outline" size="sm" onClick={() => navigate("/student/submit-issue")}>
-                <IconPlus />
-                <span className="hidden lg:inline">Add New Issue</span>
-              </Button>
-            )
-          }
-
+          {role_name == "student" && (
+            <div
+              className="flex text-xs gap-1.5 shadow border-slate-800 font-semibold justify-center cursor-default items-center bg-muted/70 px-4 py-2 rounded-lg hover:bg-muted-foreground/10"
+              onClick={() => navigate("/student/submit-issue")}
+            >
+              <IconPlus className="size-4" />
+              <span className="hidden lg:inline">Add New Issue</span>
+            </div>
+          )}
         </div>
       </div>
       <TabsContent
         value="issues"
         className="relative flex flex-col gap-4 overflow-auto px-4 lg:px-6"
       >
+        <div className="flex flex-wrap items-center gap-5 py-4">
+          <Input
+            placeholder="Filter by tracking ID..."
+            aria-label="Filter by tracking ID"
+            value={
+              (table.getColumn("tracking_id")?.getFilterValue() as string) ?? ""
+            }
+            onChange={(event) =>
+              table.getColumn("tracking_id")?.setFilterValue(event.target.value)
+            }
+            className="max-w-sm"
+          />
+          <Select
+            items={[
+              { value: "all", label: "All departments" },
+              ...departments.map((department) => ({
+                value: String(department.id),
+                label:
+                  department.name.slice(0, 1).toUpperCase() +
+                  department.name.slice(1),
+              })),
+            ]}
+            value={String(
+              table.getColumn("department")?.getFilterValue() ?? "all",
+            )}
+            onValueChange={(value) => {
+              table
+                .getColumn("department")
+                ?.setFilterValue(
+                  value === "all" || value === null ? undefined : Number(value),
+                );
+              table.setPageIndex(0);
+            }}
+          >
+            <SelectTrigger className="w-1/3" aria-label="Filter by department">
+              <SelectValue placeholder="All departments" />
+            </SelectTrigger>
+            <SelectContent>
+              <SelectItem value="all">All departments</SelectItem>
+              {departments.map((department) => (
+                <SelectItem
+                  key={department.id}
+                  value={String(department.id)}
+                  className="capitalize"
+                >
+                  {department.name}
+                </SelectItem>
+              ))}
+            </SelectContent>
+          </Select>
+          <Select
+            items={[
+              { value: "all", label: "All Priorities" },
+              ...priorityNames.map((priorityName) => ({
+                value: priorityName,
+                label: priorityName,
+              })),
+            ]}
+            value={String(
+              table.getColumn("priority")?.getFilterValue() ?? "all",
+            )}
+            onValueChange={(value) => {
+              table
+                .getColumn("priority")
+                ?.setFilterValue(
+                  value === "all" || value === null ? undefined : value,
+                );
+              table.setPageIndex(0);
+            }}
+          >
+            <SelectTrigger
+              className="w-1/3 capitalize"
+              aria-label="Filter by priority"
+            >
+              <SelectValue placeholder="All Priorities" />
+            </SelectTrigger>
+            <SelectContent>
+              <SelectItem value="all">All Priorities</SelectItem>
+              {priorityNames.map((priorityName, ind) => (
+                <SelectItem
+                  key={ind}
+                  value={priorityName}
+                  className="capitalize"
+                >
+                  {priorityName}
+                </SelectItem>
+              ))}
+            </SelectContent>
+          </Select>
+          <Select
+            items={[
+              { value: "all", label: "All Statuses" },
+              ...statusNames.map((status) => ({
+                value: status,
+                label: status,
+              })),
+            ]}
+            value={String(table.getColumn("status")?.getFilterValue() ?? "all")}
+            onValueChange={(value) => {
+              table
+                .getColumn("status")
+                ?.setFilterValue(
+                  value === "all" || value === null ? undefined : value,
+                );
+              table.setPageIndex(0);
+            }}
+          >
+            <SelectTrigger
+              className="w-1/3 capitalize"
+              aria-label="Filter by Status"
+            >
+              <SelectValue placeholder="All Statuses" />
+            </SelectTrigger>
+            <SelectContent>
+              <SelectItem value="all">All Statuses</SelectItem>
+              {statusNames.map((statusName, ind) => (
+                <SelectItem key={ind} value={statusName} className="capitalize">
+                  {statusName}
+                </SelectItem>
+              ))}
+            </SelectContent>
+          </Select>
+        </div>
         <div className="overflow-hidden rounded-lg border">
           <DndContext
             collisionDetection={closestCenter}
@@ -433,6 +697,26 @@ export function AdminDataTable({
             sensors={sensors}
             id={sortableId}
           >
+            {selectedTicket && (
+              <Dialog open={deleteDialogOpen}>
+                <form>
+                  <DialogContent className="sm:max-w-sm" showCloseButton={false}>
+                    <DialogHeader>
+                      <DialogTitle>Do you want to delete this ticket?</DialogTitle>
+                      <DialogDescription />
+                    </DialogHeader>
+                    <Trash2Icon color="red" className="bg-stone-100 rounded-full mx-auto p-3" size={50} />
+                    <p>This action can't be reversed, once ticket is deleted, you can't access it</p>
+                    <DialogFooter>
+                      <DialogClose
+                        render={<Button variant="outline" onClick={() => setDeleteDialogOpen(false)}>Cancel</Button>}
+                      />
+                      <Button type="submit" variant="destructive" onClick={(e) => handleTicketDelete(e)}>Delete Ticket</Button>
+                    </DialogFooter>
+                  </DialogContent>
+                </form>
+              </Dialog>
+            )}
             <Table>
               <TableHeader className="sticky top-0 z-10 bg-muted">
                 {table.getHeaderGroups().map((headerGroup) => (
@@ -444,7 +728,7 @@ export function AdminDataTable({
                             <FlexRender header={header} />
                           )}
                         </TableHead>
-                      )
+                      );
                     })}
                   </TableRow>
                 ))}
@@ -486,7 +770,7 @@ export function AdminDataTable({
               <Select
                 value={`${table.state.pagination.pageSize}`}
                 onValueChange={(value) => {
-                  table.setPageSize(Number(value))
+                  table.setPageSize(Number(value));
                 }}
               >
                 <SelectTrigger size="sm" className="w-20" id="rows-per-page">
@@ -549,82 +833,133 @@ export function AdminDataTable({
           </div>
         </div>
       </TabsContent>
-
     </Tabs>
-  )
+  );
 }
 
-
 function TableCellViewer({ item }: { item: z.infer<typeof schema> }) {
-  const isMobile = useIsMobile()
+  const isMobile = useIsMobile();
 
   return (
-    <Drawer swipeDirection={isMobile ? "down" : "down"} showSwipeHandle={isMobile}>
+    <Drawer
+      swipeDirection={isMobile ? "left" : "down"}
+      showSwipeHandle={isMobile}
+    >
       <DrawerTrigger>
-        <p className="w-fit px-0 text-left text-foreground font-semibold cursor-pointer underline-offset-4 hover:underline">{item.tracking_id}</p>
+        <Search className="size-3 hover:text-blue-600 cursor-pointer" />
       </DrawerTrigger>
       <DrawerContent>
         <DrawerHeader className="gap-10 mb-7">
-          <DrawerTitle className="text-2xl font-bold text-primary">{item.tracking_id}</DrawerTitle>
+          <DrawerTitle className="text-2xl font-bold text-primary">
+            {item.tracking_id}
+          </DrawerTitle>
           <DrawerDescription className="text-lg text-slate-600">
             Showing issue details for the Item Tracking # {item.tracking_id}
           </DrawerDescription>
         </DrawerHeader>
         <div className="grid grid-cols-3 gap-6 justify-center items-center overflow-y-auto px-4 size-8/12 mx-auto ">
           <div className="flex flex-col gap-2">
-            <Label htmlFor="tracking_id" className="font-bold">Tracking ID</Label>
+            <Label htmlFor="tracking_id" className="font-bold">
+              Tracking ID
+            </Label>
             <p>{item.tracking_id}</p>
           </div>
           <div className="flex flex-col gap-2">
-            <Label htmlFor="student_name" className="font-bold">Student Name</Label>
+            <Label htmlFor="student_name" className="font-bold">
+              Student Name
+            </Label>
             <p>{item.student?.full_name ?? "-"}</p>
           </div>
-          <div className="flex flex-col gap-2 capitalize">
-            <Label htmlFor="officer_name" className="font-bold">Officer Name</Label>
+          <div className="flex flex-col gap-2">
+            <Label htmlFor="officer_name" className="font-bold">
+              Officer Name
+            </Label>
             <p>{item.assigned?.full_name ?? "-"}</p>
           </div>
-          <div className="flex flex-col gap-2 capitalize">
-            <Label htmlFor="department_name" className="font-bold">Department Name</Label>
-            <p>{item.department?.name ?? "-"}</p>
-          </div>
-          <div className="flex flex-col gap-2 capitalize">
-            <Label htmlFor="category_name" className="font-bold">Category Name</Label>
-            <p>{item.category?.name ?? "-"}</p>
+          <div className="flex flex-col gap-2">
+            <Label htmlFor="department_name" className="font-bold capitalize">
+              Department Name
+            </Label>
+            <p className="capitalize">{item.department?.name ?? "-"}</p>
           </div>
           <div className="flex flex-col gap-2">
-            <Label htmlFor="channel" className="font-bold">Channel Name</Label>
+            <Label htmlFor="category_name" className="font-bold capitalize">
+              Category Name
+            </Label>
+            <p className="capitalize">{item.category?.name ?? "-"}</p>
+          </div>
+          <div className="flex flex-col gap-2">
+            <Label htmlFor="channel" className="font-bold">
+              Channel Name
+            </Label>
             <Badge>{item.channel}</Badge>
           </div>
-          <div className="flex flex-col gap-2 capitalize">
-            <Label htmlFor="intent" className="font-bold">Intent</Label>
-            <p>{item.intent}</p>
+          <div className="flex flex-col gap-2">
+            <Label htmlFor="intent" className="font-bold">
+              Intent
+            </Label>
+            <p className="capitalize">{item.intent}</p>
           </div>
           <div className="flex flex-col gap-2">
-            <Label htmlFor="status" className="font-bold">Status</Label>
-            <Badge className={item.status === "open" ? "bg-green-700 text-white" : "bg-red-600 text-white"}>{item.status}</Badge>
+            <Label htmlFor="status" className="font-bold">
+              Status
+            </Label>
+            {item.status === "open" && (
+              <Badge className="bg-green-700 text-white">{item.status}</Badge>
+            )}
+            {item.status === "pending" && (
+              <Badge className="bg-orange-400 text-white">{item.status}</Badge>
+            )}
+            {item.status === "closed" && <Badge>{item.status}</Badge>}
           </div>
           <div className="flex flex-col gap-2">
-            <Label htmlFor="intent" className="font-bold">Awaiting Student Response</Label>
-            {
-              item.awaiting_student_input ? <Badge className="bg-green-700 text-white">Yes</Badge> : <Badge className="bg-red-700 text-white">No</Badge>
-            }
-            
+            <Label htmlFor="intent" className="font-bold">
+              Awaiting Student Response
+            </Label>
+            {item.awaiting_student_input ? (
+              <Badge className="bg-green-700 text-white">Yes</Badge>
+            ) : (
+              <Badge className="bg-red-700 text-white">No</Badge>
+            )}
           </div>
           <div className="flex flex-col gap-2">
-            <Label htmlFor="intent" className="font-bold">Created At</Label>
-            <p>{item.created_at ? new Intl.DateTimeFormat("en-US").format(new Date(item.created_at)) : "None"}</p>
+            <Label htmlFor="created_at" className="font-bold">
+              Created At
+            </Label>
+            <p>
+              {item.created_at
+                ? new Intl.DateTimeFormat("en-US").format(
+                    new Date(item.created_at),
+                  )
+                : "None"}
+            </p>
           </div>
           <div className="flex flex-col gap-2">
-            <Label htmlFor="intent" className="font-bold">Resolved At</Label>
-            <p>{item.resolved_at ? new Intl.DateTimeFormat("en-US").format(new Date(item.resolved_at)) : "None"}</p>
+            <Label htmlFor="resolved_at" className="font-bold">
+              Resolved At
+            </Label>
+            <p>
+              {item.resolved_at
+                ? new Intl.DateTimeFormat("en-US").format(
+                    new Date(item.resolved_at),
+                  )
+                : "None"}
+            </p>
           </div>
           <div className="flex flex-col gap-2 col-span-full">
-            <Label htmlFor="intent" className="font-bold">Subject</Label>
+            <Label htmlFor="subject" className="font-bold">
+              Subject
+            </Label>
             <p>{item.subject}</p>
           </div>
           <div className="flex flex-col gap-2 col-span-full">
-            <Label htmlFor="intent" className="font-bold">Description</Label>
-            <p>{item.body}</p>
+            <Label htmlFor="description" className="font-bold">
+              Description
+            </Label>
+            <p
+              className="formatted-text"
+              dangerouslySetInnerHTML={{ __html: item.body }}
+            />
           </div>
         </div>
         <DrawerFooter>
@@ -634,7 +969,5 @@ function TableCellViewer({ item }: { item: z.infer<typeof schema> }) {
         </DrawerFooter>
       </DrawerContent>
     </Drawer>
-  )
+  );
 }
-
-

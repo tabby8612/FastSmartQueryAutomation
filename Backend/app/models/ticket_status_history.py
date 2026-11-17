@@ -14,7 +14,9 @@ class TicketStatusHistory(Base, TimestampMixin):
     )
     old_status: Mapped[str] = mapped_column(String(255), nullable=True)
     new_status: Mapped[str] = mapped_column(String(255), nullable=False)
-    changed_by: Mapped[int] = mapped_column(ForeignKey("users.id"), nullable=True)
+    changed_by: Mapped[int] = mapped_column(
+        ForeignKey("users.id", ondelete="CASCADE"), nullable=True
+    )
 
     ticket: Mapped[Ticket] = relationship(
         "Ticket", back_populates="ticket_status_history"

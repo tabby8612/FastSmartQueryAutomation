@@ -1,7 +1,7 @@
 from datetime import date, datetime, timedelta, timezone
 
 from sqlalchemy.ext.asyncio import AsyncSession
-from sqlalchemy import select, or_
+from sqlalchemy import select, or_, func
 from sqlalchemy.orm import joinedload
 
 from fastapi import HTTPException, status
@@ -10,6 +10,8 @@ from app.models.user import User
 from app.models.role import Role
 from app.models.user_roles import User_Roles
 from app.helpers.security import hash_password
+
+from app.Enums.RolesEnum import RolesEnum
 
 
 class UserService:
@@ -65,8 +67,10 @@ class UserService:
             stmt = select(Role).where(Role.name == "admin")
         elif user.is_officer:
             stmt = select(Role).where(Role.name == "officer")
-        else:
+        elif user.is_student:
             stmt = select(Role).where(Role.name == "student")
+        else:
+            stmt = select(Role).where(Role.name == "hod")
 
         result = await db.execute(stmt)
         role = result.scalar_one_or_none()
@@ -116,8 +120,10 @@ class UserService:
 
     @staticmethod
     async def get_by_id(db: AsyncSession, user_id: int) -> User | None:
-        result = await db.execute(select(User).where(User.id == user_id))
-        return result.scalar_one_or_none()
+        stmt = select(User).where(User.id == user_id).options(joinedload(User.roles))
+
+        result = await db.execute(stmt)
+        return result.unique().scalar_one_or_none()
 
     @staticmethod
     async def get_officers_by_department(
@@ -178,6 +184,20 @@ class UserService:
 
     @staticmethod
     async def delete(db: AsyncSession, user: User) -> None:
+
+        if user.is_admin or any(role.name == RolesEnum.ADMIN for role in user.roles):
+            result = await db.execute(
+                select(User).where(User.is_admin == True, User.is_active == True)
+            )
+
+            active_admins = result.scalars().all()
+
+            if len(active_admins) <= 1:
+                raise HTTPException(
+                    status_code=400,
+                    detail="Cannot delete the last active administrator.",
+                )
+
         await db.delete(user)
         await db.flush()
 

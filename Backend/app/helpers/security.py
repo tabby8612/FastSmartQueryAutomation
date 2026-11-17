@@ -17,7 +17,7 @@ load_dotenv()
 JWT_SECRET = os.getenv("JWT_SECRET", "1588789547ASEDERDDDSA")
 JWT_ALGORITHM = os.getenv("JWT_ALGORITHM", "HS256")
 password_hashed = PasswordHash.recommended()
-oauth2_scheme = OAuth2PasswordBearer(tokenUrl="/auth/login")
+oauth2_scheme = OAuth2PasswordBearer(tokenUrl="/api/auth/login")
 
 
 def hash_password(password: str):

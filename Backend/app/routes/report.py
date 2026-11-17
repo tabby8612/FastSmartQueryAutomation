@@ -48,13 +48,4 @@ async def index(
         channel,
     )
 
-    await AuditService.record_audit(
-        db,
-        actor_id=current_user.id,
-        action=AuditActionEnum.REPORT_EXPORT,
-        entity_type="ticket",
-        description="Ticket report has been exported",
-        ip_address=str(ip_address),
-    )
-
     return ticketsData

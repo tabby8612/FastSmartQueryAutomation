@@ -40,7 +40,7 @@ FRONTEND_URL = os.getenv("FRONTEND_URL")
 
 app = FastAPI(lifespan=lifespan)
 
-app.mount("/uploads", StaticFiles(directory="uploads"), name="uploads")
+app.mount("/api/uploads", StaticFiles(directory="uploads"), name="uploads")
 
 app.add_middleware(SessionMiddleware, secret_key=SESSION_SECRET_KEY)
 

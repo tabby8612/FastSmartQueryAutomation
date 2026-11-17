@@ -53,7 +53,8 @@ export function AdminIssues() {
                 </p>
                 </div>
               <div className="py-2 mx-6 rounded-2xl pt-5 bg-white">
-                <DataTable data={myQueries} />
+                {/* <DataTable data={myQueries} /> */}
+                <AdminDataTable data={myQueries} />
               </div>
             </div>
           </div>
