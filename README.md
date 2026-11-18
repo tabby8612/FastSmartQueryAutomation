@@ -158,7 +158,7 @@ Update the environment variables with your own local configuration.
 Refer to Section 8 for environment configuration.
 
 
-## **7. Frontend installation**
+## 7. **Frontend installation**
 
 Open another terminal and navigate to the frontend directory:
 
@@ -196,6 +196,7 @@ http://127.0.0.1:5173
 
 ## **8. Environment Configuration**
 
+### **Backend `.env` File**
 The backend requires environment variables for database connectivity, authentication, and external services.
 
 The `.env.example` file provides a template of the required variables.
@@ -214,7 +215,28 @@ Typical configuration categories include:
 
 Use the exact environment variable names defined in the project's `.env.example` and application settings.
 
-## 9. Database Setup and Migrations
+### **Frontend `.env` File**
+
+The frontend requires environment variables for backend connectivity, and upload file limit.
+
+The `.env.example` file provides a template of the required variables.
+
+Typical configuration categories include:
+| Configuration | Description |
+|---|---|
+| VITE_API_BASE_URL | Backend API URL |
+| MAX_UPLOAD_SIZE_MB | Max size of a uploaded file |
+
+## 9. **Setting up `gmail_credentials.json` file in backend**
+In **backend** folder a sample `gmail_credentials_sample.json` is provided that can be used connect to the university gmail account for polling ticket emails.
+
+This file requires you to add following important values for keys:
+1. client_id
+2. project_id
+3. client_secret
+4. redirect_uris
+
+## 10. **Database Setup and Migrations**
 
 The application uses PostgreSQL as its relational database.
 
@@ -354,23 +376,23 @@ The application uses Gmail integration to retrieve eligible incoming messages an
 
 ## **11. Screenshots**
 
-1.  Login Page
+1.  **Login Page**
 ![login page](./screenshots/01_login_page.png)
 
-2.  Student Dashboard
+2.  **Student Dashboard**
 ![student dashboard](./screenshots/02_student_dashboard.png)
 
-3. Submit New Ticket
+3. **Submit New Ticket**
 ![new ticket](./screenshots/03_submit_new_issue.png) 
 
-4. New Successful Ticket Submission
+4. **New Successful Ticket Submission**
 ![new ticket submission](./screenshots/04_new_successful_submission.png)
 
-5. Ticket Overview
+5. **Ticket Overview**
 ![Ticket Overview](./screenshots/05_ticket_overview.png)
 
-6. Officer Dashboard
+6. **Officer Dashboard**
 ![Officer Dashboard](./screenshots/06_officer_dashboard.png)
 
-7. Admin Dashboard
+7. **Admin Dashboard**
 ![Admin Dashboard](./screenshots/07_admin_dashboard.png)
